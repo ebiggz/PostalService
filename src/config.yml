@@ -1,0 +1,78 @@
+#   ______________  
+#  |         .__. |  ___           _          _   ___                 _          
+#  | ._-.    |  | | | _ \ ___  ___| |_  __ _ | | / __| ___  _ _ __ __(_) __  ___ 
+#  |         '""' | |  _// _ \(_-<|  _|/ _` || | \__ \/ -_)| '_|\ V /| |/ _|/ -_)
+#  |     -.,-_    | |_|  \___//__/ \__|\__,_||_| |___/\___||_|   \_/ |_|\__|\___|
+#  |______________| 
+
+
+####################
+# General Settings #
+####################
+
+database:
+    user: root
+    password: 123
+    host: 127.0.0.1
+    port: 3306
+    database: someName
+
+enable-world-groups: false
+world-groups:
+#    Survival Universe:
+#      - survival_main
+#      - survival_main_nether
+
+use-uuids: true
+
+debug-mode: true
+
+mail-types:
+    letter: true
+    package: true
+    payment: true
+    xp: true
+
+#################
+# User Settings #
+#################
+
+inbox-sizes:
+    default: 50
+#    permission-group: 100
+
+
+####################
+# Mailbox Settings #
+####################
+
+enable-mailboxes: true
+
+require-nearby-mailbox: true
+
+mailbox-limit:
+    default: 5
+#    permission-group: 100
+
+mailbox-world-blacklist:
+  - worldname
+
+
+#########################
+# Trading Post Settings #
+#########################
+
+enable-trading-post: true
+
+require-same-mailbox: false
+
+allow-cross-world-trades: false
+
+########################################
+# Dont touch please
+config-version: 1.0
+
+
+
+
+    
