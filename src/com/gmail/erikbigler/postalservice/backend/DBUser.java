@@ -3,11 +3,13 @@ package com.gmail.erikbigler.postalservice.backend;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.gmail.erikbigler.postalservice.mail.Mail;
-import com.gmail.erikbigler.postalservice.mail.MailManager.InboxType;
-
+import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
+import com.gmail.erikbigler.postalservice.mail.MailType;
 
 public class DBUser implements User {
 
@@ -16,7 +18,7 @@ public class DBUser implements User {
 
 	public DBUser(String playerName) {
 		this.playerName = playerName;
-		//accuire uuid
+		// accuire uuid
 	}
 
 	public DBUser(UUID uuid) {
@@ -59,8 +61,8 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public Mail[] getBoxFromType(InboxType type) {
-		if(type == InboxType.INBOX) {
+	public Mail[] getBoxFromType(BoxType type) {
+		if (type == BoxType.INBOX) {
 			return getInbox();
 		} else {
 			return getSentbox();
@@ -73,17 +75,23 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public boolean sendMail(String recipient, String message, String attachmentData, String mailType) {
+	public boolean sendMail(String recipient, String message,
+			String attachmentData, MailType mailType) {
+		// save mail to ps_mail
+		// get auto incremented mail id
+		UserFactory.getUser(recipient).receieveMail(0/* mailID */, Bukkit.getPlayer(getUUID()), mailType);
 		return false;
 	}
 
 	@Override
-	public boolean receieveMail(String from, String message, String attachmentData, String mailType) {
+	public boolean receieveMail(long mailID, Player sender, MailType mailType) {
+		// save to ps_received. 0 for status, 0 for deleted
+		// send message to user saying they have received mail
 		return false;
 	}
 
 	@Override
-	public boolean markMailAsRead() {
+	public boolean markAllMailAsRead() {
 		return false;
 	}
 

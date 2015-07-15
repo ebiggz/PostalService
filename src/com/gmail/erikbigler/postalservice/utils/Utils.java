@@ -2,7 +2,6 @@ package com.gmail.erikbigler.postalservice.utils;
 
 import org.apache.commons.lang.StringUtils;
 
-
 public class Utils {
 
 	public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {

@@ -3,11 +3,12 @@ package com.gmail.erikbigler.postalservice.backend;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.gmail.erikbigler.postalservice.mail.Mail;
-import com.gmail.erikbigler.postalservice.mail.MailManager.InboxType;
-
+import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
+import com.gmail.erikbigler.postalservice.mail.MailType;
 
 public interface User {
 
@@ -25,15 +26,16 @@ public interface User {
 
 	public void saveDropbox(List<ItemStack> items);
 
-	public Mail[] getBoxFromType(InboxType type);
+	public Mail[] getBoxFromType(BoxType type);
 
 	public int getUnreadMailCount();
 
-	public boolean sendMail(String recipient, String message, String attachmentData, String mailType);
+	public boolean sendMail(String recipient, String message,
+			String attachmentData, MailType mailType);
 
-	public boolean receieveMail(String from, String message, String attachmentData, String mailType);
+	public boolean receieveMail(long mailID, Player sender, MailType mailType);
 
-	public boolean markMailAsRead();
+	public boolean markAllMailAsRead();
 
 	public boolean markMailAsClaimed(Mail mail);
 

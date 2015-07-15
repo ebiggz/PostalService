@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
-import com.gmail.erikbigler.postalservice.backend.DataFactory;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.configs.ConfigManager;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
@@ -94,8 +94,8 @@ public class PostalService extends JavaPlugin {
 	/**
 	 * @return the class that handles mailtypes
 	 */
-	public static DataFactory getDataFactory() {
-		return new DataFactory();
+	public static UserFactory getDataFactory() {
+		return new UserFactory();
 	}
 
 	/**

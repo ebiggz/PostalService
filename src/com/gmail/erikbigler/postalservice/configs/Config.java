@@ -1,32 +1,18 @@
 package com.gmail.erikbigler.postalservice.configs;
 
 import java.io.File;
-import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.plugin.PluginManager;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 
-public class ConfigManager {
+public class Config {
 
-	public boolean USE_DATABASE = true;
-	public List<String> disabledMailTypes;
-
-	protected ConfigManager() { /* exists to block instantiation */
-	}
-
-	private static ConfigManager instance = null;
-
-	public static ConfigManager getInstance() {
-		if (instance == null) {
-			instance = new ConfigManager();
-		}
-		return instance;
-	}
-
-	public void loadAllFiles() {
-		loadConfig();
+	public static void loadFile() {
+		reloadCustomConfig();
+		writeDefaults();
+		loadValues();
 	}
 
 	private void loadConfig() {
@@ -45,4 +31,5 @@ public class ConfigManager {
 			return;
 		}
 	}
+
 }

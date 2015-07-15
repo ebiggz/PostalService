@@ -2,10 +2,9 @@ package com.gmail.erikbigler.postalservice.mail;
 
 import java.util.Date;
 
-
 public class Mail {
 
-	private int mailID;
+	private long mailID;
 	private String sender;
 	private String recipient;
 	private String message;
@@ -14,7 +13,8 @@ public class Mail {
 	private Date time;
 	private MailStatus status;
 
-	public Mail(int mailID, String sender, String recipient, String message, String attachmentData, MailType type, Date time, MailStatus status) {
+	public Mail(long mailID, String sender, String recipient, String message,
+			String attachmentData, MailType type, Date time, MailStatus status) {
 		this.mailID = mailID;
 		this.sender = sender;
 		this.recipient = recipient;
@@ -22,9 +22,10 @@ public class Mail {
 		this.time = time;
 		this.status = status;
 		this.attachmentData = attachmentData;
-		if(type == null) return;
+		if (type == null)
+			return;
 		this.type = type;
-		if(hasAttachments()) {
+		if (hasAttachments()) {
 			type.loadAttachments(attachmentData);
 		}
 	}
@@ -33,7 +34,7 @@ public class Mail {
 		UNREAD, READ, CLAIMED
 	}
 
-	public int getMailID() {
+	public long getMailID() {
 		return mailID;
 	}
 
