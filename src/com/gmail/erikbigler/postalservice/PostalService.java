@@ -5,16 +5,15 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
-import com.gmail.erikbigler.postalservice.configs.ConfigManager;
+import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.configs.Language;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 import com.mythicacraft.voteroulette.utils.database.Database;
 import com.mythicacraft.voteroulette.utils.database.MySQL;
 
-
 public class PostalService extends JavaPlugin {
-
 
 	private static PostalService plugin;
 	private static Database database;
@@ -33,12 +32,13 @@ public class PostalService extends JavaPlugin {
 		 */
 		String vString = getVersion().replace("v", "");
 		serverVersion = 0;
-		if (!vString.isEmpty()){
+		if (!vString.isEmpty()) {
 			String[] array = vString.split("_");
 			serverVersion = Double.parseDouble(array[0] + "." + array[1]);
 		}
-		if(serverVersion <= 1.6) {
-			//disable plugin
+		if (serverVersion <= 1.6) {
+			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
+			Bukkit.getPluginManager().disablePlugin(this);
 		}
 
 		/*
@@ -51,7 +51,8 @@ public class PostalService extends JavaPlugin {
 		/*
 		 * Load Configs
 		 */
-		ConfigManager.getInstance().loadAllFiles();
+		Config.loadFile();
+		Language.loadFile();
 
 		/*
 		 * Connect to database
@@ -72,7 +73,7 @@ public class PostalService extends JavaPlugin {
 		database = new MySQL(this, getConfig().getString("database.host", "127.0.0.1"), getConfig().getString("database.port", "3306"), getConfig().getString("database.database", "someName"), getConfig().getString("database.user", "user"), getConfig().getString("database.password", "password"));
 		try {
 			database.openConnection();
-			if(!database.checkConnection()) {
+			if (!database.checkConnection()) {
 				getLogger().severe("Unable to connect to the database! Please check your database settings and try again.");
 				Bukkit.getPluginManager().disablePlugin(this);
 			} else {
@@ -92,9 +93,9 @@ public class PostalService extends JavaPlugin {
 	}
 
 	/**
-	 * @return the class that handles mailtypes
+	 * @return the class that creates Users
 	 */
-	public static UserFactory getDataFactory() {
+	public static UserFactory getUserFactory() {
 		return new UserFactory();
 	}
 
@@ -106,10 +107,12 @@ public class PostalService extends JavaPlugin {
 	}
 
 	/**
-	 * Determines the version string used by Craftbukkit's safeguard (e.g. 1_7_R4).
+	 * Determines the version string used by Craftbukkit's safeguard (e.g.
+	 * 1_7_R4).
+	 * 
 	 * @return the version string used by Craftbukkit's safeguard
 	 */
-	private static String getVersion(){
+	private static String getVersion() {
 		String[] array = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",");
 		if (array.length == 4)
 			return array[3] + ".";
