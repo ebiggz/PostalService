@@ -7,11 +7,12 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.configs.Config;
 import com.gmail.erikbigler.postalservice.configs.Language;
+import com.gmail.erikbigler.postalservice.configs.UUIDUtils;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
 import com.gmail.erikbigler.postalservice.utils.Utils;
-import com.mythicacraft.voteroulette.utils.database.Database;
-import com.mythicacraft.voteroulette.utils.database.MySQL;
+import com.gmail.erikbigler.postalservice.utils.database.Database;
+import com.gmail.erikbigler.postalservice.utils.database.MySQL;
 
 public class PostalService extends JavaPlugin {
 
@@ -20,7 +21,7 @@ public class PostalService extends JavaPlugin {
 	private double serverVersion;
 
 	/**
-	 * Called when the PostalService is enabled
+	 * Called when PostalService is being enabled
 	 */
 	public void onEnable() {
 
@@ -42,17 +43,22 @@ public class PostalService extends JavaPlugin {
 		}
 
 		/*
-		 * Register MailTypes
+		 * Register built in MailTypes
 		 */
 
 		getMailManager().registerMailType(new Letter());
+
+		/*
+		 * Register listeners
+		 */
 		Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
 
 		/*
-		 * Load Configs
+		 * Load configs
 		 */
 		Config.loadFile();
 		Language.loadFile();
+		UUIDUtils.loadFile();
 
 		/*
 		 * Connect to database
@@ -62,10 +68,9 @@ public class PostalService extends JavaPlugin {
 	}
 
 	/**
-	 * Called when the PostalService is disabled
+	 * Called when PostalService is being disabled
 	 */
 	public void onDisable() {
-
 	}
 
 	public void loadDatabase() {
@@ -86,7 +91,7 @@ public class PostalService extends JavaPlugin {
 	}
 
 	/**
-	 * @return the class that handles mailtypes
+	 * @return the class that handles MailTypes
 	 */
 	public static MailManager getMailManager() {
 		return MailManager.getInstance();
@@ -103,7 +108,15 @@ public class PostalService extends JavaPlugin {
 	 * @return a link to the main class instance
 	 */
 	public static PostalService getPlugin() {
+
 		return plugin;
+	}
+
+	/**
+	 * @return the database connection
+	 */
+	public static Database getPSDatabase() {
+		return database;
 	}
 
 	/**

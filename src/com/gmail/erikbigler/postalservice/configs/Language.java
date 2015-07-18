@@ -24,11 +24,20 @@ public class Language {
 	}
 
 	public static enum Phrases {
-
-		CONSOLE_ERROR("&cCannot run this command from the console!"),
-		NO_PERMISSION("&cYou don't have permission to do that!"),
-		PLAYER_NOT_FOUND("&cCouldn't find a player matching that name!");
-
+		// @formatter:off
+		PREFIX("[PostalService]"), 
+		ERROR_CONSOLE_COMMAND("&cCannot run this command from the console!"), 
+		ERROR_NO_PERMISSION("&cYou don't have permission to do that!"), 
+		ERROR_PLAYER_NOT_FOUND("&cCouldn't find a player matching that name!"),
+		COMMAND_MAIL("mail"),
+		COMMAND_ARG_TO("to"),
+		COMMAND_ARG_MESSAGE("message"),
+		COMMAND_ARG_AMOUNT("amount"),
+		MAILTYPE_LETTER("Letter"),
+		MAILTYPE_EXPERIENCE("Experience"),
+		MAILTYPE_PAYMENT("Payment"),
+		MAILTYPE_PACKAGE("Package");
+		// @formatter:on
 		private String text;
 
 		private Phrases(String text) {
@@ -36,7 +45,11 @@ public class Language {
 		}
 
 		public String toString() {
-			return ChatColor.translateAlternateColorCodes('&', this.text);
+			return this.text;
+		}
+
+		public String toPrefixedString() {
+			return PREFIX + " " + this.text;
 		}
 	}
 
@@ -53,10 +66,7 @@ public class Language {
 	private static void loadValues() {
 		Phrases[] arrayOfPhrases = Phrases.values();
 		for (Phrases phrase : arrayOfPhrases) {
-			phrase.text = getCustomConfig().getString(phrase.name(), phrase.text);
-			if (!getCustomConfig().isSet(phrase.name())) {
-				getCustomConfig().set(phrase.name(), phrase.text);
-			}
+			phrase.text = getCustomConfig().getString(phrase.name(), ChatColor.translateAlternateColorCodes('&', phrase.text));
 		}
 	}
 
@@ -67,24 +77,20 @@ public class Language {
 		customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
 	}
 
-	private static FileConfiguration getCustomConfig()
-	{
+	private static FileConfiguration getCustomConfig() {
 		if (customConfig == null) {
 			reloadCustomConfig();
 		}
 		return customConfig;
 	}
 
-	private static void saveCustomConfig()
-	{
+	private static void saveCustomConfig() {
 		if ((customConfig == null) || (customConfigFile == null)) {
 			return;
 		}
-		try
-		{
+		try {
 			customConfig.save(customConfigFile);
-		} catch (IOException ex)
-		{
+		} catch (IOException ex) {
 			Logger.getLogger(JavaPlugin.class.getName()).log(Level.SEVERE, "Could not save config to " + customConfigFile, ex);
 		}
 	}

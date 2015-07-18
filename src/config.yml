@@ -92,5 +92,5 @@ require-same-mailbox: false
 allow-cross-world-trades: false
 
 ########################################
-# Dont touch please
+# Don't touch please
 config-version: 1.0
