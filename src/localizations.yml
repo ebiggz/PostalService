@@ -1,0 +1,13 @@
+PREFIX: "[PostalService]"
+ERROR_CONSOLE_COMMAND: "&cYou can't run that command from the console!"
+ERROR_NO_PERMISSION: "&cYou don't have permission to do that!"
+ERROR_PLAYER_NOT_FOUND: "&cCouldn't find a player matching that name!"
+COMMAND_MAIL: "mail"
+COMMAND_ARG_TO: "to"
+COMMAND_ARG_MESSAGE: "message"
+COMMAND_ARG_AMOUNT: "amount"
+MAILTYPE_LETTER: "Letter"
+MAILTYPE_EXPERIENCE: "Experience"
+MAILTYPE_PAYMENT: "Payment"
+MAILTYPE_PACKAGE: "Package"
+
