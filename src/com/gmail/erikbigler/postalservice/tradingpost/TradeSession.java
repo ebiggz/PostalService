@@ -26,9 +26,9 @@ import com.gmail.erikbigler.postalservice.mail.Mail.MailStatus;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 
 
-public class TradeSession implements GUI {
+public class TradeSession /*implements GUI*/ {
 
-	private String initiatorName;
+	/*private String initiatorName;
 	private String inviteeName;
 
 	private AcceptOfferButton initiatorAccept;
@@ -78,13 +78,13 @@ public class TradeSession implements GUI {
 		//help info sign
 		List<String> infoSignLore = new ArrayList<String>();
 		infoSignLore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
-		Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Each player has their own section to place items for trade.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
+		//Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Each player has their own section to place items for trade.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
 		infoSignLore.add(" ");
-		Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Once a player has placed their offer they must press their \"Lock Offer\" button.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
+		//Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Once a player has placed their offer they must press their \"Lock Offer\" button.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
+		//infoSignLore.add(" ");
+		//Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* After a player locks in their offer, the other player can then accept it.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
 		infoSignLore.add(" ");
-		Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* After a player locks in their offer, the other player can then accept it.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
-		infoSignLore.add(" ");
-		Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Both players must accept each other's offers for the trade to be successful.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
+		//Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Both players must accept each other's offers for the trade to be successful.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
 
 		ItemStack infoSign = GUIUtils.createButton(
 				Material.SIGN,
@@ -480,6 +480,6 @@ public class TradeSession implements GUI {
 
 	public boolean isEnded() {
 		return isEnded;
-	}
+	}*/
 
 }

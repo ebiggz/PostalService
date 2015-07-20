@@ -15,7 +15,7 @@ public class TradeManager {
 	private List<TradeSession> activeTrades = new ArrayList<TradeSession>();
 
 	/* Singleton */
-	private static TradeManager instance = null;
+	/*private static TradeManager instance = null;
 	private TradeManager() {}
 	public static TradeManager getInstance() {
 		if(instance == null) {
@@ -68,6 +68,6 @@ public class TradeManager {
 			System.out.println(p);
 		}
 		return availablePlayers;
-	}
+	}*/
 
 }

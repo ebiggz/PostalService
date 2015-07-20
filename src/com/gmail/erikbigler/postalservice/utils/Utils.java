@@ -1,6 +1,16 @@
 package com.gmail.erikbigler.postalservice.utils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
+import java.util.UUID;
+
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+
+import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
 
 public class Utils {
 
@@ -87,4 +97,60 @@ public class Utils {
 		return false;
 	}
 
+	public static Player getPlayerFromIdentifier(String identifier) {
+		Player player;
+		if(Config.USE_UUIDS) {
+			player = Bukkit.getPlayer(UUID.fromString(identifier));
+		} else {
+			player = Bukkit.getPlayer(identifier);
+		}
+		return player;
+	}
+
+	public static boolean playerIsOnline(String identifier) {
+		Player player = getPlayerFromIdentifier(identifier);
+		return (player != null && player.isOnline());
+	}
+
+	public static void messagePlayerIfOnline(String identifier, String message) {
+		Player player = getPlayerFromIdentifier(identifier);
+		if(player != null && player.isOnline()) {
+			player.sendMessage(message);
+		}
+	}
+
+	public static void unreadMailAlert(User user, boolean onlyUnreadAlert) {
+		int unread = user.getUnreadMailCount(Config.getCurrentWorldGroupForUser(user));
+		if(unread == 0) {
+			if(!onlyUnreadAlert) {
+				messagePlayerIfOnline(user.getIdentifier(), Phrases.ALERT_NO_UNREAD_MAIL.toPrefixedString());
+			}
+		} else {
+			messagePlayerIfOnline(user.getIdentifier(), Phrases.ALERT_UNREAD_MAIL.toPrefixedString().replace("%count%", Integer.toString(unread)));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static String completeName(String playername) {
+		try {
+			if (Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).getReturnType() == Collection.class)
+				for (Player onlinePlayer : ((Collection<? extends Player>) Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).invoke(null, new Object[0]))) {
+					if (onlinePlayer.getName().toLowerCase().startsWith(playername.toLowerCase())) {
+						return onlinePlayer.getName();
+					}
+				}
+			else
+				for (Player onlinePlayer : ((Player[]) Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).invoke(null, new Object[0]))) {
+					if (onlinePlayer.getName().toLowerCase().startsWith(playername.toLowerCase())) {
+						return onlinePlayer.getName();
+					}
+				}
+		} catch (NoSuchMethodException ex) {
+		} // can never happen
+		catch (InvocationTargetException ex) {
+		} // can also never happen
+		catch (IllegalAccessException ex) {
+		} // can still never happen
+		return null;
+	}
 }

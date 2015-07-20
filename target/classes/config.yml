@@ -31,8 +31,8 @@ world-groups:
 
 ## Here you can set certain mail types to ignore world groups and be visible in all worlds.
 # For example, you may want Letters to ignore world groups so players can communicate across universes.
-mail-types-ignore-world-groups:
-  letter: true
+mail-types-that-ignore-world-groups:
+#   - letter
   
 ## Worlds listed in this blacklist prevent players from running any PostalService commands.
 # This includes the ability to check mail, send mail, create mailboxes, etc.
@@ -41,10 +41,10 @@ world-blacklist:
 
 ## Here you can enable or disable each type of mail
 # PostalService has 4 mail types built-in:
-#   Letters - Allows the sending of Text only messages
-#   Package - Allows the sending of in-game Items
-#   Payment - Allows the sending of Money/Currency (requires Vault)
-#   Xp      - Allows the sending of XP points (not levels)
+#   Letters - Text only messages
+#   Package - In-game Items
+#   Payment - Money/Currency (requires Vault)
+#   Xp      - XP points (not levels)
 enabled-mail-types:
     letter: true
     package: true
@@ -79,6 +79,13 @@ require-nearby-mailbox: true
 mailbox-limit:
     default: 5
 #    permission-group: 100
+
+#####################
+# Language Settings #
+#####################
+
+date-format: "MMM d, yyyy h:mm a"
+locale-tag: "en-US"
 
 
 #########################

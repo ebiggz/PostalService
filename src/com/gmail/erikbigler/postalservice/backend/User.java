@@ -25,15 +25,15 @@ public interface User {
 
 	public void setPlayerName(String playerName);
 
-	public Mail[] getInbox(WorldGroup worldGroup);
+	public List<Mail> getInbox(WorldGroup worldGroup);
 
-	public Mail[] getSentbox(WorldGroup worldGroup);
+	public List<Mail> getSentbox(WorldGroup worldGroup);
 
-	public ItemStack[] getDropbox(WorldGroup worldGroup);
+	public List<ItemStack> getDropbox(WorldGroup worldGroup);
 
 	public void saveDropbox(List<ItemStack> items, WorldGroup worldGroup);
 
-	public Mail[] getBoxFromType(BoxType type, WorldGroup worldGroup);
+	public List<Mail> getBoxFromType(BoxType type, WorldGroup worldGroup);
 
 	public int getUnreadMailCount(WorldGroup worldGroup);
 
@@ -41,7 +41,7 @@ public interface User {
 
 	public boolean sendMail(String recipient, String message, String attachmentData, MailType mailType, WorldGroup worldGroup);
 
-	public boolean receieveMail(long mailID, Player sender, MailType mailType, WorldGroup worldGroup);
+	public boolean receieveMail(Player sender, MailType mailType);
 
 	public boolean markAllMailAsRead(WorldGroup worldGroup);
 

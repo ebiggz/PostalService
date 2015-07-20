@@ -17,9 +17,9 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 
 
-public class TradeStarterGUI implements GUI {
+public class TradeStarterGUI /*implements GUI*/ {
 
-	@Override
+	/*@Override
 	public Inventory createInventory(Player player) {
 		List<String> players = TradeManager.getInstance().availablePlayers(player);
 		int req = players.size() + 18;
@@ -79,6 +79,6 @@ public class TradeStarterGUI implements GUI {
 	@Override
 	public boolean ignoreForeignItems() {
 		return false;
-	}
+	}*/
 
 }

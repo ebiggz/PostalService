@@ -1,10 +1,15 @@
 package com.gmail.erikbigler.postalservice.mail;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+
+import com.gmail.erikbigler.postalservice.configs.Config;
 
 public class Mail {
 
 	private long mailID;
+	private long receivedID;
 	private String sender;
 	private String recipient;
 	private String message;
@@ -13,15 +18,17 @@ public class Mail {
 	private Date time;
 	private MailStatus status;
 
-	public Mail(long mailID, String sender, String recipient, String message,
-			String attachmentData, MailType type, Date time, MailStatus status) {
+	public Mail(long mailID, long receivedID, String sender, String recipient, String message, String attachmentData, MailType type, Date time, MailStatus status) {
 		this.mailID = mailID;
+		this.receivedID = receivedID;
 		this.sender = sender;
 		this.recipient = recipient;
 		this.message = message;
 		this.time = time;
 		this.status = status;
-		this.attachmentData = attachmentData;
+		if(attachmentData != null && !attachmentData.equalsIgnoreCase("null")) {
+			this.attachmentData = attachmentData;
+		}
 		if (type == null)
 			return;
 		this.type = type;
@@ -38,6 +45,10 @@ public class Mail {
 		return mailID;
 	}
 
+	public long getReceivedID() {
+		return receivedID;
+	}
+
 	public String getMessage() {
 		return message;
 	}
@@ -52,6 +63,11 @@ public class Mail {
 
 	public Date getTime() {
 		return time;
+	}
+
+	public String getTimeString() {
+		SimpleDateFormat sdf = new SimpleDateFormat(Config.DATE_FORMAT, Locale.forLanguageTag(Config.LOCALE_TAG));
+		return sdf.format(time);
 	}
 
 	public boolean isClaimed() {

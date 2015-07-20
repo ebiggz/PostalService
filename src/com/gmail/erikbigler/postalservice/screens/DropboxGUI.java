@@ -14,11 +14,12 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
-import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUI;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.configs.Config;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class DropboxGUI implements GUI {
@@ -26,8 +27,8 @@ public class DropboxGUI implements GUI {
 	@Override
 	public Inventory createInventory(Player player) {
 		Inventory inventory = Bukkit.createInventory(null, 9*5, player.getName() + "'s Drop Box");
-		User user = PostalService.getDataFactory().getUser(player.getUniqueId());
-		ItemStack[] dbItems = user.getDropbox();
+		User user = UserFactory.getUser(player.getUniqueId());
+		List<ItemStack> dbItems = user.getDropbox(Config.getWorldGroupFromWorld(player.getWorld().getName()));
 		for(ItemStack item : dbItems) {
 			inventory.addItem(item);
 		}
@@ -86,7 +87,7 @@ public class DropboxGUI implements GUI {
 				items.add(item);
 			}
 		}
-		PostalService.getDataFactory().getUser(whoClosed.getUniqueId()).saveDropbox(items);
+		UserFactory.getUser(whoClosed.getUniqueId()).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().toString()));
 	}
 
 	@Override

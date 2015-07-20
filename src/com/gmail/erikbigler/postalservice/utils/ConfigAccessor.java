@@ -12,7 +12,7 @@ import org.bukkit.plugin.Plugin;
 
 public class ConfigAccessor {
 
-	private Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("VoteRoulette");
+	private Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("PostalService");
 	private final String fileName;
 	private File configFile;
 	private FileConfiguration fileConfiguration;

@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -15,40 +14,45 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUI;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.Mail;
-import com.gmail.erikbigler.postalservice.mail.Mail.MailStatus;
-import com.gmail.erikbigler.postalservice.mail.MailManager.InboxType;
-import com.gmail.erikbigler.postalservice.mail.MailType;
-import com.gmail.erikbigler.postalservice.mail.mailtypes.Experience;
+import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
+import net.md_5.bungee.api.ChatColor;
+
+@SuppressWarnings("all")
 public class InboxTypeGUI implements GUI {
 
-	private InboxType boxType;
+	private BoxType boxType;
 	private User user;
 	private int pageNumber;
 	private int totalPages;
-	private Mail[] mails;
+	private List<Mail> mails;
 
-	public InboxTypeGUI(User user, InboxType type, int pageNumber) {
+	public InboxTypeGUI(User user, BoxType type, int pageNumber) {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
 		this.user = user;
-		this.mails = user.getBoxFromType(type);
+		this.mails = user.getBoxFromType(type, Config.getWorldGroupFromWorld(Utils.getPlayerFromIdentifier(user.getIdentifier()).getWorld()));
 	}
 
-	public InboxType getType() {
+	public BoxType getType() {
 		return boxType;
 	}
 
 	@Override
 	public Inventory createInventory(Player player) {
-		Inventory inventory = Bukkit.createInventory(null, 9*5, player.getName() + "'s " + Utils.capitalize(boxType.toString().toLowerCase(), null));
-		int boxSize = mails.length;
+		String boxTypeStr = boxType == BoxType.INBOX ? Phrases.BUTTON_INBOX.toString() : Phrases.BUTTON_SENT.toString();
+		Inventory inventory = Bukkit.createInventory(null, 9*5, ChatColor.stripColor(boxTypeStr));
+		int boxSize = mails.size();
 		totalPages = (int) Math.ceil(boxSize/27.0);
 		if(totalPages == 0) {
 			totalPages = 1;
@@ -56,11 +60,11 @@ public class InboxTypeGUI implements GUI {
 		if(pageNumber > totalPages) {
 			pageNumber = totalPages;
 		}
+
 		int mailIndex = 0 + (27*(pageNumber-1));
 		int invIndex = 0;
-
 		while(mailIndex < (27 * pageNumber) && mailIndex < boxSize) {
-			inventory.setItem(invIndex,createMailButton(mails[mailIndex]));
+			inventory.setItem(invIndex,createMailButton(mails.get(mailIndex)));
 			mailIndex++;
 			invIndex++;
 		}
@@ -72,27 +76,27 @@ public class InboxTypeGUI implements GUI {
 
 		ItemStack mainMenu = GUIUtils.createButton(
 				Material.BOOK_AND_QUILL,
-				ChatColor.YELLOW +""+ ChatColor.BOLD + "Main Menu",
+				Phrases.BUTTON_MAINMENU.toString(),
 				Arrays.asList(
-						ChatColor.RED + "Left-Click to " + ChatColor.BOLD + "Return"));
+						Phrases.CLICK_ACTION_LEFTRETURN.toString()));
 		inventory.setItem(40, mainMenu);
 		totalPages = (int) Math.ceil(boxSize/27.0);
 		if(totalPages > 1) {
 			if(pageNumber + 1 <= totalPages) {
 				ItemStack next = GUIUtils.createButton(
 						Material.IRON_PLATE,
-						ChatColor.GOLD + "Next " + ChatColor.STRIKETHROUGH + "->",
+						ChatColor.GOLD + Phrases.BUTTON_NEXT.toString(),
 						Arrays.asList(
-								ChatColor.RED + "Click for" + ChatColor.BOLD + " Next Page"));
+								Phrases.CLICK_ACTION_NEXTPAGE.toString()));
 				inventory.setItem(41, next);
 				//next button
 			}
 			if(pageNumber - 1 >= 1) {
 				ItemStack previous = GUIUtils.createButton(
 						Material.IRON_PLATE,
-						ChatColor.GOLD +""+ ChatColor.STRIKETHROUGH + "<- " + ChatColor.GOLD + "Previous",
+						Phrases.BUTTON_PREVIOUS.toString(),
 						Arrays.asList(
-								ChatColor.RED + "Click for" + ChatColor.BOLD + " Previous Page"));
+								Phrases.CLICK_ACTION_PREVIOUSPAGE.toString()));
 				inventory.setItem(39, previous);
 				//previous button
 			}
@@ -106,69 +110,68 @@ public class InboxTypeGUI implements GUI {
 		ItemStack clickedItem = clickedEvent.getCurrentItem();
 		int clickedSlot = clickedEvent.getSlot();
 		switch(clickedSlot) {
-			case 39:
-				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-					GUIManager.getInstance().showGUI(new InboxTypeGUI(user, boxType, pageNumber-1), whoClicked);
+		case 39:
+			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
+				this.pageNumber = pageNumber-1;
+				clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
+			}
+			break;
+		case 40:
+			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
+				GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
+			}
+			break;
+		case 41:
+			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
+				this.pageNumber = pageNumber+1;
+				clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
+			}
+			break;
+		default:
+			if(clickedSlot < 27 && clickedItem != null && clickedItem.getType() != Material.AIR) {
+				int mailIndex = clickedSlot + (27*(pageNumber-1));
+				if(mails.size() < mailIndex+1) {
+					whoClicked.closeInventory();
+					whoClicked.sendMessage(Phrases.ERROR_INBOX.toPrefixedString());
+					PostalService.getPlugin().getLogger().warning(whoClicked.getName() + " clicked on a " + clickedItem.getType().toString() + " which index (" + mailIndex + ") doesnt exist in their " + boxType.toString() + " mail array!");
+					return;
 				}
-				break;
-			case 40:
-				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-					GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
-				}
-				break;
-			case 41:
-				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-					GUIManager.getInstance().showGUI(new InboxTypeGUI(user, boxType, pageNumber+1), whoClicked);
-				}
-				break;
-			default:
-				if(clickedSlot < 27 && clickedItem != null && clickedItem.getType() != Material.AIR) {
-					int mailIndex = clickedSlot + (27*(pageNumber-1));
-					if(mails.length < mailIndex+1) {
+				Mail mail = mails.get(mailIndex);
+				if(clickedEvent.getClick() == ClickType.LEFT) {
+					if(boxType == BoxType.INBOX) {
 						whoClicked.closeInventory();
-						whoClicked.sendMessage(ChatColor.RED + "[MPS] Something went wrong! Please try opening mail again. If the issue persists, make an issue on the website. Sorry!");
-						Bukkit.getLogger().warning("[Mythica] " + whoClicked.getName() + " clicked on a " + clickedItem.getType().toString() + " which index (" + mailIndex + ") doesnt exist in their " + boxType.toString() + " mail array!");
-						return;
+						whoClicked.sendMessage(this.getReplySummaryString(mail));
+						String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Reply with a (Click one): \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Letter, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail letter to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a text-only letter!\",\"color\":\"gold\"}]}}},{\"text\":\"Package, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with the items in your drop box!\",\"color\":\"gold\"}]}}},{\"text\":\"Payment, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail payment to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a money payment!\",\"color\":\"gold\"}]}}},{\"text\":\"Experience\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail xp to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail xp points (not levels) to a player!!\",\"color\":\"gold\"}]}}}]}";
+						//Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()).replace("{to}", mail.getFrom()));
 					}
-					Mail mail = mails[mailIndex];
-					if(clickedEvent.getClick() == ClickType.LEFT) {
-						if(boxType == InboxType.INBOX) {
-							if(!mail.getSender().equals("the Trade Master")) {
-								whoClicked.closeInventory();
-								whoClicked.sendMessage(this.getReplySummaryString(mail));
-								String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Reply with a (Click one): \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Letter, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail letter to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a text-only letter!\",\"color\":\"gold\"}]}}},{\"text\":\"Package, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with the items in your drop box!\",\"color\":\"gold\"}]}}},{\"text\":\"Payment, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail payment to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a money payment!\",\"color\":\"gold\"}]}}},{\"text\":\"Experience\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail xp to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail xp points (not levels) to a player!!\",\"color\":\"gold\"}]}}}]}";
-								Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()).replace("{to}", mail.getFrom()));
-							}
-						}
-					}
-					else if(clickedEvent.getClick() == ClickType.RIGHT) {
-						if(boxType == InboxType.INBOX) {
-							if(mail.getStatus() != MailStatus.CLAIMED && mail.hasAttachments()) {
-								mail.getType().administerAttachments(whoClicked);
-
-								if(mail.getType() == MailType.PAYMENT) {
-									Payment payment = (Payment) mail;
-									Mythsentials.economy.depositPlayer(whoClicked.getName(), payment.getPayment());
-									payment.setStatus(MailStatus.CLAIMED);
-									mailbox.updateMailItem(payment, boxType);
+				}
+				else if(clickedEvent.getClick() == ClickType.RIGHT) {
+					if(boxType == BoxType.INBOX) {
+						if(mail.hasAttachments() && !mail.isClaimed()) {
+							if(mail.getType().useSummaryScreen()) {
+								//go to summary screen
+							} else {
+								try {
+									mail.getType().administerAttachments(whoClicked);
+									user.markMailAsClaimed(mail);
+									whoClicked.sendMessage(Phrases.PREFIX + " " + mail.getType().getAttachmentClaimMessage());
 									whoClicked.closeInventory();
-									whoClicked.sendMessage(ChatColor.YELLOW +"[MPS] " + ChatColor.DARK_AQUA + "You have successfuly claimed the payment!");
-								}
-								else if(mail.getType() == MailType.PACKAGE) {
-									GUIManager.getInstance().showGUI(new PackageGUI((PackageObj) mail, boxType, pageNumber), whoClicked);
-								}
-								else if(mail.getType() == MailType.TRADEGOODS) {
-									GUIManager.getInstance().showGUI(new TradeGoodsGUI((TradeGoods) mail, boxType, pageNumber), whoClicked);
+								} catch (MailException e) {
+									whoClicked.closeInventory();
+									whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + e.getMessage());
 								}
 							}
 						}
 					}
-					else if(clickedEvent.getClick() == ClickType.SHIFT_RIGHT) {
-						if((mail.getType() == MailType.TRADEGOODS || mail.getType() == MailType.PACKAGE || mail.getType() == MailType.PAYMENT || mail.getType() == MailType.EXPERIENCE) && mail.getStatus() != MailStatus.CLAIMED && boxType == MailboxType.INBOX) return;
-						mailbox.deleteMailItem(mail, boxType);
+				}
+				else if(clickedEvent.getClick() == ClickType.SHIFT_RIGHT) {
+					if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
+						user.markMailAsDeleted(mail);
+						mails.remove(mail);
 						clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
 					}
 				}
+			}
 		}
 	}
 
@@ -176,6 +179,7 @@ public class InboxTypeGUI implements GUI {
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
 
 	private String getReplySummaryString(Mail mail) {
+		/*
 		StringBuilder sb = new StringBuilder();
 		sb.append(ChatColor.YELLOW + "[MPS] " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + " mailed you ");
 		switch(mail.getType()) {
@@ -203,6 +207,8 @@ public class InboxTypeGUI implements GUI {
 		}
 		sb.append(ChatColor.DARK_AQUA + " at " + ChatColor.AQUA + mail.getTimeStamp());
 		return sb.toString();
+		 */
+		return null;
 	}
 
 	private ItemStack createMailButton(Mail mail) {
@@ -210,59 +216,21 @@ public class InboxTypeGUI implements GUI {
 		ItemStack button = new ItemStack(mail.getType().getIcon());
 		List<String> lore = new ArrayList<String>();
 
-		boolean claimed = (mail.getStatus() == MailStatus.CLAIMED);
 		String info = "";
-		switch(mail.getType()) {
-			case LETTER:
-				button = new ItemStack(Material.PAPER);
-				break;
-			case EXPERIENCE:
-				button = new ItemStack(Material.EXP_BOTTLE);
-				Experience exp = (Experience) mail;
-				info = ChatColor.WHITE + "" + exp.getExperience() + " XP Point(s)";
-				break;
-			case PACKAGE:
-				PackageObj po = (PackageObj) mail;
-				info = ChatColor.WHITE + "" + po.getItems().size() + " Required Slot(s)";
-				button = new ItemStack(Material.CHEST);
-				break;
-			case PAYMENT:
-				Payment payment = (Payment) mail;
-				info = ChatColor.WHITE + "$" + payment.getPayment();
-				button = new ItemStack(Material.GOLD_INGOT);
-				break;
-			case TRADEGOODS:
-				TradeGoods tradeGoods = (TradeGoods) mail;
-				button = new ItemStack(Material.STORAGE_MINECART);
-				if(tradeGoods.hasItems()) {
-					info += ChatColor.WHITE + "" + tradeGoods.getItems().size() + " slot(s)";
-				}
-				if(tradeGoods.hasMoney()) {
-					if(tradeGoods.hasItems()) {
-						info += ChatColor.WHITE + ", ";
-					}
-					info += ChatColor.WHITE + "$" + tradeGoods.getMoney();
-				}
-				if(tradeGoods.hasXP()) {
-					if(tradeGoods.hasItems() || tradeGoods.hasMoney()) {
-						info += ChatColor.WHITE + ", ";
-					}
-					info += ChatColor.WHITE + "" + tradeGoods.getXP() + " XP point(s)";
-				}
 
-		}
-		if(claimed) {
-			info = ChatColor.GRAY + "*Claimed*";
+		if(mail.hasAttachments()) {
+			if(mail.isClaimed()) {
+				info = ChatColor.GRAY + "*" + Phrases.CLAIMED.toString() + "*";
+			} else {
+				info = ChatColor.GRAY + ChatColor.stripColor(mail.getType().getAttachmentDescription());
+			}
 		}
 		if(!info.isEmpty()) {
 			lore.add(info);
 		}
 
 		ItemMeta im = button.getItemMeta();
-		String name = ChatColor.GOLD + "" + ChatColor.BOLD + Utils.capitalize(mail.getType().toString().toLowerCase(), null);
-		if(mail.getType() == MailType.TRADEGOODS) {
-			name = ChatColor.GOLD + "" + ChatColor.BOLD + "Trade Goods";
-		}
+		String name = ChatColor.GOLD + "" + ChatColor.BOLD + Utils.capitalize(mail.getType().getDisplayName().toLowerCase(), null);
 		im.setDisplayName(name);
 
 		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
@@ -272,33 +240,28 @@ public class InboxTypeGUI implements GUI {
 				lore.add(ChatColor.YELLOW + line);
 			}
 		}
-		lore.add(boxType.equals(MailboxType.INBOX) ? ChatColor.GRAY +""+ "  from " + ChatColor.WHITE + mail.getFrom() : ChatColor.GRAY + "  to " + ChatColor.WHITE + mail.getTo());
-		lore.add("  " + ChatColor.GRAY + mail.getTimeStamp());
+		lore.add(boxType.equals(BoxType.INBOX) ? ChatColor.GRAY + "  " + Phrases.FROM.toString() + " " + ChatColor.WHITE + mail.getSender() : ChatColor.GRAY + "  " + Phrases.TO.toString() + " " + ChatColor.WHITE + mail.getRecipient());
+		lore.add("  " + ChatColor.GRAY + mail.getTimeString());
 		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
-		if(boxType.equals(MailboxType.INBOX)) {
-			if(!mail.getFrom().equals("the Trade Master")) {
-				lore.add(ChatColor.RED + "Left-Click to " + ChatColor.BOLD + "Respond");
-			}
-			if(mail.getType() != MailType.LETTER) {
-				if(mail.getStatus() != MailStatus.CLAIMED) {
-					lore.add(ChatColor.DARK_RED + "Right-Click to " + ChatColor.BOLD + "Claim");
+		if(boxType.equals(BoxType.INBOX)) {
+			lore.add(Phrases.CLICK_ACTION_RESPOND.toString());
+			if(mail.hasAttachments()) {
+				if(!mail.isClaimed()) {
+					lore.add(Phrases.CLICK_ACTION_RIGHTCLAIM.toString());
 				}
 			}
-
 		}
-		if(mail.getType() == MailType.LETTER || mail.getStatus() == MailStatus.CLAIMED || boxType == MailboxType.SENT) {
-			lore.add(ChatColor.RED + "Shift+Right-Click to " + ChatColor.BOLD + "Delete");
+		if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
+			lore.add(Phrases.CLICK_ACTION_DELETE.toString());
 		}
 
 		im.setLore(lore);
 		button.setItemMeta(im);
 		return button;
-
 	}
 
 	@Override
 	public boolean ignoreForeignItems() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }

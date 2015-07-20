@@ -7,9 +7,17 @@ import org.bukkit.inventory.ItemStack;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 
 
-public interface MailType {
+public interface MailType extends Cloneable {
 
-	public String getName();
+	public String getIdentifier();
+
+	public String getDisplayName();
+
+	public Material getIcon();
+
+	public String getHoveroverDescription();
+
+	public boolean requireMessage();
 
 	public String getAttachmentCommandArgument();
 
@@ -19,12 +27,18 @@ public interface MailType {
 
 	public void administerAttachments(Player player) throws MailException;
 
-	public Material getIcon();
+	public String getAttachmentClaimMessage();
 
 	public String getAttachmentDescription();
 
 	public boolean useSummaryScreen();
 
-	public ItemStack[] getAttachmentIcons();
+	public String getSummaryScreenTitle();
+
+	public String getSummaryClaimButtonTitle();
+
+	public ItemStack[] getSummaryIcons();
+
+	public MailType clone();
 
 }

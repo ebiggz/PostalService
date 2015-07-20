@@ -7,12 +7,16 @@ import java.util.List;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 
 import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.mail.MailType;
+import com.gmail.erikbigler.postalservice.utils.Utils;
 import com.gmail.erikbigler.postalservice.worldgroups.WorldGroup;
 
 public class Config {
@@ -20,7 +24,7 @@ public class Config {
 	// General Settings
 	public static boolean ENABLE_WORLD_GROUPS;
 	public static List<WorldGroup> WORLD_GROUPS;
-	public static List<String> MAILTYPES_IGNORE_WORLD_GROUPS;
+	private static List<String> MAILTYPES_IGNORE_WORLD_GROUPS;
 	public static List<String> WORLD_BLACKLIST;
 	public static List<String> ENABLED_MAILTYPES;
 	public static boolean ENABLE_DEBUG;
@@ -38,6 +42,9 @@ public class Config {
 	public static boolean ENABLE_TRADINGPOST;
 	public static boolean REQUIRE_SAME_MAILBOX;
 	public static boolean REQUIRE_CROSS_WORLD_TRADES;
+	// Language Settings
+	public static String DATE_FORMAT;
+	public static String LOCALE_TAG;
 
 	private static double CONFIG_VERSION = 1.0;
 
@@ -68,7 +75,7 @@ public class Config {
 
 	private static void loadOptions() {
 		FileConfiguration config = PostalService.getPlugin().getConfig();
-		/** Load world group options */
+		/* Load world group options */
 		ENABLE_WORLD_GROUPS = config.getBoolean("enable-world-groups", false);
 		WORLD_GROUPS = new ArrayList<WorldGroup>();
 		ConfigurationSection wgConfigSec = config.getConfigurationSection("world-groups");
@@ -86,22 +93,50 @@ public class Config {
 			// log error, no world groups but feature is enabled.
 			ENABLE_WORLD_GROUPS = false;
 		}
-
+		MAILTYPES_IGNORE_WORLD_GROUPS = config.getStringList("mail-types-that-ignore-world-groups");
+		/* Load general options */
+		USE_UUIDS = config.getBoolean("use-uuids", true);
+		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
+		/* Load language options */
+		DATE_FORMAT = config.getString("date-format", "MMM d, yyyy h:mm a");
+		LOCALE_TAG = config.getString("locale-tag", "en-US");
 	}
 
 	public static boolean mailTypeIsEnabled(MailType mailType) {
 		for (String mailTypeName : ENABLED_MAILTYPES) {
-			if (mailType.getName().equalsIgnoreCase(mailTypeName))
+			if (mailType.getIdentifier().equalsIgnoreCase(mailTypeName))
 				return true;
 		}
 		return false;
 	}
 
+	public static WorldGroup getCurrentWorldGroupForUser(User user) {
+		Player player = Utils.getPlayerFromIdentifier(user.getIdentifier());
+		if(player != null && player.isOnline()) {
+			return getWorldGroupFromWorld(player.getWorld());
+		}
+		return new WorldGroup("None", new ArrayList<String>());
+	}
+
 	public static WorldGroup getWorldGroupFromWorld(String worldName) {
+		if(!Config.ENABLE_WORLD_GROUPS) return new WorldGroup("None", new ArrayList<String>());
 		for (WorldGroup worldGroup : WORLD_GROUPS) {
 			if (worldGroup.hasWorld(worldName))
 				return worldGroup;
 		}
-		return null;
+		return new WorldGroup("None", new ArrayList<String>());
+	}
+
+	public static WorldGroup getWorldGroupFromWorld(World world) {
+		return getWorldGroupFromWorld(world.getName());
+	}
+
+	public static boolean containsMailTypesThatIgnoreWorldGroups() {
+		if(MAILTYPES_IGNORE_WORLD_GROUPS == null || MAILTYPES_IGNORE_WORLD_GROUPS.isEmpty()) return false;
+		return true;
+	}
+
+	public static List<String> getMailTypesThatIgnoreWorldGroups() {
+		return MAILTYPES_IGNORE_WORLD_GROUPS;
 	}
 }

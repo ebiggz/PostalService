@@ -4,15 +4,32 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 
 
 public class Letter implements MailType {
 
+
 	@Override
-	public String getName() {
+	public String getIdentifier() {
 		return "Letter";
+	}
+
+	@Override
+	public String getDisplayName() {
+		return Phrases.MAILTYPE_LETTER.toString();
+	}
+
+	@Override
+	public String getHoveroverDescription() {
+		return "Mail a text-only letter!";
+	}
+
+	@Override
+	public boolean requireMessage() {
+		return true;
 	}
 
 	@Override
@@ -27,10 +44,7 @@ public class Letter implements MailType {
 	}
 
 	@Override
-	public void loadAttachments(String attachmentData) {
-
-
-	}
+	public void loadAttachments(String attachmentData) {}
 
 	@Override
 	public void administerAttachments(Player player)
@@ -48,12 +62,32 @@ public class Letter implements MailType {
 	}
 
 	@Override
+	public String getAttachmentClaimMessage() {
+		return null;
+	}
+
+	@Override
 	public boolean useSummaryScreen() {
 		return false;
 	}
 
 	@Override
-	public ItemStack[] getAttachmentIcons() {
+	public String getSummaryScreenTitle() {
+		return "";
+	}
+
+	@Override
+	public String getSummaryClaimButtonTitle() {
+		return "";
+	}
+
+	@Override
+	public ItemStack[] getSummaryIcons() {
 		return null;
+	}
+
+	@Override
+	public MailType clone() {
+		return new Letter();
 	}
 }

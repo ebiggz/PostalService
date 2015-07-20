@@ -14,7 +14,7 @@ import com.gmail.erikbigler.postalservice.PostalService;
 /**
  * Abstract Database class, serves as a base for any connection method (MySQL,
  * SQLite, etc.)
- * 
+ *
  * @author -_Husky_-
  * @author tips48
  */
@@ -29,7 +29,7 @@ public abstract class Database {
 
 	/**
 	 * Creates a new Database
-	 * 
+	 *
 	 * @param plugin
 	 *            Plugin instance
 	 */
@@ -40,7 +40,7 @@ public abstract class Database {
 
 	/**
 	 * Opens a connection with the database
-	 * 
+	 *
 	 * @return Opened connection
 	 * @throws SQLException
 	 *             if the connection can not be opened
@@ -52,7 +52,7 @@ public abstract class Database {
 
 	/**
 	 * Checks if a connection is open with the database
-	 * 
+	 *
 	 * @return true if the connection is open
 	 * @throws SQLException
 	 *             if the connection cannot be checked
@@ -69,21 +69,20 @@ public abstract class Database {
 
 	private void createTables() {
 		try {
-			this.createTable("ps_users", "PlayerID varchar(255) NOT NULL KEY, PlayerName varchar(255) NOT NULL, dropbox text");
-			this.createTable("ps_mail", "MailID INT AUTO_INCREMENT KEY, Type varchar(255) NOT NULL, Message text, Attachments text, timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0");
-			this.createTable("ps_received", "ID INT AUTO_INCREMENT KEY, ReceiverID varchar(255) NOT NULL, MailID INT NOT NULL, Status INT DEFAULT 0, Deleted INT DEFAULT 0");
-			this.createTable("ps_mailboxes", "MailboxID INT AUTO_INCREMENT KEY, Location varchar(255) NOT NULL, OwnerID varchar(255) NOT NULL");
+			this.createTable("ps_users", "PlayerID varchar(255) NOT NULL KEY, PlayerName varchar(255) NOT NULL");
+			this.createTable("ps_mail", "MailID BIGINT AUTO_INCREMENT KEY, MailType varchar(255) NOT NULL, Message text, Attachments text, Timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0, WorldGroup varchar(255)");
+			this.createTable("ps_received", "ReceivedID BIGINT AUTO_INCREMENT KEY, RecipientID varchar(255) NOT NULL, MailID INT NOT NULL, Status INT DEFAULT 0, Deleted INT DEFAULT 0");
+			this.createTable("ps_dropboxes", "DropboxID INT AUTO_INCREMENT KEY, Contents text, PlayerID varchar(255) NOT NULL, WorldGroup varchar(255) NOT NULL");
+			this.createTable("ps_mailboxes", "MailboxID INT AUTO_INCREMENT KEY, Location varchar(255) NOT NULL, PlayerID varchar(255) NOT NULL");
 		} catch (Exception e) {
 			PostalService.getPlugin().getLogger().severe("Unable to create tables in database, plugin may not function as intended!");
 		}
-
 	}
 
 	public void createTable(String name, String columns) throws SQLException {
 		DatabaseMetaData dbm = connection.getMetaData();
 		ResultSet tables = dbm.getTables(null, null, name, null);
 		if (!tables.next()) {
-			//Utils.debugMessage("Table \"" + name + "\" not found, creating...");
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE " + name + "(" + columns + ")");
 		}
@@ -91,7 +90,7 @@ public abstract class Database {
 
 	/**
 	 * Gets the connection with the database
-	 * 
+	 *
 	 * @return Connection with the database, null if none
 	 */
 	public Connection getConnection() {
@@ -100,7 +99,7 @@ public abstract class Database {
 
 	/**
 	 * Closes the connection with the database
-	 * 
+	 *
 	 * @return true if successful
 	 * @throws SQLException
 	 *             if the connection cannot be closed
@@ -116,9 +115,9 @@ public abstract class Database {
 
 	/**
 	 * Executes a SQL Query<br>
-	 * 
+	 *
 	 * If the connection is closed, it will be opened
-	 * 
+	 *
 	 * @param query
 	 *            Query to be run
 	 * @return the results of the query
@@ -144,7 +143,7 @@ public abstract class Database {
 	 * Executes an Update SQL Query<br>
 	 * See {@link java.sql.Statement#executeUpdate(String)}<br>
 	 * If the connection is closed, it will be opened
-	 * 
+	 *
 	 * @param query
 	 *            Query to be run
 	 * @return Result Code, see {@link java.sql.Statement#executeUpdate(String)}

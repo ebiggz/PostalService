@@ -17,9 +17,9 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
 
 
-public class TradingPostMenuGUI implements GUI{
+public class TradingPostMenuGUI /*implements GUI*/{
 
-	@Override
+	/*@Override
 	public Inventory createInventory(Player player) {
 		Inventory inventory = GUIUtils.generateInventory(9*3, "Trading Post Menu");
 		if(TradeManager.getInstance().playerHasActiveTradeSession(player)) {
@@ -85,5 +85,5 @@ public class TradingPostMenuGUI implements GUI{
 	@Override
 	public boolean ignoreForeignItems() {
 		return false;
-	}
+	}*/
 }
