@@ -3,16 +3,21 @@ package com.gmail.erikbigler.postalservice;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
+import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.commands.Commands;
 import com.gmail.erikbigler.postalservice.configs.Config;
@@ -28,7 +33,7 @@ import com.gmail.erikbigler.postalservice.utils.database.MySQL;
 
 public class PostalService extends JavaPlugin {
 
-	//private Plugin p;
+	// private Plugin p;
 	private static PostalService plugin;
 	private static Database database;
 	private double serverVersion;
@@ -86,7 +91,7 @@ public class PostalService extends JavaPlugin {
 		/*
 		 * Connect to database
 		 */
-		if(!loadDatabase()) {
+		if (!loadDatabase()) {
 			getLogger().severe("Unable to connect to the database! Please check your database settings and try again.");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
@@ -96,6 +101,12 @@ public class PostalService extends JavaPlugin {
 
 		getLogger().info("Enabled!");
 
+		User user = UserFactory.getUser("ebiggz");
+		List<ItemStack> items = new ArrayList<ItemStack>();
+		items.add(new ItemStack(Material.ANVIL));
+		items.add(new ItemStack(Material.APPLE, 5));
+		items.add(new ItemStack(Material.BAKED_POTATO, 9));
+		user.saveDropbox(items, Config.getWorldGroupFromWorld("world"));
 	}
 
 	/**
@@ -113,6 +124,8 @@ public class PostalService extends JavaPlugin {
 			database.openConnection();
 			return database.checkConnection();
 		} catch (Exception e) {
+			if (Config.ENABLE_DEBUG)
+				e.printStackTrace();
 			return false;
 		}
 	}

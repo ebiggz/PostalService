@@ -1,6 +1,5 @@
 package com.gmail.erikbigler.postalservice.utils;
 
-
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -21,7 +20,7 @@ public class JSONUtils {
 	@SuppressWarnings("unchecked")
 	public static String packItems(List<ItemStack> items) {
 		JSONArray jsonArray = new JSONArray();
-		for(ItemStack is : items) {
+		for (ItemStack is : items) {
 			JSONObject obj = new JSONObject();
 
 			obj.put("amount", new Integer(is.getAmount()));
@@ -67,7 +66,7 @@ public class JSONUtils {
 				}
 
 				if (md.getItemType() == Material.ENCHANTED_BOOK) {
-					EnchantmentStorageMeta esm = (EnchantmentStorageMeta)is.getItemMeta();
+					EnchantmentStorageMeta esm = (EnchantmentStorageMeta) is.getItemMeta();
 
 					if (esm.hasStoredEnchants()) {
 						JSONArray l2 = new JSONArray();
@@ -90,50 +89,50 @@ public class JSONUtils {
 			}
 			jsonArray.add(obj);
 		}
-		return jsonArray.toJSONString();
+		return jsonArray.toJSONString().replace("\"", "\\\"");
 	}
 
 	public static List<ItemStack> unpackItems(String data) {
 		JSONArray jsonItems = (JSONArray) JSONValue.parse(data);
-		if (jsonItems == null) return null;
+		if (jsonItems == null)
+			return null;
 		return unpack(jsonItems);
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static List<ItemStack> unpack(JSONArray jsonItems) {
 		List<ItemStack> items = new ArrayList<ItemStack>();
-		for(Object itemO : jsonItems) {
+		for (Object itemO : jsonItems) {
 			JSONObject obj = (JSONObject) itemO;
-			int amount = ((Long)obj.get("amount")).intValue();
-			short durability = ((Long)obj.get("durability")).shortValue();
+			int amount = ((Long) obj.get("amount")).intValue();
+			short durability = ((Long) obj.get("durability")).shortValue();
 
-			ItemStack is = new ItemStack(Material.getMaterial((String)obj.get("material")),
-					amount, durability);
+			ItemStack is = new ItemStack(Material.getMaterial((String) obj.get("material")), amount, durability);
 
 			ItemMeta im = is.getItemMeta();
 
-			String displayName = (String)obj.get("displayName");
+			String displayName = (String) obj.get("displayName");
 
 			if (displayName != null) {
 				im.setDisplayName(displayName);
 			}
 
-			JSONArray l5 = (JSONArray)obj.get("lores");
+			JSONArray l5 = (JSONArray) obj.get("lores");
 
 			if (l5 != null) {
 				im.setLore(l5);
 			}
 
-			JSONArray l1 = (JSONArray)obj.get("enchantments");
+			JSONArray l1 = (JSONArray) obj.get("enchantments");
 
 			if (l1 != null) {
 				Iterator i = l1.iterator();
 
 				while (i.hasNext()) {
-					JSONObject j1 = (JSONObject)i.next();
+					JSONObject j1 = (JSONObject) i.next();
 
-					String enchantName = (String)j1.get("enchantName");
-					int enchantPower = ((Long)j1.get("enchantPower")).intValue();
+					String enchantName = (String) j1.get("enchantName");
+					int enchantPower = ((Long) j1.get("enchantPower")).intValue();
 
 					Enchantment e = Enchantment.getByName(enchantName);
 
@@ -141,18 +140,18 @@ public class JSONUtils {
 				}
 			}
 			if (is.getData().getItemType() == Material.ENCHANTED_BOOK) {
-				EnchantmentStorageMeta esm = (EnchantmentStorageMeta)im;
+				EnchantmentStorageMeta esm = (EnchantmentStorageMeta) im;
 
-				JSONArray k1 = (JSONArray)obj.get("storedEnchants");
+				JSONArray k1 = (JSONArray) obj.get("storedEnchants");
 
 				if (k1 != null) {
 					Iterator i = k1.iterator();
 
 					while (i.hasNext()) {
-						JSONObject j1 = (JSONObject)i.next();
+						JSONObject j1 = (JSONObject) i.next();
 
-						String enchantName = (String)j1.get("enchantName");
-						int enchantPower = ((Long)j1.get("enchantPower")).intValue();
+						String enchantName = (String) j1.get("enchantName");
+						int enchantPower = ((Long) j1.get("enchantPower")).intValue();
 
 						Enchantment e = Enchantment.getByName(enchantName);
 
@@ -160,8 +159,7 @@ public class JSONUtils {
 					}
 				}
 				is.setItemMeta(esm);
-			}
-			else {
+			} else {
 				is.setItemMeta(im);
 			}
 			items.add(is);
