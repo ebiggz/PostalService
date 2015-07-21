@@ -4,7 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.config.Config;
 
 public class Mail {
 

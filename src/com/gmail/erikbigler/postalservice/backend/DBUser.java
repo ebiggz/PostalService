@@ -1,5 +1,6 @@
 package com.gmail.erikbigler.postalservice.backend;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,16 +11,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import com.gmail.erikbigler.postalservice.PostalService;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
-import com.gmail.erikbigler.postalservice.configs.UUIDUtils;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.WorldGroup;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
 import com.gmail.erikbigler.postalservice.mail.MailType;
-import com.gmail.erikbigler.postalservice.utils.JSONUtils;
+import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Utils;
-import com.gmail.erikbigler.postalservice.worldgroups.WorldGroup;
 
 public class DBUser implements User {
 
@@ -125,26 +125,35 @@ public class DBUser implements User {
 			}
 		}
 		query.append(" ORDER BY Sent.TimeStamp DESC LIMIT 100");
+		List<Mail> sentMail = new ArrayList<Mail>();
 		try {
 			// Build list of mail
-			List<Mail> sentMail = new ArrayList<Mail>();
 			MailManager mm = PostalService.getMailManager();
 			ResultSet rs = PostalService.getPSDatabase().querySQL(query.toString());
 			while (rs.next()) {
-				sentMail.add(new Mail(rs.getLong("MailID"), rs.getLong("ReceivedID"), rs.getString("Sender"), rs.getString("Recipient"), rs.getString("Message"), rs.getString("Attachments"), mm.getMailTypeByIdentifier(rs.getString("MailType")), rs.getTimestamp("TimeStamp"), mm.getMailStatusFromID(rs.getInt("Status"))));
+				MailType mailType = mm.getMailTypeByIdentifier(rs.getString("MailType"));
+				if(mailType == null) {
+					System.out.println("Mailtype is null");
+					continue;
+				}
+				sentMail.add(new Mail(rs.getLong("MailID"), rs.getLong("ReceivedID"), rs.getString("Sender"), rs.getString("Recipient"), rs.getString("Message"), rs.getString("Attachments"), mailType, rs.getTimestamp("TimeStamp"), mm.getMailStatusFromID(rs.getInt("Status"))));
 			}
-			return sentMail;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
 		}
-		return null;
+		return sentMail;
 	}
 
 	@Override
 	public List<ItemStack> getDropbox(WorldGroup worldGroup) {
 		try {
-			// TODO: pull dropbox from database
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
+			if(rs.next()) {
+				return Utils.bytesToItems(rs.getBytes("Contents"));
+			} else {
+				return null;
+			}
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
@@ -155,8 +164,15 @@ public class DBUser implements User {
 	@Override
 	public void saveDropbox(List<ItemStack> items, WorldGroup worldGroup) {
 		try {
-			String statement = "INSERT IGNORE INTO ps_dropboxes VALUES (0,\"" + JSONUtils.packItems(items) + "\",\"" + this.getIdentifier() + "\",\"" + worldGroup.getName() + "\")";
-			PostalService.getPSDatabase().updateSQL(statement);
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT DropboxID FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
+			PreparedStatement statement;
+			if(rs.next()) {
+				statement = PostalService.getPSDatabase().getConnection().prepareStatement("UPDATE ps_dropboxes SET Contents = ? WHERE DropboxID = " + rs.getInt("DropboxID"));
+			} else {
+				statement = PostalService.getPSDatabase().getConnection().prepareStatement("INSERT IGNORE INTO ps_dropboxes VALUES (0,?,\"" + this.getIdentifier() + "\",\"" + worldGroup.getName() + "\")");
+			}
+			statement.setBytes(1, Utils.itemsToBytes(items));
+			statement.execute();
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();

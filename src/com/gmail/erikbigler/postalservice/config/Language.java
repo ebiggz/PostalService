@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.configs;
+package com.gmail.erikbigler.postalservice.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +45,7 @@ public class Language {
 		MAILTYPE_EXPERIENCE("Experience"),
 		MAILTYPE_PAYMENT("Payment"),
 		MAILTYPE_PACKAGE("Package"),
+		MAILTYPE_PACKAGE_HOVERTEXT("Mail in-game items!"),
 		ALERT_RECEIVED_MAIL("&bYou just received mail from %sender%! Visit your nearest mailbox to read it."),
 		ALERT_SENT_MAIL("&bYou have mailed a %mailtype% to %recipient%."),
 		ALERT_NO_UNREAD_MAIL("You don't have any unread mail."),
@@ -62,7 +63,7 @@ public class Language {
 		CLICK_ACTION_DELETE("&cShift+Right-Click to &lDelete"),
 		CLICK_ACTION_RESPOND("&cLeft-Click to &lRespond"),
 		MAINMENU_TITLE("Postal Service"),
-		DROPBOX_DESCRIPTION("&7(Drop box is used for sending packages)"),
+		DROPBOX_DESCRIPTION("&7(The drop box is used for sending packages)"),
 		CLAIMED("Claimed"),
 		TO("to"),
 		FROM("from"),
@@ -77,7 +78,11 @@ public class Language {
 		REPLY_TEXT("&eReply with a (Click one)"),
 		COMPOSE_TEXT("&eCompose mail (Click one)"),
 		REPLY_SUMMARY_NOMESSAGE("%sender% mailed you a %mailtype% at %timestamp%"),
-		REPLY_SUMMARY_MESSAGE("%sender% mailed you a %mailtype% with the message \"%message%\" at %timestamp%");
+		REPLY_SUMMARY_MESSAGE("%sender% mailed you a %mailtype% with the message \"%message%\" at %timestamp%"),
+		DROPBOX_HELP_TEXT("You can place items from your inventory anywhere above the dotted line. Once you have, click the Compose Package button to the right. All items in your drop box are sent when you mail the package!"),
+		DROPBOX_HELP("&e&nDrop Box Help"),
+		DROPBOX_TITLE("Drop Box"),
+		BUTTON_COMPOSE_PACKAGE("&e&lCompose Package");
 		// @formatter:on
 		private String text;
 

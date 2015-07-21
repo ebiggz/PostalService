@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.configs;
+package com.gmail.erikbigler.postalservice.utils;
 
 import java.io.File;
 import java.util.UUID;
@@ -9,28 +9,25 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 
 import com.gmail.erikbigler.postalservice.PostalService;
-import com.gmail.erikbigler.postalservice.utils.ConfigAccessor;
-import com.gmail.erikbigler.postalservice.utils.UUIDFetcher;
+import com.gmail.erikbigler.postalservice.config.ConfigAccessor;
 
 public class UUIDUtils {
 
 	public static UUID findUUID(String playerName) {
-		// Utils.debugMessage("Attemping to get uuid from online player... ");
+		Utils.debugMessage("Attemping to get uuid from online player... ");
 		// if the player is online, get the uuid from that
 		Player player = Bukkit.getPlayerExact(playerName);
 		if (player != null) {
 			return player.getUniqueId();
 		}
-		// Utils.debugMessage("Player is offline. Attempting to get uuid from
-		// local cache...");
+		Utils.debugMessage("Player is offline. Attempting to get uuid from local cache...");
 		// if not, check to see if the uuid has been cached locally
 		UUID cachedID = searchCacheForID(playerName);
 		if (cachedID != null) {
 			return cachedID;
 		}
 
-		// Utils.debugMessage("Cache is empty. Attempting to get uuid from
-		// Mojang server...");
+		Utils.debugMessage("Cache is empty. Attempting to get uuid from Mojang server...");
 		// as a last resort, attempt to contact Mojang for the UUID.
 		try {
 			return UUIDFetcher.getUUIDOf(playerName);

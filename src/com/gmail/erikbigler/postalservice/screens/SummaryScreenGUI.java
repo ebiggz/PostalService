@@ -16,7 +16,7 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUI;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
@@ -47,7 +47,7 @@ public class SummaryScreenGUI implements GUI {
 
 		if(previous == BoxType.INBOX) {
 			ItemStack claim = GUIUtils.createButton(
-					Material.CHEST,
+					mail.getType().getIcon(),
 					mail.getType().getSummaryClaimButtonTitle(),
 					Arrays.asList(
 							Phrases.CLICK_ACTION_LEFTCLAIM.toString(),
@@ -67,20 +67,19 @@ public class SummaryScreenGUI implements GUI {
 	@Override
 	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickedEvent) {
 		if(clickedEvent.getSlot() == 40) {
-			if(previous == BoxType.INBOX) {
-				if(clickedEvent.getClick() == ClickType.LEFT) {
-					try {
-						mail.getType().administerAttachments(whoClicked);
-						UserFactory.getUser(whoClicked.getName()).markMailAsClaimed(mail);
-						whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + mail.getType().getAttachmentClaimMessage());
-						whoClicked.closeInventory();
-					} catch (MailException e) {
-						whoClicked.sendMessage(Phrases.PREFIX + " " + e.getErrorMessage());
-						whoClicked.closeInventory();
-					}
+			if(clickedEvent.getClick() == ClickType.LEFT) {
+				try {
+					mail.getType().administerAttachments(whoClicked);
+					UserFactory.getUser(whoClicked.getName()).markMailAsClaimed(mail);
+					whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + mail.getType().getAttachmentClaimMessage());
+					whoClicked.closeInventory();
+				} catch (MailException e) {
+					whoClicked.sendMessage(Phrases.PREFIX + " " + e.getErrorMessage());
+					whoClicked.closeInventory();
 				}
+			} else {
+				GUIManager.getInstance().showGUI(new InboxTypeGUI(UserFactory.getUser(whoClicked.getName()), previous, prevPage), whoClicked);
 			}
-			GUIManager.getInstance().showGUI(new InboxTypeGUI(UserFactory.getUser(whoClicked.getName()), previous, prevPage), whoClicked);
 		}
 	}
 
@@ -92,5 +91,4 @@ public class SummaryScreenGUI implements GUI {
 	public boolean ignoreForeignItems() {
 		return false;
 	}
-
 }

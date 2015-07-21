@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.utils;
+package com.gmail.erikbigler.postalservice.config;
 
 import java.io.File;
 import java.io.IOException;

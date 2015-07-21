@@ -2,7 +2,7 @@ package com.gmail.erikbigler.postalservice.backend;
 
 import java.util.UUID;
 
-import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.config.Config;
 
 public class UserFactory {
 

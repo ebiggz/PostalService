@@ -14,9 +14,9 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
+import com.gmail.erikbigler.postalservice.config.ConfigAccessor;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException.Reason;
-import com.gmail.erikbigler.postalservice.utils.ConfigAccessor;
 
 
 public class MailboxManager {

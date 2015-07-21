@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.utils.database;
+package com.gmail.erikbigler.postalservice.backend.database;
 
 
 import java.sql.Connection;
@@ -70,9 +70,9 @@ public abstract class Database {
 	private void createTables() {
 		try {
 			this.createTable("ps_users", "PlayerID varchar(255) NOT NULL KEY, PlayerName varchar(255) NOT NULL");
-			this.createTable("ps_mail", "MailID BIGINT AUTO_INCREMENT KEY, MailType varchar(255) NOT NULL, Message text, Attachments text, Timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0, WorldGroup varchar(255)");
+			this.createTable("ps_mail", "MailID BIGINT AUTO_INCREMENT KEY, MailType varchar(255) NOT NULL, Message text, Attachments longtext, Timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0, WorldGroup varchar(255)");
 			this.createTable("ps_received", "ReceivedID BIGINT AUTO_INCREMENT KEY, RecipientID varchar(255) NOT NULL, MailID INT NOT NULL, Status INT DEFAULT 0, Deleted INT DEFAULT 0");
-			this.createTable("ps_dropboxes", "DropboxID INT AUTO_INCREMENT KEY, Contents text, PlayerID varchar(255) NOT NULL, WorldGroup varchar(255) NOT NULL");
+			this.createTable("ps_dropboxes", "DropboxID INT AUTO_INCREMENT KEY, Contents LONGBLOB, PlayerID varchar(255) NOT NULL, WorldGroup varchar(255) NOT NULL");
 			this.createTable("ps_mailboxes", "MailboxID INT AUTO_INCREMENT KEY, Location varchar(255) NOT NULL, PlayerID varchar(255) NOT NULL");
 		} catch (Exception e) {
 			PostalService.getPlugin().getLogger().severe("Unable to create tables in database, plugin may not function as intended!");

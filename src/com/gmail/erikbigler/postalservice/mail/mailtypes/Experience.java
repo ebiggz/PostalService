@@ -4,8 +4,8 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.utils.SetExpFix;

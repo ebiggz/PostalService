@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
+import com.gmail.erikbigler.postalservice.config.WorldGroup;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
 import com.gmail.erikbigler.postalservice.mail.MailType;
-import com.gmail.erikbigler.postalservice.worldgroups.WorldGroup;
 
 public interface User {
 

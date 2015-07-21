@@ -21,8 +21,8 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 
@@ -50,10 +50,13 @@ public class MainMenuGUI implements GUI {
 		ItemStack composeBook = GUIUtils.createButton(
 				Material.BOOK_AND_QUILL,
 				Phrases.BUTTON_COMPOSE.toString(),
-				Arrays.asList(
-						Phrases.CLICK_ACTION_COMPOSE.toString(),
-						Phrases.CLICK_ACTION_DROPBOX.toString(),
-						Phrases.DROPBOX_DESCRIPTION.toString()));
+				(Config.packagesAreEnabled()
+						? Arrays.asList(
+								Phrases.CLICK_ACTION_COMPOSE.toString(),
+								Phrases.CLICK_ACTION_DROPBOX.toString(),
+								Phrases.DROPBOX_DESCRIPTION.toString())
+								: Arrays.asList(
+										Phrases.CLICK_ACTION_COMPOSE.toString())));
 
 		ItemStack inboxChest = GUIUtils.createButton(
 				Material.CHEST,
@@ -64,7 +67,7 @@ public class MainMenuGUI implements GUI {
 
 		ItemStack sentEnderchest = GUIUtils.createButton(
 				Material.ENDER_CHEST,
-				Phrases.ALERT_SENT_MAIL.toString(),
+				Phrases.BUTTON_SENT.toString(),
 				Arrays.asList(
 						Phrases.CLICK_ACTION_OPEN.toString()));
 
@@ -121,7 +124,8 @@ public class MainMenuGUI implements GUI {
 				whoClicked.performCommand(Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_COMPOSE.toString());
 			}
 			else if(clickedEvent.getClick() == ClickType.RIGHT) {
-				//GUIManager.getInstance().showGUI(new DropboxGUI(), whoClicked);
+				if(Config.packagesAreEnabled())
+					GUIManager.getInstance().showGUI(new DropboxGUI(), whoClicked);
 			}
 			break;
 		case 2:

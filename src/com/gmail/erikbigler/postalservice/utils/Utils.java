@@ -1,18 +1,32 @@
 package com.gmail.erikbigler.postalservice.utils;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.io.BukkitObjectInputStream;
+import org.bukkit.util.io.BukkitObjectOutputStream;
 
+import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.backend.User;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 
 public class Utils {
+
+	public static void debugMessage(String message) {
+		if(Config.ENABLE_DEBUG) PostalService.getPlugin().getLogger().info(message);
+	}
 
 	public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
 		if (str == null) {
@@ -119,6 +133,17 @@ public class Utils {
 		}
 	}
 
+	public static int getPlayerOpenInvSlots(Player player) {
+		Inventory inv = player.getInventory();
+		ItemStack[] contents = inv.getContents();
+		int count = 0;
+		for (ItemStack content : contents) {
+			if (content == null)
+				count++;
+		}
+		return count;
+	}
+
 	public static void unreadMailAlert(User user, boolean onlyUnreadAlert) {
 		int unread = user.getUnreadMailCount(Config.getCurrentWorldGroupForUser(user));
 		if(unread == 0) {
@@ -128,6 +153,45 @@ public class Utils {
 		} else {
 			messagePlayerIfOnline(user.getIdentifier(), Phrases.ALERT_UNREAD_MAIL.toPrefixedString().replace("%count%", Integer.toString(unread)));
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static Player[] getOnlinePlayers() {
+		try {
+			if (Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).getReturnType() == Collection.class) {
+				Collection<? extends Player> players = ((Collection<? extends Player>) Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).invoke(null, new Object[0]));
+				players.toArray(new Player[players.size()]);
+			} else {
+				return ((Player[]) Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).invoke(null, new Object[0]));
+			}
+		} catch (NoSuchMethodException ex) {
+		} // can never happen
+		catch (InvocationTargetException ex) {
+		} // can also never happen
+		catch (IllegalAccessException ex) {
+		} // can still never happen
+		return null;
+	}
+
+	public static List<String> getNamesThatStartWith(String prefix) {
+		List<String> matches = new ArrayList<String>();
+		boolean prefixTo = false;
+		if(prefix.startsWith(Phrases.COMMAND_ARG_TO.toString() + ":")) {
+			prefix = prefix.replace(Phrases.COMMAND_ARG_TO.toString() + ":", "");
+			prefixTo = true;
+		}
+		for(Player player : getOnlinePlayers()) {
+			if(player.getName().startsWith(prefix)) {
+				if(!player.getName().equals(prefix)) {
+					if(prefixTo) {
+						matches.add(Phrases.COMMAND_ARG_TO.toString() + ":" + player.getName());
+					} else {
+						matches.add(player.getName());
+					}
+				}
+			}
+		}
+		return matches;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -152,5 +216,33 @@ public class Utils {
 		catch (IllegalAccessException ex) {
 		} // can still never happen
 		return null;
+	}
+	public static byte[] itemsToBytes(List<ItemStack> items) {
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		try {
+			BukkitObjectOutputStream boos = new BukkitObjectOutputStream(baos);
+			boos.writeObject(items);
+			boos.close();
+		} catch (IOException ioexception) {
+			if(Config.ENABLE_DEBUG) ioexception.printStackTrace();
+		}
+
+		return baos.toByteArray();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static List<ItemStack> bytesToItems(byte[] bytes) {
+		ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+		Object backFromTheDead = null;
+		try {
+			BukkitObjectInputStream bois = new BukkitObjectInputStream(bais);
+			backFromTheDead = bois.readObject();
+			bois.close();
+		} catch (IOException ioexception) {
+			if(Config.ENABLE_DEBUG) ioexception.printStackTrace();
+		} catch (ClassNotFoundException classNotFoundException) {
+			if(Config.ENABLE_DEBUG) classNotFoundException.printStackTrace();
+		}
+		return (List<ItemStack>) backFromTheDead;
 	}
 }

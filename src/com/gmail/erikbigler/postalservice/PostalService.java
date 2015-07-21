@@ -3,33 +3,31 @@ package com.gmail.erikbigler.postalservice;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
-import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.backend.database.Database;
+import com.gmail.erikbigler.postalservice.backend.database.MySQL;
 import com.gmail.erikbigler.postalservice.commands.Commands;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
-import com.gmail.erikbigler.postalservice.configs.UUIDUtils;
+import com.gmail.erikbigler.postalservice.commands.MailTabCompleter;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Experience;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
+import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
+import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Utils;
-import com.gmail.erikbigler.postalservice.utils.database.Database;
-import com.gmail.erikbigler.postalservice.utils.database.MySQL;
 
 public class PostalService extends JavaPlugin {
 
@@ -61,12 +59,6 @@ public class PostalService extends JavaPlugin {
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
 
-		/*
-		 * Register built in MailTypes
-		 */
-
-		getMailManager().registerMailType(new Letter());
-		getMailManager().registerMailType(new Experience());
 
 		/*
 		 * Register listeners
@@ -81,11 +73,20 @@ public class PostalService extends JavaPlugin {
 		UUIDUtils.loadFile();
 
 		/*
+		 * Register built in MailTypes
+		 */
+
+		getMailManager().registerMailType(new Letter());
+		getMailManager().registerMailType(new Experience());
+		getMailManager().registerMailType(new Package());
+
+		/*
 		 * Register commands
 		 */
 
 		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString());
 		getCommand("mail").setExecutor(new Commands());
+		getCommand("mail").setTabCompleter(new MailTabCompleter());
 		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new Commands());
 
 		/*
@@ -100,13 +101,6 @@ public class PostalService extends JavaPlugin {
 		}
 
 		getLogger().info("Enabled!");
-
-		User user = UserFactory.getUser("ebiggz");
-		List<ItemStack> items = new ArrayList<ItemStack>();
-		items.add(new ItemStack(Material.ANVIL));
-		items.add(new ItemStack(Material.APPLE, 5));
-		items.add(new ItemStack(Material.BAKED_POTATO, 9));
-		user.saveDropbox(items, Config.getWorldGroupFromWorld("world"));
 	}
 
 	/**
@@ -114,6 +108,7 @@ public class PostalService extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
+		GUIManager.getInstance().closeAllGUIs();
 		getLogger().info("Disabled!");
 	}
 

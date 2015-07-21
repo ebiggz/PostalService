@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.utils.database;
+package com.gmail.erikbigler.postalservice.backend.database;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

@@ -19,8 +19,8 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUI;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
@@ -149,7 +149,7 @@ public class InboxTypeGUI implements GUI {
 					if(boxType == BoxType.INBOX) {
 						if(mail.hasAttachments() && !mail.isClaimed()) {
 							if(mail.getType().useSummaryScreen()) {
-								//go to summary screen
+								GUIManager.getInstance().showGUI(new SummaryScreenGUI(mail, boxType, pageNumber), whoClicked);
 							} else {
 								try {
 									mail.getType().administerAttachments(whoClicked);
@@ -222,7 +222,9 @@ public class InboxTypeGUI implements GUI {
 			if(mail.isClaimed()) {
 				info = ChatColor.GRAY + "*" + Phrases.CLAIMED.toString() + "*";
 			} else {
-				info = ChatColor.GRAY + ChatColor.stripColor(mail.getType().getAttachmentDescription());
+				if(mail.getType().getAttachmentDescription() != null && !mail.getType().getAttachmentDescription().isEmpty()) {
+					info = ChatColor.GRAY + ChatColor.stripColor(mail.getType().getAttachmentDescription());
+				}
 			}
 		}
 		if(!info.isEmpty()) {

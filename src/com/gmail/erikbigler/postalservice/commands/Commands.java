@@ -16,8 +16,8 @@ import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.Interactive
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
-import com.gmail.erikbigler.postalservice.configs.Config;
-import com.gmail.erikbigler.postalservice.configs.Language.Phrases;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
@@ -97,7 +97,7 @@ public class Commands implements CommandExecutor {
 				MailType mailType = MailManager.getInstance().getMailTypeByName(args[0]);
 
 				if(mailType == null) {
-					sender.sendMessage(Phrases.ERROR_MAILTYPE_NOT_FOUND.toPrefixedString());
+					sender.sendMessage(Phrases.ERROR_MAILTYPE_NOT_FOUND.toPrefixedString().replace("%mailtype%", args[0]));
 					return true;
 				}
 				String to = "", message = "", attachmentArgs = "";

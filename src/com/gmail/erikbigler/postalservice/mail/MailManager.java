@@ -3,6 +3,7 @@ package com.gmail.erikbigler.postalservice.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.mail.Mail.MailStatus;
 
 public class MailManager {
@@ -22,9 +23,10 @@ public class MailManager {
 	}
 
 	public void registerMailType(MailType newType) {
+		if (Config.mailTypeIsDisabled(newType)) return;
 		for (MailType mailType : mailTypes) {
 			if (mailType.getDisplayName().equalsIgnoreCase(newType.getDisplayName()) || mailType.getIdentifier().equalsIgnoreCase(newType.getIdentifier())) {
-				// log error
+				// TODO log warning error
 				return;
 			}
 		}

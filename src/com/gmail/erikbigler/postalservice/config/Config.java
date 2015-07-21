@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.configs;
+package com.gmail.erikbigler.postalservice.config;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -17,7 +17,6 @@ import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.utils.Utils;
-import com.gmail.erikbigler.postalservice.worldgroups.WorldGroup;
 
 public class Config {
 
@@ -26,7 +25,7 @@ public class Config {
 	public static List<WorldGroup> WORLD_GROUPS;
 	private static List<String> MAILTYPES_IGNORE_WORLD_GROUPS;
 	public static List<String> WORLD_BLACKLIST;
-	public static List<String> ENABLED_MAILTYPES;
+	private static List<String> DISABLED_MAILTYPES;
 	public static boolean ENABLE_DEBUG;
 	public static boolean USE_DATABASE = true;
 	// User Settings
@@ -95,6 +94,14 @@ public class Config {
 		}
 		MAILTYPES_IGNORE_WORLD_GROUPS = config.getStringList("mail-types-that-ignore-world-groups");
 		/* Load general options */
+		DISABLED_MAILTYPES = new ArrayList<String>();
+		ConfigurationSection mtConfigSection = config.getConfigurationSection("enabled-mail-types");
+		if (mtConfigSection != null) {
+			for (String mailTypeNode : mtConfigSection.getKeys(false)) {
+				if(!mtConfigSection.getBoolean(mailTypeNode, true)) DISABLED_MAILTYPES.add(mailTypeNode);
+			}
+		}
+		System.out.println(DISABLED_MAILTYPES);
 		USE_UUIDS = config.getBoolean("use-uuids", true);
 		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
 		/* Load language options */
@@ -102,10 +109,17 @@ public class Config {
 		LOCALE_TAG = config.getString("locale-tag", "en-US");
 	}
 
-	public static boolean mailTypeIsEnabled(MailType mailType) {
-		for (String mailTypeName : ENABLED_MAILTYPES) {
-			if (mailType.getIdentifier().equalsIgnoreCase(mailTypeName))
-				return true;
+	public static boolean mailTypeIsDisabled(MailType mailType) {
+		return mailTypeIsDisabled(mailType.getDisplayName());
+	}
+
+	public static boolean packagesAreEnabled() {
+		return !mailTypeIsDisabled("package");
+	}
+
+	public static boolean mailTypeIsDisabled(String name) {
+		for(String type : DISABLED_MAILTYPES) {
+			if(type.equalsIgnoreCase(name)) return true;
 		}
 		return false;
 	}

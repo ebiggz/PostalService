@@ -1,4 +1,4 @@
-package com.gmail.erikbigler.postalservice.worldgroups;
+package com.gmail.erikbigler.postalservice.config;
 
 import java.util.List;
 

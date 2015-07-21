@@ -14,23 +14,33 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.FormattedText;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUI;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
-import com.gmail.erikbigler.postalservice.configs.Config;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.mail.MailManager;
+import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class DropboxGUI implements GUI {
 
 	@Override
 	public Inventory createInventory(Player player) {
-		Inventory inventory = Bukkit.createInventory(null, 9*5, player.getName() + "'s Drop Box");
+		Inventory inventory = Bukkit.createInventory(null, 9*5, Phrases.DROPBOX_TITLE.toString());
 		User user = UserFactory.getUser(player.getUniqueId());
 		List<ItemStack> dbItems = user.getDropbox(Config.getWorldGroupFromWorld(player.getWorld().getName()));
-		for(ItemStack item : dbItems) {
-			inventory.addItem(item);
+		if(dbItems != null) {
+			for(ItemStack item : dbItems) {
+				inventory.addItem(item);
+			}
 		}
 		ItemStack seperator = GUIUtils.createButton(Material.STONE_BUTTON, ChatColor.STRIKETHROUGH + "---", null);
 		for(int i = 27; i < 36; i++) {
@@ -38,22 +48,22 @@ public class DropboxGUI implements GUI {
 		}
 
 		List<String> lore = new ArrayList<String>();
-		String[] wrappedMessage = Utils.wrap("You can place items from your inventory anywhere above the dotted line. Once you have, click the Compose Package button to the right. All items in your drop box are sent when you mail the package!", 30, "\n", true).split("\n");
+		String[] wrappedMessage = Utils.wrap(Phrases.DROPBOX_HELP_TEXT.toString(), 30, "\n", true).split("\n");
 		for(String line : wrappedMessage) {
 			lore.add(ChatColor.WHITE + line);
 		}
 		ItemStack infoSign = GUIUtils.createButton(
 				Material.SIGN,
-				ChatColor.YELLOW +""+ ChatColor.UNDERLINE + "Drop Box Help",
+				Phrases.DROPBOX_HELP.toString(),
 				lore);
 		inventory.setItem(39, infoSign);
 
 		ItemStack mainMenu = GUIUtils.createButton(
 				Material.BOOK_AND_QUILL,
-				ChatColor.YELLOW +""+ ChatColor.BOLD + "Compose Package",
+				Phrases.BUTTON_COMPOSE_PACKAGE.toString(),
 				Arrays.asList(
-						ChatColor.RED + "Left-Click to " + ChatColor.BOLD + "Compose Package",
-						ChatColor.RED + "Right-Click to " + ChatColor.BOLD + "Return"));
+						Phrases.CLICK_ACTION_COMPOSE.toString(),
+						Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
 		inventory.setItem(40, mainMenu);
 		return inventory;
 	}
@@ -70,8 +80,17 @@ public class DropboxGUI implements GUI {
 						GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
 					} else {
 						whoClicked.closeInventory();
-						String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Click to compose: \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Package\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with items!\",\"color\":\"gold\"}]}}}]}";
-						Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()));
+						MailType type = MailManager.getInstance().getMailTypeByIdentifier("package");
+						InteractiveMessage im = new InteractiveMessage();
+						im.addElement(Phrases.COMPOSE_TEXT.toPrefixedString() + ": ");
+						InteractiveMessageElement ime = new InteractiveMessageElement(
+								new FormattedText(ChatColor.stripColor(type.getDisplayName()), ChatColor.AQUA),
+								HoverEvent.SHOW_TEXT,
+								new FormattedText(ChatColor.stripColor(type.getHoveroverDescription()), ChatColor.GOLD),
+								ClickEvent.SUGGEST_COMMAND,
+								"/" + Phrases.COMMAND_MAIL.toString() + " " + type.getDisplayName().toLowerCase() + " " + Phrases.COMMAND_ARG_TO.toString() + ": " + Phrases.COMMAND_ARG_MESSAGE.toString() + ":");
+						im.addElement(ime);
+						im.sendTo(whoClicked);
 					}
 				}
 			}
