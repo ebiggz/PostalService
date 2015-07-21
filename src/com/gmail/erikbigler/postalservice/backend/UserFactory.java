@@ -20,4 +20,14 @@ public class UserFactory {
 		return null;
 	}
 
+	public static User getUserFromIdentifier(String identifier) {
+		if (Config.USE_DATABASE) {
+			if (Config.USE_UUIDS) {
+				return new DBUser(UUID.fromString(identifier));
+			} else {
+				return new DBUser(identifier);
+			}
+		}
+		return null;
+	}
 }

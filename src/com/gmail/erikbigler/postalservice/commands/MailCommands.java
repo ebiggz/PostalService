@@ -25,7 +25,7 @@ import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
-public class Commands implements CommandExecutor {
+public class MailCommands implements CommandExecutor {
 
 	enum Tracking {
 		TO, MESSAGE, ATTACHMENT

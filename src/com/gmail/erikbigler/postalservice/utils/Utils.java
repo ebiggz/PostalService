@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +26,8 @@ import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 public class Utils {
 
 	public static void debugMessage(String message) {
-		if(Config.ENABLE_DEBUG) PostalService.getPlugin().getLogger().info(message);
+		if (Config.ENABLE_DEBUG)
+			PostalService.getPlugin().getLogger().info(message);
 	}
 
 	public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
@@ -113,7 +115,7 @@ public class Utils {
 
 	public static Player getPlayerFromIdentifier(String identifier) {
 		Player player;
-		if(Config.USE_UUIDS) {
+		if (Config.USE_UUIDS) {
 			player = Bukkit.getPlayer(UUID.fromString(identifier));
 		} else {
 			player = Bukkit.getPlayer(identifier);
@@ -128,7 +130,7 @@ public class Utils {
 
 	public static void messagePlayerIfOnline(String identifier, String message) {
 		Player player = getPlayerFromIdentifier(identifier);
-		if(player != null && player.isOnline()) {
+		if (player != null && player.isOnline()) {
 			player.sendMessage(message);
 		}
 	}
@@ -146,8 +148,8 @@ public class Utils {
 
 	public static void unreadMailAlert(User user, boolean onlyUnreadAlert) {
 		int unread = user.getUnreadMailCount(Config.getCurrentWorldGroupForUser(user));
-		if(unread == 0) {
-			if(!onlyUnreadAlert) {
+		if (unread == 0) {
+			if (!onlyUnreadAlert) {
 				messagePlayerIfOnline(user.getIdentifier(), Phrases.ALERT_NO_UNREAD_MAIL.toPrefixedString());
 			}
 		} else {
@@ -176,14 +178,14 @@ public class Utils {
 	public static List<String> getNamesThatStartWith(String prefix) {
 		List<String> matches = new ArrayList<String>();
 		boolean prefixTo = false;
-		if(prefix.startsWith(Phrases.COMMAND_ARG_TO.toString() + ":")) {
+		if (prefix.startsWith(Phrases.COMMAND_ARG_TO.toString() + ":")) {
 			prefix = prefix.replace(Phrases.COMMAND_ARG_TO.toString() + ":", "");
 			prefixTo = true;
 		}
-		for(Player player : getOnlinePlayers()) {
-			if(player.getName().startsWith(prefix)) {
-				if(!player.getName().equals(prefix)) {
-					if(prefixTo) {
+		for (Player player : getOnlinePlayers()) {
+			if (player.getName().startsWith(prefix)) {
+				if (!player.getName().equals(prefix)) {
+					if (prefixTo) {
 						matches.add(Phrases.COMMAND_ARG_TO.toString() + ":" + player.getName());
 					} else {
 						matches.add(player.getName());
@@ -217,6 +219,7 @@ public class Utils {
 		} // can still never happen
 		return null;
 	}
+
 	public static byte[] itemsToBytes(List<ItemStack> items) {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		try {
@@ -224,7 +227,8 @@ public class Utils {
 			boos.writeObject(items);
 			boos.close();
 		} catch (IOException ioexception) {
-			if(Config.ENABLE_DEBUG) ioexception.printStackTrace();
+			if (Config.ENABLE_DEBUG)
+				ioexception.printStackTrace();
 		}
 
 		return baos.toByteArray();
@@ -239,10 +243,21 @@ public class Utils {
 			backFromTheDead = bois.readObject();
 			bois.close();
 		} catch (IOException ioexception) {
-			if(Config.ENABLE_DEBUG) ioexception.printStackTrace();
+			if (Config.ENABLE_DEBUG)
+				ioexception.printStackTrace();
 		} catch (ClassNotFoundException classNotFoundException) {
-			if(Config.ENABLE_DEBUG) classNotFoundException.printStackTrace();
+			if (Config.ENABLE_DEBUG)
+				classNotFoundException.printStackTrace();
 		}
 		return (List<ItemStack>) backFromTheDead;
+	}
+
+	public static String locationToString(Location location) {
+		return location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + "," + location.getWorld().getName();
+	}
+
+	public static Location stringToLocation(String string) {
+		String[] split = string.split(",");
+		return new Location(Bukkit.getWorld(split[3]), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
 	}
 }

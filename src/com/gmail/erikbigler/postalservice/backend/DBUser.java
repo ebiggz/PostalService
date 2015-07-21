@@ -32,12 +32,11 @@ public class DBUser implements User {
 		if (Config.USE_UUIDS) {
 			UUID id = UUIDUtils.findUUID(playerName);
 			if (id != null) {
+				Utils.debugMessage("Success!");
 				this.uuid = id;
 				UUIDUtils.saveKnownNameAndUUID(playerName, id);
 			} else {
-				// Utils.debugMessage("Failed! Could not get a uuid for the
-				// player
-				// at all.");
+				Utils.debugMessage("Failed! Could not get a uuid for the player at all.");
 				isReal = false;
 				return;
 			}
@@ -132,7 +131,7 @@ public class DBUser implements User {
 			ResultSet rs = PostalService.getPSDatabase().querySQL(query.toString());
 			while (rs.next()) {
 				MailType mailType = mm.getMailTypeByIdentifier(rs.getString("MailType"));
-				if(mailType == null) {
+				if (mailType == null) {
 					System.out.println("Mailtype is null");
 					continue;
 				}
@@ -149,7 +148,7 @@ public class DBUser implements User {
 	public List<ItemStack> getDropbox(WorldGroup worldGroup) {
 		try {
 			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
-			if(rs.next()) {
+			if (rs.next()) {
 				return Utils.bytesToItems(rs.getBytes("Contents"));
 			} else {
 				return null;
@@ -166,7 +165,7 @@ public class DBUser implements User {
 		try {
 			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT DropboxID FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
 			PreparedStatement statement;
-			if(rs.next()) {
+			if (rs.next()) {
 				statement = PostalService.getPSDatabase().getConnection().prepareStatement("UPDATE ps_dropboxes SET Contents = ? WHERE DropboxID = " + rs.getInt("DropboxID"));
 			} else {
 				statement = PostalService.getPSDatabase().getConnection().prepareStatement("INSERT IGNORE INTO ps_dropboxes VALUES (0,?,\"" + this.getIdentifier() + "\",\"" + worldGroup.getName() + "\")");

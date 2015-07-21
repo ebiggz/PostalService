@@ -38,44 +38,15 @@ public class MainMenuGUI implements GUI {
 
 		Inventory inventory = Bukkit.createInventory(null, InventoryType.HOPPER, Phrases.MAINMENU_TITLE.toString());
 
+		ItemStack infoSign = GUIUtils.createButton(Material.SIGN, Phrases.BUTTON_ACCOUNTINFO.toString(), Arrays.asList(ChatColor.GRAY + "Mailboxes: " + ChatColor.WHITE + /*MailboxManager.getInstance().getMailboxCount(user.getPlayerName()) +*/ " of " /*+ user.getMaxMailboxCount()*/, ChatColor.GRAY + "Inbox/Sent Size: " + ChatColor.WHITE, Phrases.CLICK_ACTION_HELP.toString()));
 
-		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
-				Phrases.BUTTON_ACCOUNTINFO.toString(),
-				Arrays.asList(
-						ChatColor.GRAY + "Mailboxes: " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(user.getPlayerName()) + " of " /*+ user.getMaxMailboxCount()*/,
-						ChatColor.GRAY + "Inbox/Sent Size: " + ChatColor.WHITE,
-						Phrases.CLICK_ACTION_HELP.toString()));
+		ItemStack composeBook = GUIUtils.createButton(Material.BOOK_AND_QUILL, Phrases.BUTTON_COMPOSE.toString(), (Config.packagesAreEnabled() ? Arrays.asList(Phrases.CLICK_ACTION_COMPOSE.toString(), Phrases.CLICK_ACTION_DROPBOX.toString(), Phrases.DROPBOX_DESCRIPTION.toString()) : Arrays.asList(Phrases.CLICK_ACTION_COMPOSE.toString())));
 
-		ItemStack composeBook = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
-				Phrases.BUTTON_COMPOSE.toString(),
-				(Config.packagesAreEnabled()
-						? Arrays.asList(
-								Phrases.CLICK_ACTION_COMPOSE.toString(),
-								Phrases.CLICK_ACTION_DROPBOX.toString(),
-								Phrases.DROPBOX_DESCRIPTION.toString())
-								: Arrays.asList(
-										Phrases.CLICK_ACTION_COMPOSE.toString())));
+		ItemStack inboxChest = GUIUtils.createButton(Material.CHEST, Phrases.BUTTON_INBOX.toString(), Arrays.asList(ChatColor.WHITE + "" + unread + " Unread", Phrases.CLICK_ACTION_OPEN.toString()));
 
-		ItemStack inboxChest = GUIUtils.createButton(
-				Material.CHEST,
-				Phrases.BUTTON_INBOX.toString(),
-				Arrays.asList(
-						ChatColor.WHITE + "" + unread + " Unread",
-						Phrases.CLICK_ACTION_OPEN.toString()));
+		ItemStack sentEnderchest = GUIUtils.createButton(Material.ENDER_CHEST, Phrases.BUTTON_SENT.toString(), Arrays.asList(Phrases.CLICK_ACTION_OPEN.toString()));
 
-		ItemStack sentEnderchest = GUIUtils.createButton(
-				Material.ENDER_CHEST,
-				Phrases.BUTTON_SENT.toString(),
-				Arrays.asList(
-						Phrases.CLICK_ACTION_OPEN.toString()));
-
-		ItemStack tradingPost = GUIUtils.createButton(
-				Material.FENCE,
-				Phrases.BUTTON_TRADINGPOST.toString(),
-				Arrays.asList(
-						ChatColor.GRAY + "*Coming Soon*"));
+		ItemStack tradingPost = GUIUtils.createButton(Material.FENCE, Phrases.BUTTON_TRADINGPOST.toString(), Arrays.asList(ChatColor.GRAY + "*Coming Soon*"));
 
 		inventory.setItem(0, infoSign);
 		inventory.setItem(1, composeBook);
@@ -122,8 +93,7 @@ public class MainMenuGUI implements GUI {
 				}
 				whoClicked.closeInventory();
 				whoClicked.performCommand(Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_COMPOSE.toString());
-			}
-			else if(clickedEvent.getClick() == ClickType.RIGHT) {
+			} else if(clickedEvent.getClick() == ClickType.RIGHT) {
 				if(Config.packagesAreEnabled())
 					GUIManager.getInstance().showGUI(new DropboxGUI(), whoClicked);
 			}
@@ -144,13 +114,11 @@ public class MainMenuGUI implements GUI {
 	}
 
 	@Override
-	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {
-	}
+	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
 
 	@Override
 	public boolean ignoreForeignItems() {
 		return false;
 	}
-
 
 }

@@ -1,100 +1,108 @@
 package com.gmail.erikbigler.postalservice.mailbox;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.inventory.ItemStack;
 
-import com.gmail.erikbigler.postalservice.config.ConfigAccessor;
+import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException.Reason;
-
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailboxManager {
 
-	public HashMap<Player,MailboxSelect> mailboxSelectors = new HashMap<Player,MailboxSelect>();
+	public HashMap<Player, MailboxSelect> mailboxSelectors = new HashMap<Player, MailboxSelect>();
 	public List<Player> willDropBook = new ArrayList<Player>();
+	private List<Mailbox> mailboxes = new ArrayList<Mailbox>();
 
-	protected MailboxManager() { /*exists to block instantiation*/ }
+	protected MailboxManager() {
+		/* exists to block instantiation */ }
+
 	private static MailboxManager instance = null;
+
 	public static MailboxManager getInstance() {
-		if(instance == null) {
+		if (instance == null) {
 			instance = new MailboxManager();
 		}
 		return instance;
 	}
 
 	public enum MailboxSelect {
-		ADD, REMOVE
+		ADD, REMOVE, OWNERSET
 	}
-
 
 	public boolean locationHasMailbox(Location location) {
-		ConfigAccessor mailboxData = new ConfigAccessor("mailbox-locations.yml");
-		return mailboxData.getConfig().contains(this.locationToString(location));
+		Mailbox mb = this.getMailbox(location);
+		return mb != null;
 	}
 
-	public Location[] getMailboxLocations() {
-
-		ConfigAccessor mailboxData = new ConfigAccessor("mailbox-locations.yml");
-		Set<String> keys = mailboxData.getConfig().getKeys(false);
-		Location[] mailboxLocs = new Location[keys.size()];
-
-		int index = 0;
-		for(String locStr : keys) {
-			mailboxLocs[index] = stringToLocation(locStr);
-			index++;
+	public void loadMailboxes() {
+		this.mailboxes.clear();
+		if (Config.USE_DATABASE) {
+			try {
+				ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT * FROM ps_mailboxes");
+				while (rs.next()) {
+					int id = rs.getInt("MailboxID");
+					String location = rs.getString("Location");
+					String playerIdentifier = rs.getString("PlayerID");
+					if (location != null || playerIdentifier != null) {
+						mailboxes.add(new Mailbox(UserFactory.getUserFromIdentifier(playerIdentifier), Utils.stringToLocation(playerIdentifier), id));
+					}
+				}
+			} catch (Exception e) {
+				if (Config.ENABLE_DEBUG)
+					e.printStackTrace();
+			}
 		}
-		return mailboxLocs;
 	}
 
-	public String getMailboxOwner(Location loc) {
-		return "";
+	public Mailbox getMailbox(Location loc) {
+		for (Mailbox mailbox : mailboxes) {
+			if (mailbox.getLocation().equals(loc))
+				return mailbox;
+		}
+		return null;
 	}
 
-	public int getMailboxCount(String playerName) {
-		return 0;
-	}
-
-	public void addMailboxAtLoc(Location location, Player player) throws MailboxException {
-		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
+	public void addMailboxAtLoc(Location location, Player player)
+			throws MailboxException {
+		if (location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
-		}
-		else if(!canBreakAndPlaceAtLoc(location, player)) {
+		} else
+			if (!PermissionHandler.userCanCreateMailboxAtLoc(location, player)) {
 			throw new MailboxException(Reason.NO_PERMISSION);
-		}
-		else if(this.locationHasMailbox(location)) {
+		} else if (this.locationHasMailbox(location)) {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
-		}
-		else {
-			//savemailbox
+		} else {
+			// savemailbox
 		}
 	}
 
-	public void removeMailboxAtLoc(Location location, Player player) throws MailboxException {
-		/*if(mythian.getMailboxLocs().size() >= getMaxMailboxCount(owner)) {
-			throw new MailException(Reason.MAX_MAILBOXES_REACHED);
-		}*/
-		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
-			throw new MailboxException(Reason.NOT_CHEST);
-		}
-		else if(!getMailboxOwner(location).equals(player.getName())) {
-			throw new MailboxException(Reason.NOT_OWNER);
-		}
-		else if(!this.locationHasMailbox(location)) {
+	public void removeMailboxAtLoc(Location location, Player player)
+			throws MailboxException {
+
+		Mailbox mb = this.getMailbox(location);
+		/*
+		 * if(mythian.getMailboxLocs().size() >= getMaxMailboxCount(owner)) {
+		 * throw new MailException(Reason.MAX_MAILBOXES_REACHED); }
+		 */
+		if (mb == null) {
 			throw new MailboxException(Reason.DOESNT_EXIST);
-		}
-		else {
-			//delete mailbox
+		} else
+			if (location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
+			throw new MailboxException(Reason.NOT_CHEST);
+		} else if (!mb.getOwner().getPlayerName().equals(player.getName())) {
+			throw new MailboxException(Reason.NOT_OWNER);
+		} else {
+			// delete mailbox
 		}
 	}
 
@@ -103,40 +111,10 @@ public class MailboxManager {
 	}
 
 	public boolean mailboxIsNearby(Location location, int distance) {
-		Location[] mailboxes = getMailboxLocations();
-		for(Location mailbox : mailboxes) {
-			if(location.distance(mailbox) < distance) return true;
+		for (Mailbox mailbox : mailboxes) {
+			if (location.distance(mailbox.getLocation()) < distance)
+				return true;
 		}
 		return false;
 	}
-
-	private boolean canBreakAndPlaceAtLoc(Location loc, Player player) {
-		Block block = loc.getBlock();
-		int spawnRadius = Bukkit.getServer().getSpawnRadius();
-		Location spawn = loc.getWorld().getSpawnLocation();
-		boolean canBuild = (spawnRadius <= 0) || (player.isOp()) || (Math.max(Math.abs(block.getX() - spawn.getBlockX()), Math.abs(block.getZ() - spawn.getBlockZ())) > spawnRadius);
-		BlockPlaceEvent placeEvent = new BlockPlaceEvent(block, block.getState(), null, new ItemStack(Material.CHEST), player, canBuild);
-		BlockBreakEvent breakEvent = new BlockBreakEvent(block, player);
-		Bukkit.getPluginManager().callEvent(placeEvent);
-		Bukkit.getPluginManager().callEvent(breakEvent);
-		return (!placeEvent.isCancelled() && !breakEvent.isCancelled());
-	}
-
-	public int getMaxMailboxCount(String playerName) {
-		/*String primaryGroup = Mythsentials.permission.getPrimaryGroup("", playerName);
-		if(primaryGroup != null) {
-			return Mythsentials.getMaxMailboxesForGroup(primaryGroup);
-		}*/
-		return 1;
-	}
-
-	private String locationToString(Location location) {
-		return location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ() + "," + location.getWorld().getName();
-	}
-
-	private Location stringToLocation(String string) {
-		String[] split = string.split(",");
-		return new Location(Bukkit.getWorld(split[3]), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
-	}
-
 }
