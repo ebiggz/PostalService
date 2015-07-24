@@ -2,19 +2,18 @@ package com.gmail.erikbigler.postalservice;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
-import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.backend.database.Database;
 import com.gmail.erikbigler.postalservice.backend.database.MySQL;
 import com.gmail.erikbigler.postalservice.commands.MailCommands;
@@ -29,12 +28,19 @@ import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
+
 public class PostalService extends JavaPlugin {
 
-	// private Plugin p;
 	private static PostalService plugin;
 	private static Database database;
 	private double serverVersion;
+	public static Economy economy = null;
+	public static Permission permission = null;
+	public static boolean vaultEnabled = false;
+	public static boolean hasPermPlugin = false;
+	public static boolean hasEconPlugin = false;
 
 	/**
 	 * Called when PostalService is being enabled
@@ -57,6 +63,13 @@ public class PostalService extends JavaPlugin {
 		if (serverVersion <= 1.6) {
 			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
 			Bukkit.getPluginManager().disablePlugin(this);
+		}
+
+		/*
+		 * Check for and setup vault
+		 */
+		if(setupVault()) {
+			vaultEnabled = true;
 		}
 
 
@@ -100,6 +113,8 @@ public class PostalService extends JavaPlugin {
 			getLogger().info("Sucessfully connected to the database!");
 		}
 
+		//Updater updater = new Updater(this, id, this.getFile(), Updater.UpdateType.DEFAULT, false);
+
 		getLogger().info("Enabled!");
 	}
 
@@ -108,8 +123,44 @@ public class PostalService extends JavaPlugin {
 	 */
 	@Override
 	public void onDisable() {
+		//Make sure all open GUI inventories are closed when disabled. Otherwise, players would be able to access items during a reload.
 		GUIManager.getInstance().closeAllGUIs();
 		getLogger().info("Disabled!");
+	}
+
+	private boolean setupVault() {
+		Plugin vault =  getServer().getPluginManager().getPlugin("Vault");
+		if (vault != null) {
+			getLogger().info("Hooked into Vault!");
+			if(!setupEconomy()) {
+				getLogger().warning("No plugin to handle currency, Payment mail type will be disabled!");
+			}
+			if(!setupPermissions()) {
+				getLogger().warning("No plugin to handle permission groups, permission group settings will be ignored!");
+			}
+			return true;
+		} else {
+			getLogger().warning("Vault plugin not found. Currency and permission group features will be not be functional!");
+			return false;
+		}
+	}
+
+	private boolean setupEconomy() {
+		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
+		if (economyProvider != null) {
+			hasEconPlugin = true;
+			economy = economyProvider.getProvider();
+		}
+		return (economy != null);
+	}
+
+	private boolean setupPermissions() {
+		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+		if (permissionProvider != null) {
+			hasPermPlugin = true;
+			permission = permissionProvider.getProvider();
+		}
+		return (permission != null);
 	}
 
 	public boolean loadDatabase() {
@@ -130,13 +181,6 @@ public class PostalService extends JavaPlugin {
 	 */
 	public static MailManager getMailManager() {
 		return MailManager.getInstance();
-	}
-
-	/**
-	 * @return the class that creates Users
-	 */
-	public static UserFactory getUserFactory() {
-		return new UserFactory();
 	}
 
 	/**
@@ -167,7 +211,11 @@ public class PostalService extends JavaPlugin {
 		return "";
 	}
 
-	public void registerCommand(String... aliases) {
+	/**
+	 * Functions for registering command aliases in code.
+	 */
+
+	private void registerCommand(String... aliases) {
 		PluginCommand command = getCommand(aliases[0], this);
 		command.setAliases(Arrays.asList(aliases));
 		getCommandMap().register(plugin.getDescription().getName(), command);
@@ -175,32 +223,18 @@ public class PostalService extends JavaPlugin {
 
 	private static PluginCommand getCommand(String name, Plugin plugin) {
 		PluginCommand command = null;
-
 		try {
 			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
 			c.setAccessible(true);
-
 			command = c.newInstance(name, plugin);
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (InvocationTargetException e) {
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
 		}
-
 		return command;
 	}
 
 	private static CommandMap getCommandMap() {
 		CommandMap commandMap = null;
-
 		try {
 			if (Bukkit.getPluginManager() instanceof SimplePluginManager) {
 				Field f = SimplePluginManager.class.getDeclaredField("commandMap");
@@ -208,17 +242,9 @@ public class PostalService extends JavaPlugin {
 
 				commandMap = (CommandMap) f.get(Bukkit.getPluginManager());
 			}
-		} catch (NoSuchFieldException e) {
-			e.printStackTrace();
-		} catch (SecurityException e) {
-			e.printStackTrace();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
 		}
-
 		return commandMap;
 	}
-
 }

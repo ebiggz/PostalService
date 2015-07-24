@@ -39,6 +39,8 @@ public interface User {
 
 	public boolean inboxIsFull(WorldGroup worldGroup);
 
+	public int getBoxSizeFromType(BoxType type, WorldGroup worldGroup);
+
 	public boolean sendMail(String recipient, String message, String attachmentData, MailType mailType, WorldGroup worldGroup);
 
 	public boolean receieveMail(Player sender, MailType mailType);

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -29,14 +30,14 @@ public class Config {
 	public static boolean ENABLE_DEBUG;
 	public static boolean USE_DATABASE = true;
 	// User Settings
-	public static HashMap<String, Integer> INBOX_SIZES;
+	public static Map<String, Integer> INBOX_SIZES;
 	public static boolean UNREAD_NOTIFICATION_WORLD_CHANGE;
 	public static boolean UNREAD_NOTIFICATION_LOGIN;
 	public static boolean USE_UUIDS;
 	// Mailbox Settings
 	public static boolean ENABLE_MAILBOXES;
 	public static boolean REQUIRE_NEARBY_MAILBOX;
-	public static HashMap<String, Integer> MAILBOX_LIMITS;
+	public static Map<String, Integer> MAILBOX_LIMITS;
 	// Trading Post Settings
 	public static boolean ENABLE_TRADINGPOST;
 	public static boolean REQUIRE_SAME_MAILBOX;
@@ -101,12 +102,22 @@ public class Config {
 				if(!mtConfigSection.getBoolean(mailTypeNode, true)) DISABLED_MAILTYPES.add(mailTypeNode);
 			}
 		}
-		System.out.println(DISABLED_MAILTYPES);
 		USE_UUIDS = config.getBoolean("use-uuids", true);
 		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
 		/* Load language options */
 		DATE_FORMAT = config.getString("date-format", "MMM d, yyyy h:mm a");
 		LOCALE_TAG = config.getString("locale-tag", "en-US");
+		/* User Settings */
+		INBOX_SIZES = new HashMap<String, Integer>();
+		ConfigurationSection inboxLimitsCS = config.getConfigurationSection("inbox-limits");
+		if(inboxLimitsCS != null) {
+			for(String permGroup : inboxLimitsCS.getKeys(false)) {
+				INBOX_SIZES.put(permGroup, inboxLimitsCS.getInt(permGroup, 50));
+			}
+		}
+		if(!INBOX_SIZES.containsKey("default")) {
+			INBOX_SIZES.put("default", 50);
+		}
 	}
 
 	public static boolean mailTypeIsDisabled(MailType mailType) {
@@ -122,6 +133,21 @@ public class Config {
 			if(type.equalsIgnoreCase(name)) return true;
 		}
 		return false;
+	}
+
+	@SuppressWarnings("deprecation")
+	public static int getMaxInboxSizeForPlayer(String playerName) {
+		if(PostalService.hasPermPlugin) {
+			String primaryGroup = PostalService.permission.getPrimaryGroup("", playerName);
+			if (primaryGroup != null) {
+				if (INBOX_SIZES.containsKey(primaryGroup)) {
+					return INBOX_SIZES.get(primaryGroup);
+				}
+			} else {
+				if(ENABLE_DEBUG) PostalService.getPlugin().getLogger().warning("Warning! Could not get the primary group for player: " + playerName);
+			}
+		}
+		return INBOX_SIZES.get("default");
 	}
 
 	public static WorldGroup getCurrentWorldGroupForUser(User user) {

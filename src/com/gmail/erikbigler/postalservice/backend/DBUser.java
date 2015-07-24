@@ -202,8 +202,45 @@ public class DBUser implements User {
 
 	@Override
 	public boolean inboxIsFull(WorldGroup worldGroup) {
+		return (getBoxSizeFromType(BoxType.INBOX, worldGroup) >= Config.getMaxInboxSizeForPlayer(playerName));
+	}
 
-		return false;
+	@Override
+	public int getBoxSizeFromType(BoxType type, WorldGroup worldGroup) {
+		try {
+			StringBuilder query = new StringBuilder();
+			if (type == BoxType.INBOX) {
+				query.append("SELECT count(Received.ReceivedID) as Size FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
+			} else {
+				query.append("SELECT count(Sent.MailID) as Size FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
+			}
+			if (Config.ENABLE_WORLD_GROUPS) {
+				if (Config.containsMailTypesThatIgnoreWorldGroups()) {
+					query.append(" AND (Sent.WorldGroup = \"" + worldGroup.getName() + "\" OR (");
+					int remaining = Config.getMailTypesThatIgnoreWorldGroups().size();
+					for (String mailType : Config.getMailTypesThatIgnoreWorldGroups()) {
+						query.append("MailType = \"" + mailType.toLowerCase() + "\"");
+						remaining--;
+						if (remaining > 0) {
+							query.append(" OR ");
+						}
+					}
+					query.append("))");
+				} else {
+					query.append(" AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
+				}
+			}
+
+			ResultSet rs = PostalService.getPSDatabase().querySQL(query.toString());
+			if(rs.next()) {
+				return rs.getInt("Size");
+			}
+
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
+
+		return 0;
 	}
 
 	@Override

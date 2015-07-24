@@ -78,8 +78,8 @@ inbox-limits:
     default: 50
 #    permission-group: 75
 
-# Set this to true to have players be unable to receive mail if their inbox is full.
-# If set to false, once full, old mail will instead make way for new mail automatically. 
+# Set this to true to make players be unable to receive mail if their inbox is full.
+# If set to false, old mail will instead make way for new mail automatically. 
 # Old mail is never deleted in this case, however, and will reappear if the player 
 # deletes other mail to make room.
 hard-enforce-inbox-limit: false
