@@ -29,7 +29,7 @@ public class MailboxManager {
 	private static MailboxManager instance = null;
 
 	public static MailboxManager getInstance() {
-		if (instance == null) {
+		if(instance == null) {
 			instance = new MailboxManager();
 		}
 		return instance;
@@ -46,60 +46,56 @@ public class MailboxManager {
 
 	public void loadMailboxes() {
 		this.mailboxes.clear();
-		if (Config.USE_DATABASE) {
+		if(Config.USE_DATABASE) {
 			try {
 				ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT * FROM ps_mailboxes");
-				while (rs.next()) {
+				while(rs.next()) {
 					int id = rs.getInt("MailboxID");
 					String location = rs.getString("Location");
 					String playerIdentifier = rs.getString("PlayerID");
-					if (location != null || playerIdentifier != null) {
+					if(location != null || playerIdentifier != null) {
 						mailboxes.add(new Mailbox(UserFactory.getUserFromIdentifier(playerIdentifier), Utils.stringToLocation(playerIdentifier), id));
 					}
 				}
 			} catch (Exception e) {
-				if (Config.ENABLE_DEBUG)
+				if(Config.ENABLE_DEBUG)
 					e.printStackTrace();
 			}
 		}
 	}
 
 	public Mailbox getMailbox(Location loc) {
-		for (Mailbox mailbox : mailboxes) {
-			if (mailbox.getLocation().equals(loc))
+		for(Mailbox mailbox : mailboxes) {
+			if(mailbox.getLocation().equals(loc))
 				return mailbox;
 		}
 		return null;
 	}
 
-	public void addMailboxAtLoc(Location location, Player player)
-			throws MailboxException {
-		if (location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
+	public void addMailboxAtLoc(Location location, Player player) throws MailboxException {
+		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
-		} else
-			if (!PermissionHandler.userCanCreateMailboxAtLoc(location, player)) {
+		} else if(!PermissionHandler.playerCanCreateMailboxAtLoc(location, player)) {
 			throw new MailboxException(Reason.NO_PERMISSION);
-		} else if (this.locationHasMailbox(location)) {
+		} else if(this.locationHasMailbox(location)) {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
 		} else {
 			// savemailbox
 		}
 	}
 
-	public void removeMailboxAtLoc(Location location, Player player)
-			throws MailboxException {
+	public void removeMailboxAtLoc(Location location, Player player) throws MailboxException {
 
 		Mailbox mb = this.getMailbox(location);
 		/*
 		 * if(mythian.getMailboxLocs().size() >= getMaxMailboxCount(owner)) {
 		 * throw new MailException(Reason.MAX_MAILBOXES_REACHED); }
 		 */
-		if (mb == null) {
+		if(mb == null) {
 			throw new MailboxException(Reason.DOESNT_EXIST);
-		} else
-			if (location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
+		} else if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
-		} else if (!mb.getOwner().getPlayerName().equals(player.getName())) {
+		} else if(!mb.getOwner().getPlayerName().equals(player.getName())) {
 			throw new MailboxException(Reason.NOT_OWNER);
 		} else {
 			// delete mailbox
@@ -111,8 +107,8 @@ public class MailboxManager {
 	}
 
 	public boolean mailboxIsNearby(Location location, int distance) {
-		for (Mailbox mailbox : mailboxes) {
-			if (location.distance(mailbox.getLocation()) < distance)
+		for(Mailbox mailbox : mailboxes) {
+			if(location.distance(mailbox.getLocation()) < distance)
 				return true;
 		}
 		return false;
