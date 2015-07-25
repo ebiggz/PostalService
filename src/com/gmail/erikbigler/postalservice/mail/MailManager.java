@@ -3,12 +3,16 @@ package com.gmail.erikbigler.postalservice.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.entity.Player;
+
+import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.mail.Mail.MailStatus;
 
 public class MailManager {
 
 	private List<MailType> mailTypes = new ArrayList<MailType>();
+	public List<Player> willDropBook = new ArrayList<Player>();
 
 	protected MailManager() { /* exists to block instantiation */
 	}
@@ -16,17 +20,18 @@ public class MailManager {
 	private static MailManager instance = null;
 
 	public static MailManager getInstance() {
-		if (instance == null) {
+		if(instance == null) {
 			instance = new MailManager();
 		}
 		return instance;
 	}
 
 	public void registerMailType(MailType newType) {
-		if (Config.mailTypeIsDisabled(newType)) return;
-		for (MailType mailType : mailTypes) {
-			if (mailType.getDisplayName().equalsIgnoreCase(newType.getDisplayName()) || mailType.getIdentifier().equalsIgnoreCase(newType.getIdentifier())) {
-				// TODO log warning error
+		if(Config.mailTypeIsDisabled(newType))
+			return;
+		for(MailType mailType : mailTypes) {
+			if(mailType.getDisplayName().equalsIgnoreCase(newType.getDisplayName()) || mailType.getIdentifier().equalsIgnoreCase(newType.getIdentifier())) {
+				PostalService.getPlugin().getLogger().warning("A plugin attempted to register a mail type named " + newType.getDisplayName() + " with the identifier " + newType.getIdentifier() + " but a mail type with that name or identifier already exists!");
 				return;
 			}
 		}
@@ -39,7 +44,7 @@ public class MailManager {
 
 	public String[] getMailTypeNames() {
 		String[] mailTypeNames = new String[mailTypes.size()];
-		for (int i = 0; i < mailTypes.size(); i++) {
+		for(int i = 0; i < mailTypes.size(); i++) {
 			mailTypeNames[i] = mailTypes.get(i).getDisplayName();
 		}
 		return mailTypeNames;
@@ -53,23 +58,23 @@ public class MailManager {
 
 	public String[] getMailTypeIdentifiers() {
 		String[] mailTypeNames = new String[mailTypes.size()];
-		for (int i = 0; i < mailTypes.size(); i++) {
+		for(int i = 0; i < mailTypes.size(); i++) {
 			mailTypeNames[i] = mailTypes.get(i).getIdentifier();
 		}
 		return mailTypeNames;
 	}
 
 	public MailType getMailTypeByName(String name) {
-		for (MailType mailType : mailTypes) {
-			if (mailType.getDisplayName().equalsIgnoreCase(name))
+		for(MailType mailType : mailTypes) {
+			if(mailType.getDisplayName().equalsIgnoreCase(name))
 				return mailType.clone();
 		}
 		return null;
 	}
 
 	public MailType getMailTypeByIdentifier(String identifier) {
-		for (MailType mailType : mailTypes) {
-			if (mailType.getIdentifier().equalsIgnoreCase(identifier))
+		for(MailType mailType : mailTypes) {
+			if(mailType.getIdentifier().equalsIgnoreCase(identifier))
 				return mailType.clone();
 		}
 		return null;

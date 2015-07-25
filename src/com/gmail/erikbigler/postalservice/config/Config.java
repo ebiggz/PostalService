@@ -12,6 +12,7 @@ import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 
 import com.gmail.erikbigler.postalservice.PostalService;
@@ -51,18 +52,18 @@ public class Config {
 	public static void loadFile() {
 		loadConfig();
 		loadOptions();
-		if (CONFIG_VERSION != 1.0) {
+		if(CONFIG_VERSION != 1.0) {
 			// out of date config version
 		}
 	}
 
 	private static void loadConfig() {
-		PostalService plugin = PostalService.getPlugin();
+		Plugin plugin = PostalService.getPlugin();
 		PluginManager pm = plugin.getServer().getPluginManager();
 		String pluginFolder = plugin.getDataFolder().getAbsolutePath();
 		(new File(pluginFolder)).mkdirs();
 		File configFile = new File(pluginFolder, "config.yml");
-		if (!configFile.exists()) {
+		if(!configFile.exists()) {
 			PostalService.getPlugin().saveResource("config.yml", true);
 		}
 		try {
@@ -79,17 +80,17 @@ public class Config {
 		ENABLE_WORLD_GROUPS = config.getBoolean("enable-world-groups", false);
 		WORLD_GROUPS = new ArrayList<WorldGroup>();
 		ConfigurationSection wgConfigSec = config.getConfigurationSection("world-groups");
-		if (wgConfigSec != null) {
-			for (String worldGroupName : wgConfigSec.getKeys(false)) {
+		if(wgConfigSec != null) {
+			for(String worldGroupName : wgConfigSec.getKeys(false)) {
 				List<String> worldNames = wgConfigSec.getStringList(worldGroupName);
-				if (worldNames.isEmpty()) {
+				if(worldNames.isEmpty()) {
 					// log error, empty world group
 					continue;
 				}
 				WORLD_GROUPS.add(new WorldGroup(worldGroupName, worldNames));
 			}
 		}
-		if (ENABLE_WORLD_GROUPS && WORLD_GROUPS.isEmpty()) {
+		if(ENABLE_WORLD_GROUPS && WORLD_GROUPS.isEmpty()) {
 			// log error, no world groups but feature is enabled.
 			ENABLE_WORLD_GROUPS = false;
 		}
@@ -97,9 +98,10 @@ public class Config {
 		/* Load general options */
 		DISABLED_MAILTYPES = new ArrayList<String>();
 		ConfigurationSection mtConfigSection = config.getConfigurationSection("enabled-mail-types");
-		if (mtConfigSection != null) {
-			for (String mailTypeNode : mtConfigSection.getKeys(false)) {
-				if(!mtConfigSection.getBoolean(mailTypeNode, true)) DISABLED_MAILTYPES.add(mailTypeNode);
+		if(mtConfigSection != null) {
+			for(String mailTypeNode : mtConfigSection.getKeys(false)) {
+				if(!mtConfigSection.getBoolean(mailTypeNode, true))
+					DISABLED_MAILTYPES.add(mailTypeNode);
 			}
 		}
 		USE_UUIDS = config.getBoolean("use-uuids", true);
@@ -109,7 +111,7 @@ public class Config {
 		LOCALE_TAG = config.getString("locale-tag", "en-US");
 		/* User Settings */
 		INBOX_SIZES = new HashMap<String, Integer>();
-		ConfigurationSection inboxLimitsCS = config.getConfigurationSection("inbox-limits");
+		ConfigurationSection inboxLimitsCS = config.getConfigurationSection("inbox-sizes");
 		if(inboxLimitsCS != null) {
 			for(String permGroup : inboxLimitsCS.getKeys(false)) {
 				INBOX_SIZES.put(permGroup, inboxLimitsCS.getInt(permGroup, 50));
@@ -117,6 +119,16 @@ public class Config {
 		}
 		if(!INBOX_SIZES.containsKey("default")) {
 			INBOX_SIZES.put("default", 50);
+		}
+		MAILBOX_LIMITS = new HashMap<String, Integer>();
+		ConfigurationSection mailboxLimitsCS = config.getConfigurationSection("mailbox-limits");
+		if(mailboxLimitsCS != null) {
+			for(String permGroup : mailboxLimitsCS.getKeys(false)) {
+				MAILBOX_LIMITS.put(permGroup, mailboxLimitsCS.getInt(permGroup, 5));
+			}
+		}
+		if(!MAILBOX_LIMITS.containsKey("default")) {
+			MAILBOX_LIMITS.put("default", 5);
 		}
 	}
 
@@ -130,7 +142,8 @@ public class Config {
 
 	public static boolean mailTypeIsDisabled(String name) {
 		for(String type : DISABLED_MAILTYPES) {
-			if(type.equalsIgnoreCase(name)) return true;
+			if(type.equalsIgnoreCase(name))
+				return true;
 		}
 		return false;
 	}
@@ -139,15 +152,32 @@ public class Config {
 	public static int getMaxInboxSizeForPlayer(String playerName) {
 		if(PostalService.hasPermPlugin) {
 			String primaryGroup = PostalService.permission.getPrimaryGroup("", playerName);
-			if (primaryGroup != null) {
-				if (INBOX_SIZES.containsKey(primaryGroup)) {
+			if(primaryGroup != null) {
+				if(INBOX_SIZES.containsKey(primaryGroup)) {
 					return INBOX_SIZES.get(primaryGroup);
 				}
 			} else {
-				if(ENABLE_DEBUG) PostalService.getPlugin().getLogger().warning("Warning! Could not get the primary group for player: " + playerName);
+				if(ENABLE_DEBUG)
+					PostalService.getPlugin().getLogger().warning("Could not get the primary group for player: " + playerName);
 			}
 		}
 		return INBOX_SIZES.get("default");
+	}
+
+	@SuppressWarnings("deprecation")
+	public static int getMailboxLimitForPlayer(String playerName) {
+		if(PostalService.hasPermPlugin) {
+			String primaryGroup = PostalService.permission.getPrimaryGroup("", playerName);
+			if(primaryGroup != null) {
+				if(MAILBOX_LIMITS.containsKey(primaryGroup)) {
+					return MAILBOX_LIMITS.get(primaryGroup);
+				}
+			} else {
+				if(ENABLE_DEBUG)
+					PostalService.getPlugin().getLogger().warning("Could not get the primary group for player: " + playerName);
+			}
+		}
+		return MAILBOX_LIMITS.get("default");
 	}
 
 	public static WorldGroup getCurrentWorldGroupForUser(User user) {
@@ -159,9 +189,10 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(String worldName) {
-		if(!Config.ENABLE_WORLD_GROUPS) return new WorldGroup("None", new ArrayList<String>());
-		for (WorldGroup worldGroup : WORLD_GROUPS) {
-			if (worldGroup.hasWorld(worldName))
+		if(!Config.ENABLE_WORLD_GROUPS)
+			return new WorldGroup("None", new ArrayList<String>());
+		for(WorldGroup worldGroup : WORLD_GROUPS) {
+			if(worldGroup.hasWorld(worldName))
 				return worldGroup;
 		}
 		return new WorldGroup("None", new ArrayList<String>());
@@ -172,7 +203,8 @@ public class Config {
 	}
 
 	public static boolean containsMailTypesThatIgnoreWorldGroups() {
-		if(MAILTYPES_IGNORE_WORLD_GROUPS == null || MAILTYPES_IGNORE_WORLD_GROUPS.isEmpty()) return false;
+		if(MAILTYPES_IGNORE_WORLD_GROUPS == null || MAILTYPES_IGNORE_WORLD_GROUPS.isEmpty())
+			return false;
 		return true;
 	}
 

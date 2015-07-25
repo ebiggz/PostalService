@@ -34,15 +34,24 @@ use-uuids: true
 
 debug-mode: false
 
+
+
+
 ##################
 # World Settings #
+
 ##################
 
+
+
 ## World groups allow you to segregate mail. This is useful if you have worlds with different 
+
 # inventories and you don't want players sending things across universes.
 # For example, mail sent from a world in a "Survival Universe" would not be accessible from a 
+
 # world in a "PvP Universe".
 # You can define as many groups as you like.
+
 
 enable-world-groups: false
 
@@ -50,39 +59,58 @@ world-groups:
 #    Survival Universe:
 #      - survival_main
 #      - survival_main_nether
+
 #    Some Other Group:
+
 #      - another_world
 
 ## Here you can set certain mail types to ignore world groups and be visible in all worlds.
 # For example, you may want Letters to ignore world groups so players can 
+
 # communicate across universes but want Packages to stay within world groups so items can't be
+
 # shared.
 mail-types-that-ignore-world-groups:
+
 #   - letter
   
-## Worlds listed in this blacklist prevent players from running any PostalService commands.
+## Worlds listed in this blacklist prevent players from running any PostalService 
+# commands or opening mailboxes.
 # This includes the ability to check mail, send mail, create mailboxes, etc.
 world-blacklist:
   - worldname
+
+
 
 #################
 # User Settings #
 #################
 
 # This is the max inbox size per permission group.
+
 # If a permission group is undefined, the default is used.
+
 # Be mindful in how high you set these limits, especially on larger servers.
+
 # This feature requires Vault. If Vault is not present, the default is used
+
 # for everyone.
-inbox-limits:
+inbox-sizes:
     default: 50
 #    permission-group: 75
 
+
+
 # Set this to true to make players be unable to receive mail if their inbox is full.
+
 # If set to false, old mail will instead make way for new mail automatically. 
+
 # Old mail is never deleted in this case, however, and will reappear if the player 
+
 # deletes other mail to make room.
+
 hard-enforce-inbox-limit: false
+
 
 
 # Enable or disable when the unread mail notification is shown to players.
@@ -99,9 +127,10 @@ enable-mailboxes: true
 
 require-nearby-mailbox: true
 
-mailbox-limit:
+mailbox-limits:
     default: 5
 #    permission-group: 10
+
 
 
 #########################
@@ -115,11 +144,17 @@ require-same-mailbox: false
 allow-cross-world-trades: false
 
 
+
+
+
 #########################
 # Localization Settings #
 #########################
 
+
+
 date-format: "MMM d, yyyy h:mm a"
+
 
 locale-tag: "en-US"
 

@@ -23,8 +23,8 @@ import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
-import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 
 public class MainMenuGUI implements GUI {
 
@@ -84,7 +84,7 @@ public class MainMenuGUI implements GUI {
 								String to = split[1].trim();
 								String message = pageData.replace(matcher.group(), "");
 								whoClicked.performCommand(Phrases.COMMAND_MAIL.toString() + " " + Phrases.MAILTYPE_LETTER.toString() + " " + Phrases.COMMAND_ARG_TO + ":" + to + " " + Phrases.COMMAND_ARG_MESSAGE.toString() + ":" + message.trim());
-								MailboxManager.getInstance().willDropBook.add(whoClicked);
+								MailManager.getInstance().willDropBook.add(whoClicked);
 								whoClicked.closeInventory();
 								break;
 							}

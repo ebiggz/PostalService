@@ -1,6 +1,5 @@
 package com.gmail.erikbigler.postalservice.backend.database;
 
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -11,52 +10,41 @@ import org.bukkit.plugin.Plugin;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 
-/**
- * Abstract Database class, serves as a base for any connection method (MySQL,
+/** Abstract Database class, serves as a base for any connection method (MySQL,
  * SQLite, etc.)
  *
  * @author -_Husky_-
- * @author tips48
- */
+ * @author tips48 */
 public abstract class Database {
 
 	protected Connection connection;
 
-	/**
-	 * Plugin instance, use for plugin.getDataFolder()
-	 */
+	/** Plugin instance, use for plugin.getDataFolder() */
 	protected Plugin plugin;
 
-	/**
-	 * Creates a new Database
+	/** Creates a new Database
 	 *
 	 * @param plugin
-	 *            Plugin instance
-	 */
+	 *            Plugin instance */
 	protected Database(Plugin plugin) {
 		this.plugin = plugin;
 		this.connection = null;
 	}
 
-	/**
-	 * Opens a connection with the database
+	/** Opens a connection with the database
 	 *
 	 * @return Opened connection
 	 * @throws SQLException
 	 *             if the connection can not be opened
 	 * @throws ClassNotFoundException
-	 *             if the driver cannot be found
-	 */
-	public abstract Connection openConnection() throws SQLException,
-	ClassNotFoundException;
+	 *             if the driver cannot be found */
+	public abstract Connection openConnection() throws SQLException, ClassNotFoundException;
 
-	/**
-	 * Checks if a connection is open with the database
+	/** Checks if a connection is open with the database
 	 *
 	 * @return true if the connection is open
 	 * @throws SQLException
-	 *             if the connection cannot be checked
-	 */
+	 *             if the connection cannot be checked */
 	public boolean checkConnection() throws SQLException {
 		if(connection != null && !connection.isClosed()) {
 			createTables();
@@ -73,7 +61,7 @@ public abstract class Database {
 			this.createTable("ps_mail", "MailID BIGINT AUTO_INCREMENT KEY, MailType varchar(255) NOT NULL, Message text, Attachments longtext, Timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0, WorldGroup varchar(255)");
 			this.createTable("ps_received", "ReceivedID BIGINT AUTO_INCREMENT KEY, RecipientID varchar(255) NOT NULL, MailID INT NOT NULL, Status INT DEFAULT 0, Deleted INT DEFAULT 0");
 			this.createTable("ps_dropboxes", "DropboxID INT AUTO_INCREMENT KEY, Contents LONGBLOB, PlayerID varchar(255) NOT NULL, WorldGroup varchar(255) NOT NULL");
-			this.createTable("ps_mailboxes", "MailboxID INT AUTO_INCREMENT KEY, Location varchar(255) NOT NULL, PlayerID varchar(255) NOT NULL");
+			this.createTable("ps_mailboxes", "Location varchar(255) NOT NULL KEY, PlayerID varchar(255) NOT NULL");
 		} catch (Exception e) {
 			PostalService.getPlugin().getLogger().severe("Unable to create tables in database, plugin may not function as intended!");
 		}
@@ -82,39 +70,33 @@ public abstract class Database {
 	public void createTable(String name, String columns) throws SQLException {
 		DatabaseMetaData dbm = connection.getMetaData();
 		ResultSet tables = dbm.getTables(null, null, name, null);
-		if (!tables.next()) {
+		if(!tables.next()) {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE " + name + "(" + columns + ")");
 		}
 	}
 
-	/**
-	 * Gets the connection with the database
+	/** Gets the connection with the database
 	 *
-	 * @return Connection with the database, null if none
-	 */
+	 * @return Connection with the database, null if none */
 	public Connection getConnection() {
 		return connection;
 	}
 
-	/**
-	 * Closes the connection with the database
+	/** Closes the connection with the database
 	 *
 	 * @return true if successful
 	 * @throws SQLException
-	 *             if the connection cannot be closed
-	 */
+	 *             if the connection cannot be closed */
 	public boolean closeConnection() throws SQLException {
-		if (connection == null) {
+		if(connection == null) {
 			return false;
 		}
 		connection.close();
 		return true;
 	}
 
-
-	/**
-	 * Executes a SQL Query<br>
+	/** Executes a SQL Query<br>
 	 *
 	 * If the connection is closed, it will be opened
 	 *
@@ -124,11 +106,10 @@ public abstract class Database {
 	 * @throws SQLException
 	 *             If the query cannot be executed
 	 * @throws ClassNotFoundException
-	 *             If the driver cannot be found; see {@link #openConnection()}
-	 */
-	public ResultSet querySQL(String query) throws SQLException,
-	ClassNotFoundException {
-		if (!checkConnection()) {
+	 *             If the driver cannot be found; see
+	 *             {@link #openConnection()} */
+	public ResultSet querySQL(String query) throws SQLException, ClassNotFoundException {
+		if(!checkConnection()) {
 			openConnection();
 		}
 
@@ -139,8 +120,7 @@ public abstract class Database {
 		return result;
 	}
 
-	/**
-	 * Executes an Update SQL Query<br>
+	/** Executes an Update SQL Query<br>
 	 * See {@link java.sql.Statement#executeUpdate(String)}<br>
 	 * If the connection is closed, it will be opened
 	 *
@@ -150,11 +130,10 @@ public abstract class Database {
 	 * @throws SQLException
 	 *             If the query cannot be executed
 	 * @throws ClassNotFoundException
-	 *             If the driver cannot be found; see {@link #openConnection()}
-	 */
-	public int updateSQL(String query) throws SQLException,
-	ClassNotFoundException {
-		if (!checkConnection()) {
+	 *             If the driver cannot be found; see
+	 *             {@link #openConnection()} */
+	public int updateSQL(String query) throws SQLException, ClassNotFoundException {
+		if(!checkConnection()) {
 			openConnection();
 		}
 

@@ -37,6 +37,10 @@ public class Language {
 		ERROR_INVALID_NUMBER("&c%That is not a valid number!"),
 		COMMAND_MAIL("mail"),
 		COMMAND_MAILBOX("mailbox"),
+		COMMAND_ARG_SET("set"),
+		COMMAND_ARG_REMOVE("remove"),
+		COMMAND_ARG_REMOVEALL("removeall"),
+		COMMAND_ARG_FIND("find"),
 		COMMAND_ARG_TO("to"),
 		COMMAND_ARG_MESSAGE("message"),
 		COMMAND_ARG_AMOUNT("amount"),
@@ -104,8 +108,8 @@ public class Language {
 
 	private static void writeDefaults() {
 		Phrases[] arrayOfPhrases = Phrases.values();
-		for (Phrases phrase : arrayOfPhrases) {
-			if (!getCustomConfig().isSet(phrase.name())) {
+		for(Phrases phrase : arrayOfPhrases) {
+			if(!getCustomConfig().isSet(phrase.name())) {
 				getCustomConfig().set(phrase.name(), phrase.text);
 			}
 		}
@@ -114,27 +118,27 @@ public class Language {
 
 	private static void loadValues() {
 		Phrases[] arrayOfPhrases = Phrases.values();
-		for (Phrases phrase : arrayOfPhrases) {
+		for(Phrases phrase : arrayOfPhrases) {
 			phrase.text = ChatColor.translateAlternateColorCodes('&', getCustomConfig().getString(phrase.name(), phrase.text));
 		}
 	}
 
 	private static void reloadCustomConfig() {
-		if (customConfigFile == null) {
+		if(customConfigFile == null) {
 			customConfigFile = new File(PostalService.getPlugin().getDataFolder(), "localizations.yml");
 		}
 		customConfig = YamlConfiguration.loadConfiguration(customConfigFile);
 	}
 
 	private static FileConfiguration getCustomConfig() {
-		if (customConfig == null) {
+		if(customConfig == null) {
 			reloadCustomConfig();
 		}
 		return customConfig;
 	}
 
 	private static void saveCustomConfig() {
-		if ((customConfig == null) || (customConfigFile == null)) {
+		if((customConfig == null) || (customConfigFile == null)) {
 			return;
 		}
 		try {

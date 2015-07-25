@@ -18,13 +18,17 @@ import com.gmail.erikbigler.postalservice.backend.database.Database;
 import com.gmail.erikbigler.postalservice.backend.database.MySQL;
 import com.gmail.erikbigler.postalservice.commands.MailCommands;
 import com.gmail.erikbigler.postalservice.commands.MailTabCompleter;
+import com.gmail.erikbigler.postalservice.commands.MailboxCommands;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.listeners.MailboxListener;
+import com.gmail.erikbigler.postalservice.listeners.PlayerListener;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Experience;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
+import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
@@ -33,7 +37,7 @@ import net.milkbowl.vault.permission.Permission;
 
 public class PostalService extends JavaPlugin {
 
-	private static PostalService plugin;
+	private static Plugin plugin;
 	private static Database database;
 	private double serverVersion;
 	public static Economy economy = null;
@@ -42,9 +46,7 @@ public class PostalService extends JavaPlugin {
 	public static boolean hasPermPlugin = false;
 	public static boolean hasEconPlugin = false;
 
-	/**
-	 * Called when PostalService is being enabled
-	 */
+	/** Called when PostalService is being enabled */
 	@Override
 	public void onEnable() {
 
@@ -56,11 +58,11 @@ public class PostalService extends JavaPlugin {
 		 */
 		String vString = getVersion().replace("v", "");
 		serverVersion = 0;
-		if (!vString.isEmpty()) {
+		if(!vString.isEmpty()) {
 			String[] array = vString.split("_");
 			serverVersion = Double.parseDouble(array[0] + "." + array[1]);
 		}
-		if (serverVersion <= 1.6) {
+		if(serverVersion <= 1.6) {
 			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
@@ -72,11 +74,12 @@ public class PostalService extends JavaPlugin {
 			vaultEnabled = true;
 		}
 
-
 		/*
 		 * Register listeners
 		 */
 		Bukkit.getPluginManager().registerEvents(new GUIListener(), this);
+		Bukkit.getPluginManager().registerEvents(new MailboxListener(), this);
+		Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
 
 		/*
 		 * Load configs
@@ -102,10 +105,14 @@ public class PostalService extends JavaPlugin {
 		getCommand("mail").setTabCompleter(new MailTabCompleter());
 		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
 
+		this.registerCommand("mailbox", Phrases.COMMAND_MAILBOX.toString());
+		getCommand("mailbox").setExecutor(new MailboxCommands());
+		getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
+
 		/*
 		 * Connect to database
 		 */
-		if (!loadDatabase()) {
+		if(!loadDatabase()) {
 			getLogger().severe("Unable to connect to the database! Please check your database settings and try again.");
 			Bukkit.getPluginManager().disablePlugin(this);
 			return;
@@ -113,14 +120,14 @@ public class PostalService extends JavaPlugin {
 			getLogger().info("Sucessfully connected to the database!");
 		}
 
+		MailboxManager.getInstance().loadMailboxes();
+
 		//Updater updater = new Updater(this, id, this.getFile(), Updater.UpdateType.DEFAULT, false);
 
 		getLogger().info("Enabled!");
 	}
 
-	/**
-	 * Called when PostalService is being disabled
-	 */
+	/** Called when PostalService is being disabled */
 	@Override
 	public void onDisable() {
 		//Make sure all open GUI inventories are closed when disabled. Otherwise, players would be able to access items during a reload.
@@ -129,8 +136,8 @@ public class PostalService extends JavaPlugin {
 	}
 
 	private boolean setupVault() {
-		Plugin vault =  getServer().getPluginManager().getPlugin("Vault");
-		if (vault != null) {
+		Plugin vault = getServer().getPluginManager().getPlugin("Vault");
+		if(vault != null) {
 			getLogger().info("Hooked into Vault!");
 			if(!setupEconomy()) {
 				getLogger().warning("No plugin to handle currency, Payment mail type will be disabled!");
@@ -147,7 +154,7 @@ public class PostalService extends JavaPlugin {
 
 	private boolean setupEconomy() {
 		RegisteredServiceProvider<Economy> economyProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.economy.Economy.class);
-		if (economyProvider != null) {
+		if(economyProvider != null) {
 			hasEconPlugin = true;
 			economy = economyProvider.getProvider();
 		}
@@ -156,7 +163,7 @@ public class PostalService extends JavaPlugin {
 
 	private boolean setupPermissions() {
 		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
-		if (permissionProvider != null) {
+		if(permissionProvider != null) {
 			hasPermPlugin = true;
 			permission = permissionProvider.getProvider();
 		}
@@ -170,50 +177,44 @@ public class PostalService extends JavaPlugin {
 			database.openConnection();
 			return database.checkConnection();
 		} catch (Exception e) {
-			if (Config.ENABLE_DEBUG)
+			if(Config.ENABLE_DEBUG)
 				e.printStackTrace();
 			return false;
 		}
 	}
 
-	/**
-	 * @return the class that handles MailTypes
-	 */
+	/** @return the class that handles MailTypes */
 	public static MailManager getMailManager() {
 		return MailManager.getInstance();
 	}
 
-	/**
-	 * @return a link to the main class instance
-	 */
-	public static PostalService getPlugin() {
+	/** @return the class that handles Mailboxes */
+	public static MailboxManager getMailboxManager() {
+		return MailboxManager.getInstance();
+	}
 
+	/** @return a link to the main class instance */
+	public static Plugin getPlugin() {
 		return plugin;
 	}
 
-	/**
-	 * @return the database connection
-	 */
+	/** @return the database connection */
 	public static Database getPSDatabase() {
 		return database;
 	}
 
-	/**
-	 * Determines the version string used by Craftbukkit's safeguard (e.g.
+	/** Determines the version string used by Craftbukkit's safeguard (e.g.
 	 * 1_7_R4).
 	 *
-	 * @return the version string used by Craftbukkit's safeguard
-	 */
+	 * @return the version string used by Craftbukkit's safeguard */
 	private static String getVersion() {
 		String[] array = Bukkit.getServer().getClass().getPackage().getName().replace(".", ",").split(",");
-		if (array.length == 4)
+		if(array.length == 4)
 			return array[3] + ".";
 		return "";
 	}
 
-	/**
-	 * Functions for registering command aliases in code.
-	 */
+	/** Functions for registering command aliases in code. */
 
 	private void registerCommand(String... aliases) {
 		PluginCommand command = getCommand(aliases[0], this);
@@ -228,7 +229,8 @@ public class PostalService extends JavaPlugin {
 			c.setAccessible(true);
 			command = c.newInstance(name, plugin);
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG) e.printStackTrace();
+			if(Config.ENABLE_DEBUG)
+				e.printStackTrace();
 		}
 		return command;
 	}
@@ -236,14 +238,15 @@ public class PostalService extends JavaPlugin {
 	private static CommandMap getCommandMap() {
 		CommandMap commandMap = null;
 		try {
-			if (Bukkit.getPluginManager() instanceof SimplePluginManager) {
+			if(Bukkit.getPluginManager() instanceof SimplePluginManager) {
 				Field f = SimplePluginManager.class.getDeclaredField("commandMap");
 				f.setAccessible(true);
 
 				commandMap = (CommandMap) f.get(Bukkit.getPluginManager());
 			}
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG) e.printStackTrace();
+			if(Config.ENABLE_DEBUG)
+				e.printStackTrace();
 		}
 		return commandMap;
 	}

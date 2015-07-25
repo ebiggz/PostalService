@@ -6,34 +6,21 @@ import com.gmail.erikbigler.postalservice.backend.User;
 
 public class Mailbox {
 
-	private User owner;
 	private Location location;
-	private int mailboxID;
+	private User owner;
 
-	public Mailbox(User owner, Location location, int mailboxID) {
-		this.owner = owner;
+	public Mailbox(Location location, User owner) {
 		this.location = location;
-		this.mailboxID = mailboxID;
+		this.owner = owner;
 	}
 
-	/**
-	 * @return the mailbox's owner
-	 */
-	public User getOwner() {
-		return owner;
-	}
-
-	/**
-	 * @return the location of this mailbox
-	 */
+	/** @return the location of this mailbox */
 	public Location getLocation() {
 		return location;
 	}
 
-	/**
-	 * @return the id used in the database
-	 */
-	public int getMailboxID() {
-		return mailboxID;
+	/** @return the mailbox's owner */
+	public User getOwner() {
+		return owner;
 	}
 }

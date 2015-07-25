@@ -10,20 +10,21 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 
-import com.gmail.erikbigler.postalservice.backend.User;
-import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.WorldGroup;
 
 public class PermissionHandler {
 
-	enum CommandPerm {
-		MAIL, MAIL_CHECK, MAIL_CHECKOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, RELOAD
+	public enum Perm {
+		MAIL, MAIL_CHECK, MAIL_CHECKOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, RELOAD, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_NEARBY_MAILBOX
 	}
 
-	public static boolean playerHasPermission(CommandPerm perm, CommandSender sender) {
+	public static boolean playerHasPermission(Perm perm, CommandSender sender) {
 		return playerHasPermission(perm, (Player) sender);
 	}
 
-	public static boolean playerHasPermission(CommandPerm perm, Player player) {
+	public static boolean playerHasPermission(Perm perm, Player player) {
 		switch(perm) {
 		case HELP:
 			return player.hasPermission("postalservice.help");
@@ -46,12 +47,15 @@ public class PermissionHandler {
 		case MAIL_CHECK:
 			return player.hasPermission("postalservice.mail.check");
 		case MAIL_CHECKOTHER:
-			return player.hasPermission("postalservice.mail.check.other");
+			return player.hasPermission("postalservice.mail.checkother");
 		case RELOAD:
 			return player.hasPermission("postalservice.reload");
-		default:
-			return false;
+		case OVERRIDE_NEARBY_MAILBOX:
+			return player.hasPermission("postalservice.overridenearbymailbox");
+		case OVERRIDE_WORLD_BLACKLIST:
+			return player.hasPermission("postalservice.overrideworldblacklist");
 		}
+		return false;
 	}
 
 	public static boolean playerCanMailType(String typeName, CommandSender sender) {
@@ -62,15 +66,8 @@ public class PermissionHandler {
 		return (player.hasPermission("postalservice.mail.type." + typeName.toLowerCase()) || player.hasPermission("postalservice.mail.type." + typeName) || player.hasPermission("postalservice.mail.type.*"));
 	}
 
-	public static boolean playerHasMetMailboxLimit(Player player) {
-
-		return true;
-	}
-
-	public static boolean getPlayerInboxSize(Player player) {
-		User user = UserFactory.getUser(player.getName());
-		//TODO: get inbox limit
-		return true;
+	public static boolean playerHasMetMailboxLimit(Player player, WorldGroup group) {
+		return (PostalService.getMailboxManager().getMailboxCount(player, group) >= Config.getMailboxLimitForPlayer(player.getName()));
 	}
 
 	public static boolean playerCanCreateMailboxAtLoc(Location loc, Player player) {
@@ -84,5 +81,4 @@ public class PermissionHandler {
 		Bukkit.getPluginManager().callEvent(breakEvent);
 		return (!placeEvent.isCancelled() && !breakEvent.isCancelled());
 	}
-
 }
