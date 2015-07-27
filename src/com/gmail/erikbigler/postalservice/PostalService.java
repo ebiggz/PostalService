@@ -11,6 +11,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
@@ -42,12 +43,14 @@ public class PostalService extends JavaPlugin {
 	private static Plugin plugin;
 	private static Database database;
 	private double serverVersion;
-	public static Updater updater;
+	private static Updater updater;
+	private BukkitRunnable updateCheckTask;
 	public static Economy economy = null;
 	public static Permission permission = null;
 	public static boolean vaultEnabled = false;
 	public static boolean hasPermPlugin = false;
 	public static boolean hasEconPlugin = false;
+	private static int projectId = 71726;
 
 	/** Called when PostalService is being enabled */
 	@Override
@@ -135,20 +138,9 @@ public class PostalService extends JavaPlugin {
 
 		MailboxManager.getInstance().loadMailboxes();
 
-		if(Config.CHECK_FOR_UPDATES) {
-			switch(Config.AUTO_DOWNLOAD_TYPE) {
-			case BUGFIXES:
-				updater = new Updater(this, 71726, this.getFile(), Updater.UpdateType.BUGFIX_ONLY, true);
-				break;
-			case NONE:
-				break;
-			default:
-				updater = new Updater(this, 71726, this.getFile(), Updater.UpdateType.DEFAULT, true);
-				break;
+		//start timed checker
 
-			}
-			//start timed checker
-		}
+		scheduleTasks();
 
 		getLogger().info("Enabled!");
 	}
@@ -211,6 +203,10 @@ public class PostalService extends JavaPlugin {
 		}
 	}
 
+	public static Updater getUpdater() {
+		return updater;
+	}
+
 	/** @return the class that handles MailTypes */
 	public static MailManager getMailManager() {
 		return MailManager.getInstance();
@@ -231,6 +227,10 @@ public class PostalService extends JavaPlugin {
 		return database;
 	}
 
+	public int getProjectID() {
+		return projectId;
+	}
+
 	/** Determines the version string used by Craftbukkit's safeguard (e.g.
 	 * 1_7_R4).
 	 *
@@ -240,6 +240,21 @@ public class PostalService extends JavaPlugin {
 		if(array.length == 4)
 			return array[3] + ".";
 		return "";
+	}
+
+	private void scheduleTasks() {
+		//cancel any previously set tasks
+		cancelTasks();
+
+		//schedule new ones
+		updateCheckTask = new UpdateCheckTask(this);
+		updateCheckTask.runTaskTimerAsynchronously(this, 40, 432000);
+	}
+
+	private void cancelTasks() {
+		if(updateCheckTask != null) {
+			updateCheckTask.cancel();
+		}
 	}
 
 	/** Functions for registering command aliases in code. */
@@ -277,5 +292,56 @@ public class PostalService extends JavaPlugin {
 				e.printStackTrace();
 		}
 		return commandMap;
+	}
+
+	private class UpdateCheckTask extends BukkitRunnable {
+
+		PostalService plugin;
+
+		private UpdateCheckTask(PostalService plugin) {
+			this.plugin = plugin;
+		}
+
+		@Override
+		public void run() {
+			if(Config.CHECK_FOR_UPDATES) {
+				plugin.getLogger().info("Checking for updates...");
+				switch(Config.AUTO_DOWNLOAD_TYPE) {
+				case BUGFIXES:
+					updater = new Updater(plugin, plugin.getProjectID(), plugin.getFile(), Updater.UpdateType.BUGFIX_ONLY, true);
+					break;
+				case NONE:
+					updater = new Updater(plugin, plugin.getProjectID(), plugin.getFile(), Updater.UpdateType.NO_DOWNLOAD, true);
+					break;
+				default:
+					updater = new Updater(plugin, plugin.getProjectID(), plugin.getFile(), Updater.UpdateType.DEFAULT, true);
+					break;
+				}
+				switch(updater.getResult()) {
+				case DISABLED:
+					plugin.getLogger().info("Update checking has been disabled in the config.");
+					plugin.updateCheckTask.cancel();
+					break;
+				case FAIL_APIKEY:
+				case FAIL_BADID:
+				case FAIL_DBO:
+				case FAIL_DOWNLOAD:
+				case FAIL_NOVERSION:
+					plugin.getLogger().warning("An error occured while trying to check for updates. Error: " + updater.getResult().toString());
+					break;
+				case NO_UPDATE:
+					plugin.getLogger().info("You are up to date!");
+					break;
+				case SUCCESS:
+					plugin.getLogger().info("The update was succussfully downloaded and will be available after the next server restart.");
+					plugin.getLogger().info("Read the release notes here: " + updater.getLatestReleaseNotesLink());
+					break;
+				case UPDATE_AVAILABLE:
+					plugin.getLogger().info("There is a new version available! New version: " + updater.getLatestName());
+					plugin.getLogger().info("Download the update here: " + updater.getLatestReleaseNotesLink());
+					break;
+				}
+			}
+		}
 	}
 }
