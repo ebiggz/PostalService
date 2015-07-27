@@ -14,6 +14,7 @@ import com.gmail.erikbigler.postalservice.config.ConfigAccessor;
 public class UUIDUtils {
 
 	public static UUID findUUID(String playerName) {
+		System.out.println(playerName);
 		Utils.debugMessage("Attemping to get uuid from online player... ");
 		// if the player is online, get the uuid from that
 		Player player = Bukkit.getPlayerExact(playerName);
@@ -31,6 +32,31 @@ public class UUIDUtils {
 		// as a last resort, attempt to contact Mojang for the UUID.
 		try {
 			return UUIDFetcher.getUUIDOf(playerName);
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static String findPlayerName(UUID uuid) {
+		Utils.debugMessage("Attemping to get player name from online player... ");
+		// if the player is online, get the name from that
+		Player player = Bukkit.getPlayer(uuid);
+		if (player != null) {
+			System.out.println(player.getName());
+			return player.getName();
+		}
+		Utils.debugMessage("Player is offline. Attempting to get name from local cache...");
+		// if not, check to see if the name has been cached locally
+		String cachedName = searchCacheForName(uuid);
+		if (cachedName != null) {
+			System.out.println(cachedName);
+			return cachedName;
+		}
+
+		Utils.debugMessage("Cache is empty. Attempting to get name from Mojang server...");
+		// as a last resort, attempt to contact Mojang for the name.
+		try {
+			return NameFetcher.getNameOf(uuid);
 		} catch (Exception e) {
 			return null;
 		}

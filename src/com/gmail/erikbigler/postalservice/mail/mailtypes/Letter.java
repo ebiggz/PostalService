@@ -24,7 +24,7 @@ public class Letter implements MailType {
 
 	@Override
 	public String getHoveroverDescription() {
-		return "Mail a text-only letter!";
+		return Phrases.MAILTYPE_LETTER_HOVERTEXT.toString();
 	}
 
 	@Override
@@ -84,10 +84,5 @@ public class Letter implements MailType {
 	@Override
 	public ItemStack[] getSummaryIcons() {
 		return null;
-	}
-
-	@Override
-	public MailType clone() {
-		return new Letter();
 	}
 }

@@ -51,4 +51,8 @@ public interface User {
 
 	public boolean markMailAsDeleted(Mail mail);
 
+	public String getTimeZone();
+
+	public void setTimeZone(String timezone);
+
 }

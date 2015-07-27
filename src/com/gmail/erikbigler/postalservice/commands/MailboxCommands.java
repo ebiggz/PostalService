@@ -8,35 +8,35 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitScheduler;
 
 import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
 
 public class MailboxCommands implements CommandExecutor {
 
-	//TODO: Add phrases for all these messages
-
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+		if(!Config.ENABLE_MAILBOXES) return true;
 		Player player = (Player) sender;
 		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString()) || commandLabel.equalsIgnoreCase("mailbox")) {
 			if(args.length == 0) {
-				//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
+				//FancyMenu.showClickableCommandList(sender, commandLabel, "Postal Service", commandData, 1);
 			} else if(args.length == 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString())) {
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.SET);
-					//sender.sendMessage(ChatColor.YELLOW + "[Mythica] " + ChatColor.DARK_AQUA + "Please click a chest to register it as a mailbox...");
+					sender.sendMessage(Phrases.ALERT_MAILBOX_SET.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVE.toString())) {
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.REMOVE);
-					//sender.sendMessage(ChatColor.YELLOW + "[Mythica] " + ChatColor.DARK_AQUA + "Please click a chest to unregister it as a mailbox...");
+					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVEALL.toString())) {
-					//MailboxManager.getInstance().removeAllMailboxes(sender.getName());
-					//sender.sendMessage(ChatColor.YELLOW + "[Mythica] " + ChatColor.DARK_AQUA + "Unregistered all your mailboxes.");
+					MailboxManager.getInstance().removeAllMailboxes(sender.getName());
+					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_FIND.toString())) {
 					if(MailboxManager.getInstance().markNearbyMailboxes(player)) {
-						//player.sendMessage(ChatColor.YELLOW + "[MPS]" + ChatColor.DARK_AQUA + " Marking nearby mailboxes!");
+						sender.sendMessage(Phrases.ALERT_MAILBOX_FIND.toPrefixedString());
 					} else {
-						//player.sendMessage(ChatColor.RED + "[MPS] There are no nearby mailboxes!");
+						sender.sendMessage(Phrases.ERROR_MAILBOX_FIND_NONE.toPrefixedString());
 					}
 				}
 
@@ -49,7 +49,7 @@ public class MailboxCommands implements CommandExecutor {
 						public void run() {
 							if(MailboxManager.getInstance().mailboxSelectors.containsKey(player)) {
 								MailboxManager.getInstance().mailboxSelectors.remove(player);
-								//player.sendMessage(ChatColor.YELLOW + "[Mythica] " + ChatColor.AQUA + "Mailbox selection timed out.");
+								player.sendMessage(Phrases.ALERT_MAILBOX_TIMEOUT.toPrefixedString());
 							}
 						}
 

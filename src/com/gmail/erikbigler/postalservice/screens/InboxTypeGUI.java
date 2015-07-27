@@ -32,16 +32,16 @@ import net.md_5.bungee.api.ChatColor;
 public class InboxTypeGUI implements GUI {
 
 	private BoxType boxType;
-	private User user;
+	private User accountOwner;
 	private int pageNumber;
 	private int totalPages;
 	private List<Mail> mails;
 
-	public InboxTypeGUI(User user, BoxType type, int pageNumber) {
+	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber) {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
-		this.user = user;
-		this.mails = user.getBoxFromType(type, Config.getWorldGroupFromWorld(Utils.getPlayerFromIdentifier(user.getIdentifier()).getWorld()));
+		this.accountOwner = accountOwner;
+		this.mails = accountOwner.getBoxFromType(type, Config.getWorldGroupFromWorld(Utils.getPlayerFromIdentifier(accountOwner.getIdentifier()).getWorld()));
 	}
 
 	public BoxType getType() {
@@ -64,7 +64,7 @@ public class InboxTypeGUI implements GUI {
 		int mailIndex = 0 + (27*(pageNumber-1));
 		int invIndex = 0;
 		while(mailIndex < (27 * pageNumber) && mailIndex < boxSize) {
-			inventory.setItem(invIndex,createMailButton(mails.get(mailIndex)));
+			inventory.setItem(invIndex,createMailButton(mails.get(mailIndex), player));
 			mailIndex++;
 			invIndex++;
 		}
@@ -118,7 +118,7 @@ public class InboxTypeGUI implements GUI {
 			break;
 		case 40:
 			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-				GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(accountOwner), whoClicked);
 			}
 			break;
 		case 41:
@@ -129,6 +129,7 @@ public class InboxTypeGUI implements GUI {
 			break;
 		default:
 			if(clickedSlot < 27 && clickedItem != null && clickedItem.getType() != Material.AIR) {
+				if(!accountOwner.getPlayerName().equals(whoClicked.getName())) break;
 				int mailIndex = clickedSlot + (27*(pageNumber-1));
 				if(mails.size() < mailIndex+1) {
 					whoClicked.closeInventory();
@@ -141,8 +142,7 @@ public class InboxTypeGUI implements GUI {
 					if(boxType == BoxType.INBOX) {
 						whoClicked.closeInventory();
 						whoClicked.sendMessage(this.getReplySummaryString(mail));
-						String command = "tellraw {player} {\"text\":\"\",\"extra\":[{\"text\":\"[MPS] Reply with a (Click one): \",\"color\":\"yellow\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"\"}},{\"text\":\"Letter, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail letter to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a text-only letter!\",\"color\":\"gold\"}]}}},{\"text\":\"Package, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail package to:{to} message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a package with the items in your drop box!\",\"color\":\"gold\"}]}}},{\"text\":\"Payment, \",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail payment to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail a money payment!\",\"color\":\"gold\"}]}}},{\"text\":\"Experience\",\"color\":\"aqua\",\"clickEvent\":{\"action\":\"suggest_command\",\"value\":\"/mail xp to:{to} amount: message:\"},\"hoverEvent\":{\"action\":\"show_text\",\"value\":{\"text\":\"\",\"extra\":[{\"text\":\"Mail xp points (not levels) to a player!!\",\"color\":\"gold\"}]}}}]}";
-						//Bukkit.getServer().dispatchCommand(Bukkit.getServer().getConsoleSender(), command.replace("{player}", whoClicked.getName()).replace("{to}", mail.getFrom()));
+						Utils.getComposeMessage(true, whoClicked).sendTo(whoClicked);
 					}
 				}
 				else if(clickedEvent.getClick() == ClickType.RIGHT) {
@@ -153,7 +153,7 @@ public class InboxTypeGUI implements GUI {
 							} else {
 								try {
 									mail.getType().administerAttachments(whoClicked);
-									user.markMailAsClaimed(mail);
+									accountOwner.markMailAsClaimed(mail);
 									whoClicked.sendMessage(Phrases.PREFIX + " " + mail.getType().getAttachmentClaimMessage());
 									whoClicked.closeInventory();
 								} catch (MailException e) {
@@ -166,7 +166,7 @@ public class InboxTypeGUI implements GUI {
 				}
 				else if(clickedEvent.getClick() == ClickType.SHIFT_RIGHT) {
 					if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
-						user.markMailAsDeleted(mail);
+						accountOwner.markMailAsDeleted(mail);
 						mails.remove(mail);
 						clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
 					}
@@ -178,40 +178,16 @@ public class InboxTypeGUI implements GUI {
 	@Override
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {}
 
+
 	private String getReplySummaryString(Mail mail) {
-		/*
-		StringBuilder sb = new StringBuilder();
-		sb.append(ChatColor.YELLOW + "[MPS] " + ChatColor.AQUA + mail.getFrom() + ChatColor.DARK_AQUA + " mailed you ");
-		switch(mail.getType()) {
-			case EXPERIENCE:
-				Experience exp = (Experience) mail;
-				sb.append("an " + ChatColor.AQUA + "Experience Sum" + ChatColor.DARK_AQUA + " of " + ChatColor.AQUA + exp.getExperience() + " xp point(s)" + ChatColor.DARK_AQUA);
-				break;
-			case LETTER:
-				sb.append("a " + ChatColor.AQUA + "Letter" + ChatColor.DARK_AQUA);
-				break;
-			case PACKAGE:
-				PackageObj po = (PackageObj) mail;
-				sb.append("a " + ChatColor.AQUA + "Package" + ChatColor.DARK_AQUA + " containing " + ChatColor.AQUA + po.getItems().size() + " item(s)"  + ChatColor.DARK_AQUA);
-				break;
-			case PAYMENT:
-				Payment payment = (Payment) mail;
-				sb.append("a " + ChatColor.AQUA + "Payment" + ChatColor.DARK_AQUA + " of " + ChatColor.DARK_AQUA + "$" + payment.getPayment() + ChatColor.DARK_AQUA);
-				break;
-			case TRADEGOODS:
-				break;
-		}
 		if(!mail.getMessage().isEmpty()) {
-			sb.append(" with the message: ");
-			sb.append(ChatColor.RESET + "\"" + ChatColor.ITALIC + mail.getMessage() + "\"");
+			return Phrases.REPLY_SUMMARY_MESSAGE.toPrefixedString().replace("%sender%", mail.getSender()).replace("%mailtype%", mail.getType().getDisplayName()).replace("%timestamp%", mail.getTimeString(accountOwner.getTimeZone())).replace("%message%", mail.getMessage());
+		} else {
+			return Phrases.REPLY_SUMMARY_NOMESSAGE.toPrefixedString().replace("%sender%", mail.getSender()).replace("%mailtype%", mail.getType().getDisplayName()).replace("%timestamp%", mail.getTimeString(accountOwner.getTimeZone()));
 		}
-		sb.append(ChatColor.DARK_AQUA + " at " + ChatColor.AQUA + mail.getTimeStamp());
-		return sb.toString();
-		 */
-		return null;
 	}
 
-	private ItemStack createMailButton(Mail mail) {
+	private ItemStack createMailButton(Mail mail, Player viewingPlayer) {
 
 		ItemStack button = new ItemStack(mail.getType().getIcon());
 		List<String> lore = new ArrayList<String>();
@@ -243,18 +219,20 @@ public class InboxTypeGUI implements GUI {
 			}
 		}
 		lore.add(boxType.equals(BoxType.INBOX) ? ChatColor.GRAY + "  " + Phrases.FROM.toString() + " " + ChatColor.WHITE + mail.getSender() : ChatColor.GRAY + "  " + Phrases.TO.toString() + " " + ChatColor.WHITE + mail.getRecipient());
-		lore.add("  " + ChatColor.GRAY + mail.getTimeString());
+		lore.add("  " + ChatColor.GRAY + mail.getTimeString(accountOwner.getTimeZone()));
 		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
-		if(boxType.equals(BoxType.INBOX)) {
-			lore.add(Phrases.CLICK_ACTION_RESPOND.toString());
-			if(mail.hasAttachments()) {
-				if(!mail.isClaimed()) {
-					lore.add(Phrases.CLICK_ACTION_RIGHTCLAIM.toString());
+		if(accountOwner.getPlayerName().equals(viewingPlayer.getName())) {
+			if(boxType.equals(BoxType.INBOX)) {
+				lore.add(Phrases.CLICK_ACTION_RESPOND.toString());
+				if(mail.hasAttachments()) {
+					if(!mail.isClaimed()) {
+						lore.add(Phrases.CLICK_ACTION_RIGHTCLAIM.toString());
+					}
 				}
 			}
-		}
-		if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
-			lore.add(Phrases.CLICK_ACTION_DELETE.toString());
+			if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
+				lore.add(Phrases.CLICK_ACTION_DELETE.toString());
+			}
 		}
 
 		im.setLore(lore);

@@ -55,7 +55,7 @@ public class Package implements MailType {
 		User user = UserFactory.getUser(sender.getName());
 		List<ItemStack> dropBoxContents = user.getDropbox(Config.getCurrentWorldGroupForUser(user));
 		if(dropBoxContents == null || dropBoxContents.isEmpty()) {
-			throw new MailException("You must have items in your drop box to send a Package!");
+			throw new MailException(Phrases.ERROR_MAILTYPE_PACKAGE_NO_ITEMS.toPrefixedString());
 		} else {
 			user.saveDropbox(null, Config.getCurrentWorldGroupForUser(user));
 			return Arrays.toString(Utils.itemsToBytes(dropBoxContents));
@@ -77,7 +77,7 @@ public class Package implements MailType {
 	public void administerAttachments(Player player) throws MailException {
 		int openSpots = Utils.getPlayerOpenInvSlots(player);
 		if(items.size() > openSpots) {
-			throw new MailException("There is not enough empty room in your inventory. Please clear space and try again.");
+			throw new MailException(Phrases.ERROR_MAILTYPE_PACKAGE_NEED_SPACE.toString());
 		} else {
 			for(ItemStack item : items) {
 				player.getInventory().addItem(item);
@@ -87,12 +87,12 @@ public class Package implements MailType {
 
 	@Override
 	public String getAttachmentClaimMessage() {
-		return "You have claimed the contents of this package.";
+		return Phrases.ALERT_MAILTYPE_PACKAGE_CLAIM.toString();
 	}
 
 	@Override
 	public String getAttachmentDescription() {
-		return items.size() + " item(s)";
+		return Phrases.MAILTYPE_PACKAGE_ITEMDESC.toString().replace("%count%", Integer.toString(items.size()));
 	}
 
 	@Override
@@ -102,12 +102,12 @@ public class Package implements MailType {
 
 	@Override
 	public String getSummaryScreenTitle() {
-		return "Package Contents";
+		return Phrases.MAILTYPE_PACKAGE_SUMMARYSCREEN_TITLE.toString();
 	}
 
 	@Override
 	public String getSummaryClaimButtonTitle() {
-		return "Claim Package";
+		return Phrases.MAILTYPE_PACKAGE_CLAIM_BUTTON.toString();
 	}
 
 	@Override
@@ -115,10 +115,5 @@ public class Package implements MailType {
 		ItemStack[] itemArray = new ItemStack[items.size()];
 		items.toArray(itemArray);
 		return itemArray;
-	}
-
-	@Override
-	public MailType clone() {
-		return new Package();
 	}
 }

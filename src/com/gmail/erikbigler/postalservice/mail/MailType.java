@@ -39,6 +39,4 @@ public interface MailType extends Cloneable {
 
 	public ItemStack[] getSummaryIcons();
 
-	public MailType clone();
-
 }

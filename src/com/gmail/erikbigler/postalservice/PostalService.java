@@ -28,8 +28,10 @@ import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Experience;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
+import com.gmail.erikbigler.postalservice.mail.mailtypes.Payment;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
+import com.gmail.erikbigler.postalservice.utils.Updater;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 import net.milkbowl.vault.economy.Economy;
@@ -40,6 +42,7 @@ public class PostalService extends JavaPlugin {
 	private static Plugin plugin;
 	private static Database database;
 	private double serverVersion;
+	public static Updater updater;
 	public static Economy economy = null;
 	public static Permission permission = null;
 	public static boolean vaultEnabled = false;
@@ -95,6 +98,9 @@ public class PostalService extends JavaPlugin {
 		getMailManager().registerMailType(new Letter());
 		getMailManager().registerMailType(new Experience());
 		getMailManager().registerMailType(new Package());
+		if(vaultEnabled && hasEconPlugin) {
+			getMailManager().registerMailType(new Payment());
+		}
 
 		/*
 		 * Register commands
@@ -120,9 +126,29 @@ public class PostalService extends JavaPlugin {
 			getLogger().info("Sucessfully connected to the database!");
 		}
 
+		if(!getServer().getOnlineMode()) {
+			if(!Config.FORCE_UUIDS) {
+				Config.USE_UUIDS = false;
+				getLogger().warning("UUIDs are enabled but the server is running in Offline Mode. UUIDs have been disabled. To force the use of UUIDs while in Offline mode, set \"use-uuids\" to \"always\" in the config.");
+			}
+		}
+
 		MailboxManager.getInstance().loadMailboxes();
 
-		//Updater updater = new Updater(this, id, this.getFile(), Updater.UpdateType.DEFAULT, false);
+		if(Config.CHECK_FOR_UPDATES) {
+			switch(Config.AUTO_DOWNLOAD_TYPE) {
+			case BUGFIXES:
+				updater = new Updater(this, 71726, this.getFile(), Updater.UpdateType.BUGFIX_ONLY, true);
+				break;
+			case NONE:
+				break;
+			default:
+				updater = new Updater(this, 71726, this.getFile(), Updater.UpdateType.DEFAULT, true);
+				break;
+
+			}
+			//start timed checker
+		}
 
 		getLogger().info("Enabled!");
 	}
@@ -140,14 +166,14 @@ public class PostalService extends JavaPlugin {
 		if(vault != null) {
 			getLogger().info("Hooked into Vault!");
 			if(!setupEconomy()) {
-				getLogger().warning("No plugin to handle currency, Payment mail type will be disabled!");
+				getLogger().warning("No plugin to handle currency. Payment mail type will be not be available if enabled!");
 			}
 			if(!setupPermissions()) {
-				getLogger().warning("No plugin to handle permission groups, permission group settings will be ignored!");
+				getLogger().warning("No plugin to handle permission groups. Permission group settings will be ignored!");
 			}
 			return true;
 		} else {
-			getLogger().warning("Vault plugin not found. Currency and permission group features will be not be functional!");
+			getLogger().warning("Vault plugin not found. The Payment mailtype and permission group features will be not be functional!");
 			return false;
 		}
 	}
@@ -164,8 +190,10 @@ public class PostalService extends JavaPlugin {
 	private boolean setupPermissions() {
 		RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
 		if(permissionProvider != null) {
-			hasPermPlugin = true;
-			permission = permissionProvider.getProvider();
+			if(permissionProvider.getProvider().hasGroupSupport()) {
+				hasPermPlugin = true;
+				permission = permissionProvider.getProvider();
+			}
 		}
 		return (permission != null);
 	}

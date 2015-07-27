@@ -1,28 +1,114 @@
 package com.gmail.erikbigler.postalservice.mail.mailtypes;
 
-public class Payment {
-	/*
-	 * 					double money = 0;
-					try {
-						money = Double.parseDouble(amount);
-					} catch (Exception e) {
-						sender.sendMessage(ChatColor.RED + "[MPS] \"" + amount + "\" is not a recongized amount of money! Please try again.");
-						return true;
-					}
-					if(money <= 0) {
-						sender.sendMessage(ChatColor.RED + "[MPS] You can't send zero or negative money! Please try again.");
-						return true;
-					}
+import org.bukkit.Material;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
-					double balance = Mythsentials.economy.getBalance(sender.getName());
+import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.exceptions.MailException;
+import com.gmail.erikbigler.postalservice.mail.MailType;
 
-					if(balance >= money) {
-						Mythsentials.economy.withdrawPlayer(sender.getName(), money);
-						mail = new Payment(completedName, sender.getName(), message, Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), money);
-						sender.sendMessage(ChatColor.YELLOW + "[MPS]" + ChatColor.DARK_AQUA + " You have mailed a " + ChatColor.AQUA + "payment" + ChatColor.DARK_AQUA + " to " + ChatColor.AQUA + completedName);
-					} else {
-						sender.sendMessage(ChatColor.RED + "You do not have enough in your bank to send this amount!");
-						return true;
-					}
-	 */
+public class Payment implements MailType {
+
+	private double amount;
+
+	@Override
+	public String getIdentifier() {
+		return "Payment";
+	}
+
+	@Override
+	public String getDisplayName() {
+		return Phrases.MAILTYPE_PAYMENT.toString();
+	}
+
+	@Override
+	public Material getIcon() {
+		return Material.GOLD_INGOT;
+	}
+
+	@Override
+	public String getHoveroverDescription() {
+		return Phrases.MAILTYPE_PAYMENT_HOVERTEXT.toString();
+	}
+
+	@Override
+	public boolean requireMessage() {
+		return false;
+	}
+
+	@Override
+	public String getAttachmentCommandArgument() {
+		return Phrases.COMMAND_ARG_AMOUNT.toString();
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public String handleSendCommand(Player sender, String[] commandArgs) throws MailException {
+		double money = 0;
+		try {
+			money = Double.parseDouble(commandArgs[0]);
+		} catch (Exception e) {
+			throw new MailException(Phrases.ERROR_MAILTYPE_PAYMENT_NOTVALID.toString());
+		}
+		if(money <= 0) {
+			throw new MailException(Phrases.ERROR_MAILTYPE_PAYMENT_EMPTY.toString());
+		}
+
+		double balance = PostalService.economy.getBalance(sender.getName());
+
+		if(balance >= money) {
+			PostalService.economy.withdrawPlayer(sender.getName(), money);
+		} else {
+			throw new MailException(Phrases.ERROR_MAILTYPE_PAYMENT_NOTENOUGH.toString());
+		}
+		return Double.toString(money);
+	}
+
+	@Override
+	public void loadAttachments(String attachmentData) {
+		try {
+			amount = Double.parseDouble(attachmentData);
+		} catch (Exception e){
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
+	}
+
+	@SuppressWarnings("deprecation")
+	@Override
+	public void administerAttachments(Player player) throws MailException {
+		PostalService.economy.depositPlayer(player.getName(), amount);
+	}
+
+	@Override
+	public String getAttachmentClaimMessage() {
+		return Phrases.ALERT_MAILTYPE_PAYMENT_CLAIM.toString();
+	}
+
+	@Override
+	public String getAttachmentDescription() {
+		return Phrases.MAILTYPE_PAYMENT_ITEMDESC.toString().replace("%count%", Double.toString(amount));
+	}
+
+	@Override
+	public boolean useSummaryScreen() {
+		return false;
+	}
+
+	@Override
+	public String getSummaryScreenTitle() {
+		return null;
+	}
+
+	@Override
+	public String getSummaryClaimButtonTitle() {
+		return null;
+	}
+
+	@Override
+	public ItemStack[] getSummaryIcons() {
+		return null;
+	}
 }

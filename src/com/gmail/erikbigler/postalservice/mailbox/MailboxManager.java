@@ -27,7 +27,7 @@ public class MailboxManager {
 	private List<Mailbox> mailboxes = new ArrayList<Mailbox>();
 
 	protected MailboxManager() {
-		/* exists to block instantiation */ }
+	/* exists to block instantiation */ }
 
 	private static MailboxManager instance = null;
 
@@ -56,7 +56,7 @@ public class MailboxManager {
 					String location = rs.getString("Location");
 					String playerIdentifier = rs.getString("PlayerID");
 					if(location != null || playerIdentifier != null) {
-						mailboxes.add(new Mailbox(Utils.stringToLocation(location), UserFactory.getUserFromIdentifier(playerIdentifier)));
+						mailboxes.add(new Mailbox(Utils.stringToLocation(location), playerIdentifier));
 					}
 				}
 			} catch (Exception e) {
@@ -82,7 +82,7 @@ public class MailboxManager {
 			throw new MailboxException(Reason.NO_PERMISSION);
 		} else if(this.locationHasMailbox(location)) {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
-		} else if(this.getMailboxCount(player, Config.getWorldGroupFromWorld(location.getWorld())) >= Config.getMailboxLimitForPlayer(player.getName())) {
+		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld())) >= Config.getMailboxLimitForPlayer(player.getName())) {
 			throw new MailboxException(Reason.MAX_REACHED);
 		} else {
 			if(Config.USE_DATABASE) {
@@ -93,7 +93,7 @@ public class MailboxManager {
 						e.printStackTrace();
 				}
 			}
-			this.mailboxes.add(new Mailbox(location, user));
+			this.mailboxes.add(new Mailbox(location, user.getIdentifier()));
 		}
 	}
 
@@ -154,9 +154,10 @@ public class MailboxManager {
 		}
 	}
 
-	public int getMailboxCount(Player player, WorldGroup group) {
+	public int getMailboxCount(String name, WorldGroup group) {
 		int count = 0;
 		for(Mailbox mailbox : this.mailboxes) {
+			if(!mailbox.getOwner().getPlayerName().equals(name)) continue;
 			if(Config.getWorldGroupFromWorld(mailbox.getLocation().getWorld()).getName().equals(group.getName())) {
 				count++;
 			}

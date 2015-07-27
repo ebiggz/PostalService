@@ -17,7 +17,7 @@ import com.gmail.erikbigler.postalservice.config.WorldGroup;
 public class PermissionHandler {
 
 	public enum Perm {
-		MAIL, MAIL_CHECK, MAIL_CHECKOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, RELOAD, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_NEARBY_MAILBOX
+		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, ADMIN
 	}
 
 	public static boolean playerHasPermission(Perm perm, CommandSender sender) {
@@ -46,14 +46,16 @@ public class PermissionHandler {
 			return player.hasPermission("postalservice.mailbox.setother");
 		case MAIL_CHECK:
 			return player.hasPermission("postalservice.mail.check");
-		case MAIL_CHECKOTHER:
-			return player.hasPermission("postalservice.mail.checkother");
-		case RELOAD:
-			return player.hasPermission("postalservice.reload");
-		case OVERRIDE_NEARBY_MAILBOX:
-			return player.hasPermission("postalservice.overridenearbymailbox");
+		case MAIL_READOTHER:
+			return player.hasPermission("postalservice.mail.readother");
+		case ADMIN:
+			return player.hasPermission("postalservice.admin");
+		case OVERRIDE_REQUIRE_MAILBOX:
+			return player.hasPermission("postalservice.overriderequiremailbox");
 		case OVERRIDE_WORLD_BLACKLIST:
 			return player.hasPermission("postalservice.overrideworldblacklist");
+		case MAIL_READ:
+			return player.hasPermission("postalservice.mail.read");
 		}
 		return false;
 	}
@@ -67,7 +69,7 @@ public class PermissionHandler {
 	}
 
 	public static boolean playerHasMetMailboxLimit(Player player, WorldGroup group) {
-		return (PostalService.getMailboxManager().getMailboxCount(player, group) >= Config.getMailboxLimitForPlayer(player.getName()));
+		return (PostalService.getMailboxManager().getMailboxCount(player.getName(), group) >= Config.getMailboxLimitForPlayer(player.getName()));
 	}
 
 	public static boolean playerCanCreateMailboxAtLoc(Location loc, Player player) {

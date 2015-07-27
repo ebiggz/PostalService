@@ -41,12 +41,13 @@ public class DBUser implements User {
 				return;
 			}
 		}
-		this.playerName = playerName;
 		createUser();
 	}
 
 	public DBUser(UUID uuid) {
 		this.uuid = uuid;
+		this.playerName = UUIDUtils.findPlayerName(uuid);
+		createUser();
 	}
 
 	@Override
@@ -57,7 +58,7 @@ public class DBUser implements User {
 	@Override
 	public void createUser() {
 		try {
-			PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_users VALUES (\"" + this.getIdentifier() + "\",\"" + this.getPlayerName() + "\")");
+			PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_users VALUES (\"" + this.getIdentifier() + "\",\"" + this.getPlayerName() + "\", \"\")");
 		} catch (Exception e) {
 		}
 	}
@@ -78,6 +79,9 @@ public class DBUser implements User {
 
 	@Override
 	public String getPlayerName() {
+		if(playerName == null) {
+			this.playerName = UUIDUtils.findPlayerName(uuid);
+		}
 		return playerName;
 	}
 
@@ -132,7 +136,6 @@ public class DBUser implements User {
 			while (rs.next()) {
 				MailType mailType = mm.getMailTypeByIdentifier(rs.getString("MailType"));
 				if (mailType == null) {
-					System.out.println("Mailtype is null");
 					continue;
 				}
 				sentMail.add(new Mail(rs.getLong("MailID"), rs.getLong("ReceivedID"), rs.getString("Sender"), rs.getString("Recipient"), rs.getString("Message"), rs.getString("Attachments"), mailType, rs.getTimestamp("TimeStamp"), mm.getMailStatusFromID(rs.getInt("Status"))));
@@ -309,5 +312,28 @@ public class DBUser implements User {
 				e.printStackTrace();
 		}
 		return false;
+	}
+
+	@Override
+	public String getTimeZone() {
+		try {
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT TimeZone FROM ps_users WHERE PlayerID = \"" + this.getIdentifier() + "\"");
+			if(rs != null && rs.next()) {
+				String timezone = rs.getString("TimeZone");
+				if(timezone != null && !timezone.equalsIgnoreCase("null")) return timezone;
+			}
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
+		return "";
+	}
+
+	@Override
+	public void setTimeZone(String timezone) {
+		try {
+			PostalService.getPSDatabase().updateSQL("UPDATE ps_users SET TimeZone = \"" + timezone + "\" WHERE PlayerID = \"" + this.getIdentifier() + "\"");
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
 	}
 }

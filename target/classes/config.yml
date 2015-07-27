@@ -30,28 +30,42 @@ enabled-mail-types:
     payment: true
     xp: true
      
+## Toggle the use of UUIDs
+# If disabled, PostalService will track player data using
+# player names. If the server is running in offline mode,
+# UUIDs will automatically be disabled. To force the use of
+# UUIDS in offline mode, set this to "always". 
 use-uuids: true
 
+## Toggle on or off the update checker
+# If the update checker finds an update, it will notify players with the
+# postalservice.updatenotify permission when they login.
+#
+# You can also choose to have new versions auto downloaded as well.
+# There are 3 auto download settings you can choose from:
+#   - all: This will download all updates as they become available.
+#   - bugfix: This will only download bugfix updates to your current version,
+#             and you will have to manually update for feature releases.
+#   - none: This will disable auto downloading for all updates.
+update-checker:
+    enabled: true
+    auto-download: all
+
+## Turning on debug mode may reveal errors that can be used to help 
+# solve problems.
 debug-mode: false
-
-
 
 
 ##################
 # World Settings #
-
 ##################
 
-
-
-## World groups allow you to segregate mail. This is useful if you have worlds with different 
-
-# inventories and you don't want players sending things across universes.
-# For example, mail sent from a world in a "Survival Universe" would not be accessible from a 
-
-# world in a "PvP Universe".
-# You can define as many groups as you like.
-
+## World groups allow you to segregate mail. This is useful if you have worlds with
+# different inventories and you don't want players sending things across universes.
+# For example, mail sent from a world in a "Survival Universe" would not be
+# accessible from a world in a "PvP Universe".
+# You can define as many groups as you like and the group names do not matter,
+# as long as they are different from each other.
 
 enable-world-groups: false
 
@@ -59,19 +73,17 @@ world-groups:
 #    Survival Universe:
 #      - survival_main
 #      - survival_main_nether
-
+#
 #    Some Other Group:
-
 #      - another_world
 
-## Here you can set certain mail types to ignore world groups and be visible in all worlds.
+## Here you can set certain mail types to ignore world groups and 
+# be visible in all worlds.
 # For example, you may want Letters to ignore world groups so players can 
-
-# communicate across universes but want Packages to stay within world groups so items can't be
-
+# communicate across universes but want Packages to stay within world groups 
+# so items can't be
 # shared.
 mail-types-that-ignore-world-groups:
-
 #   - letter
   
 ## Worlds listed in this blacklist prevent players from running any PostalService 
@@ -81,39 +93,30 @@ world-blacklist:
   - worldname
 
 
-
 #################
 # User Settings #
 #################
 
-# This is the max inbox size per permission group.
-
+## This is the max inbox/sent size per permission group.
 # If a permission group is undefined, the default is used.
-
 # Be mindful in how high you set these limits, especially on larger servers.
-
 # This feature requires Vault. If Vault is not present, the default is used
-
 # for everyone.
-inbox-sizes:
+box-sizes:
     default: 50
 #    permission-group: 75
 
 
-
-# Set this to true to make players be unable to receive mail if their inbox is full.
-
+## Set this to true to make players be unable to receive mail if their inbox is full.
 # If set to false, old mail will instead make way for new mail automatically. 
-
 # Old mail is never deleted in this case, however, and will reappear if the player 
-
 # deletes other mail to make room.
-
 hard-enforce-inbox-limit: false
 
 
-
-# Enable or disable when the unread mail notification is shown to players.
+## Enable or disable when the unread mail notification is shown to players.
+# If you have world groups enabled, on-world-change will only notify the player
+# if they change world groups.
 unread-mail-notifications:
     on-login: true
     on-world-change: false
@@ -123,40 +126,55 @@ unread-mail-notifications:
 # Mailbox Settings #
 ####################
 
+## Enable or disable the Mailbox feature
+# Mailboxes are chests that players have registered as a Mailbox.
+# Clicking on these chests will open up the Postal Service main menu
+# GUI where players can view their inbox.
+# If disabled, players can type /mail to access the main menu.
 enable-mailboxes: true
 
-require-nearby-mailbox: true
+## Enable this if you want to require players to be near a mailbox
+# to send mail. Enabling this will also make opening mailboxes the only
+# way to view the main menu GUI.
+require-mailbox: true
 
+## This is the max number of mailboxes per permission group.
+# If a permission group is undefined, the default is used.
+# This feature requires Vault. If Vault is not present, the default is used
+# for everyone.
 mailbox-limits:
     default: 5
 #    permission-group: 10
 
 
-
 #########################
 # Trading Post Settings #
 #########################
+## UPCOMING FEATURE! THESE SETTINGS CURRENTLY DO NOTHING ##
 
-enable-trading-post: true
+enable-trading-post: false
 
 require-same-mailbox: false
 
 allow-cross-world-trades: false
 
 
-
-
-
 #########################
 # Localization Settings #
 #########################
 
-
-
+## Here you can change the pattern used to format the date and time for mail.
+# Learn how to format patterns: http://goo.gl/n8qMk0
+# Then test your pattern here: http://goo.gl/WCaX6i
 date-format: "MMM d, yyyy h:mm a"
 
-
+## This automatically translates month and day names in the date format
 locale-tag: "en-US"
+
+## Change the default time zone in which the time is displayed.
+# Players can also change the timezone for themselves individually
+# with the command: /mail timezone <zone>
+time-zone: "UTC"
 
 ########################################
 # Don't touch please

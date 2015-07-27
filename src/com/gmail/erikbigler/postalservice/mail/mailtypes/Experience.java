@@ -21,12 +21,12 @@ public class Experience implements MailType {
 	}
 	@Override
 	public String getDisplayName() {
-		return "XP";
+		return Phrases.MAILTYPE_EXPERIENCE.toString();
 	}
 
 	@Override
 	public String getHoveroverDescription() {
-		return "Mail XP points (not levels)!";
+		return Phrases.MAILTYPE_EXPERIENCE_HOVERTEXT.toString();
 	}
 
 	@Override
@@ -42,18 +42,15 @@ public class Experience implements MailType {
 	@Override
 	public String handleSendCommand(Player sender, String[] commandArgs)
 			throws MailException {
-		System.out.println(commandArgs);
-		System.out.println(commandArgs.length);
 		if(commandArgs == null || commandArgs.length < 1) {
-			throw new MailException("You must include an xp amount!");
+			throw new MailException(Phrases.ERROR_MAILTYPE_EXPERIENCE_EMPTY.toString());
 		} else {
 			try {
 				int amount = Integer.parseInt(commandArgs[0]);
 				System.out.println(amount);
 				if(sender.getTotalExperience() < amount) {
-					throw new MailException("You don't have that amount of XP to send!");
+					throw new MailException(Phrases.ERROR_MAILTYPE_EXPERIENCE_NOTENOUGH.toString());
 				}
-				System.out.println("hi");
 				long totalXp = SetExpFix.getTotalExperience(sender) - amount;
 				if (totalXp < 0L)
 				{
@@ -64,7 +61,7 @@ public class Experience implements MailType {
 				return commandArgs[0];
 			} catch (NumberFormatException e) {
 				if(Config.ENABLE_DEBUG) e.printStackTrace();
-				throw new MailException("That is not a valid xp amount!");
+				throw new MailException(Phrases.ERROR_MAILTYPE_EXPERIENCE_NOTVALID.toString());
 			}
 		}
 	}
@@ -92,7 +89,7 @@ public class Experience implements MailType {
 
 	@Override
 	public String getAttachmentClaimMessage() {
-		return "You have successfully claimed the experience points.";
+		return Phrases.ALERT_MAILTYPE_EXPERIENCE_CLAIM.toString();
 	}
 
 	@Override
@@ -102,7 +99,7 @@ public class Experience implements MailType {
 
 	@Override
 	public String getAttachmentDescription() {
-		return amount + " XP point(s)";
+		return Phrases.MAILTYPE_EXPERIENCE_ITEMDESC.toString().replace("%count%", Integer.toString(amount));
 	}
 
 	@Override
@@ -123,10 +120,5 @@ public class Experience implements MailType {
 	@Override
 	public ItemStack[] getSummaryIcons() {
 		return null;
-	}
-
-	@Override
-	public MailType clone() {
-		return new Experience();
 	}
 }

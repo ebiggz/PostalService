@@ -42,6 +42,14 @@ public class MailManager {
 		mailTypes.remove(mailType);
 	}
 
+	public void deregisterMailTypeByIdentifier(String identifier) {
+		for(MailType type : mailTypes) {
+			if(type.getIdentifier().equalsIgnoreCase(identifier)) {
+				mailTypes.remove(type);
+			}
+		}
+	}
+
 	public String[] getMailTypeNames() {
 		String[] mailTypeNames = new String[mailTypes.size()];
 		for(int i = 0; i < mailTypes.size(); i++) {
@@ -52,7 +60,13 @@ public class MailManager {
 
 	public MailType[] getMailTypes() {
 		MailType[] types = new MailType[mailTypes.size()];
-		mailTypes.toArray(types);
+		try {
+			for(int i = 0; i < mailTypes.size(); i++) {
+				types[i] = mailTypes.get(i).getClass().newInstance();
+			}
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
 		return types;
 	}
 
@@ -67,7 +81,11 @@ public class MailManager {
 	public MailType getMailTypeByName(String name) {
 		for(MailType mailType : mailTypes) {
 			if(mailType.getDisplayName().equalsIgnoreCase(name))
-				return mailType.clone();
+				try {
+					return mailType.getClass().newInstance();
+				} catch (Exception e) {
+					if(Config.ENABLE_DEBUG) e.printStackTrace();
+				}
 		}
 		return null;
 	}
@@ -75,7 +93,11 @@ public class MailManager {
 	public MailType getMailTypeByIdentifier(String identifier) {
 		for(MailType mailType : mailTypes) {
 			if(mailType.getIdentifier().equalsIgnoreCase(identifier))
-				return mailType.clone();
+				try {
+					return mailType.getClass().newInstance();
+				} catch (Exception e) {
+					if(Config.ENABLE_DEBUG) e.printStackTrace();
+				}
 		}
 		return null;
 	}

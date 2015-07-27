@@ -2,6 +2,8 @@ package com.gmail.erikbigler.postalservice.backend;
 
 import java.util.UUID;
 
+import org.bukkit.entity.Player;
+
 import com.gmail.erikbigler.postalservice.config.Config;
 
 public class UserFactory {
@@ -13,9 +15,13 @@ public class UserFactory {
 		return null;
 	}
 
-	public static User getUser(UUID uuid) {
+	public static User getUser(Player player) {
 		if (Config.USE_DATABASE) {
-			return new DBUser(uuid);
+			if (Config.USE_UUIDS) {
+				return new DBUser(player.getUniqueId());
+			} else {
+				return new DBUser(player.getName());
+			}
 		}
 		return null;
 	}

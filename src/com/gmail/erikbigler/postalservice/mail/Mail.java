@@ -3,6 +3,7 @@ package com.gmail.erikbigler.postalservice.mail;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import com.gmail.erikbigler.postalservice.config.Config;
 
@@ -65,8 +66,13 @@ public class Mail {
 		return time;
 	}
 
-	public String getTimeString() {
+	public String getTimeString(String timeZone) {
 		SimpleDateFormat sdf = new SimpleDateFormat(Config.DATE_FORMAT, Locale.forLanguageTag(Config.LOCALE_TAG));
+		if(timeZone != null && !timeZone.equalsIgnoreCase("null") && !timeZone.isEmpty()) {
+			sdf.setTimeZone(TimeZone.getTimeZone(timeZone));
+		} else {
+			sdf.setTimeZone(TimeZone.getTimeZone(Config.DEFAULT_TIMEZONE));
+		}
 		return sdf.format(time);
 	}
 

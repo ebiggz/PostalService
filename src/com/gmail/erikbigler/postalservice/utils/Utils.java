@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -19,15 +20,23 @@ import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
 import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.FormattedText;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.mail.MailManager;
+import com.gmail.erikbigler.postalservice.mail.MailType;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 
 public class Utils {
 
 	public static void debugMessage(String message) {
 		if (Config.ENABLE_DEBUG)
-			PostalService.getPlugin().getLogger().info(message);
+			PostalService.getPlugin().getLogger().info("DEBUG: " + message);
 	}
 
 	public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
@@ -113,6 +122,36 @@ public class Utils {
 		return false;
 	}
 
+	public static InteractiveMessage getComposeMessage(boolean isReply, Player player) {
+		InteractiveMessage im = new InteractiveMessage();
+		if(isReply) {
+			im.addElement(Phrases.REPLY_TEXT.toPrefixedString() + ": ");
+		} else {
+			im.addElement(Phrases.COMPOSE_TEXT.toPrefixedString() + ": ");
+		}
+		MailType[] types = MailManager.getInstance().getMailTypes();
+		int remaining = types.length;
+		for(MailType type : types) {
+			if(!PermissionHandler.playerCanMailType(type.getDisplayName(), player)) continue;
+			String attachArg = "";
+			if(type.getAttachmentCommandArgument() != null && !type.getAttachmentCommandArgument().isEmpty()) {
+				attachArg = " " + type.getAttachmentCommandArgument() + ":";
+			}
+			InteractiveMessageElement ime = new InteractiveMessageElement(
+					new FormattedText(ChatColor.stripColor(type.getDisplayName()), ChatColor.AQUA),
+					HoverEvent.SHOW_TEXT,
+					new FormattedText(ChatColor.stripColor(type.getHoveroverDescription()), ChatColor.GOLD),
+					ClickEvent.SUGGEST_COMMAND,
+					"/" + Phrases.COMMAND_MAIL.toString() + " " + type.getDisplayName().toLowerCase() + " " + Phrases.COMMAND_ARG_TO.toString() + ": " + Phrases.COMMAND_ARG_MESSAGE.toString() + ":" + attachArg);
+			im.addElement(ime);
+			remaining--;
+			if(remaining > 0) {
+				im.addElement(", ", ChatColor.AQUA);
+			}
+		}
+		return im;
+	}
+
 	public static Player getPlayerFromIdentifier(String identifier) {
 		Player player;
 		if (Config.USE_UUIDS) {
@@ -166,13 +205,10 @@ public class Utils {
 			} else {
 				return ((Player[]) Bukkit.class.getMethod("getOnlinePlayers", new Class<?>[0]).invoke(null, new Object[0]));
 			}
-		} catch (NoSuchMethodException ex) {
-		} // can never happen
-		catch (InvocationTargetException ex) {
-		} // can also never happen
-		catch (IllegalAccessException ex) {
-		} // can still never happen
-		return null;
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
+		}
+		return new Player[0];
 	}
 
 	public static List<String> getNamesThatStartWith(String prefix) {

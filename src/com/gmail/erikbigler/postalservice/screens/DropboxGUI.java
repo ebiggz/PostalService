@@ -35,7 +35,7 @@ public class DropboxGUI implements GUI {
 	@Override
 	public Inventory createInventory(Player player) {
 		Inventory inventory = Bukkit.createInventory(null, 9*5, Phrases.DROPBOX_TITLE.toString());
-		User user = UserFactory.getUser(player.getUniqueId());
+		User user = UserFactory.getUser(player.getName());
 		List<ItemStack> dbItems = user.getDropbox(Config.getWorldGroupFromWorld(player.getWorld().getName()));
 		if(dbItems != null) {
 			for(ItemStack item : dbItems) {
@@ -77,7 +77,7 @@ public class DropboxGUI implements GUI {
 			if(clickedEvent.getSlot() == 40) {
 				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
 					if(clickedEvent.getClick() == ClickType.RIGHT) {
-						GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
+						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked)), whoClicked);
 					} else {
 						whoClicked.closeInventory();
 						MailType type = MailManager.getInstance().getMailTypeByIdentifier("package");
@@ -106,7 +106,7 @@ public class DropboxGUI implements GUI {
 				items.add(item);
 			}
 		}
-		UserFactory.getUser(whoClosed.getUniqueId()).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().toString()));
+		UserFactory.getUser(whoClosed).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().toString()));
 	}
 
 	@Override

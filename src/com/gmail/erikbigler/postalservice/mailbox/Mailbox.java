@@ -3,15 +3,16 @@ package com.gmail.erikbigler.postalservice.mailbox;
 import org.bukkit.Location;
 
 import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
 
 public class Mailbox {
 
 	private Location location;
-	private User owner;
+	private String playerID;
 
-	public Mailbox(Location location, User owner) {
+	public Mailbox(Location location, String playerID) {
 		this.location = location;
-		this.owner = owner;
+		this.playerID = playerID;
 	}
 
 	/** @return the location of this mailbox */
@@ -21,6 +22,6 @@ public class Mailbox {
 
 	/** @return the mailbox's owner */
 	public User getOwner() {
-		return owner;
+		return UserFactory.getUserFromIdentifier(playerID);
 	}
 }

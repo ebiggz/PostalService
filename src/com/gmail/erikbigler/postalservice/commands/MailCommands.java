@@ -8,11 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.FormattedText;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
@@ -22,6 +17,8 @@ import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
@@ -34,59 +31,59 @@ public class MailCommands implements CommandExecutor {
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		Player cmdPlayer = (Player) sender;
-		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail")) {
-			if(commandLabel.equalsIgnoreCase("mailadmin") && !sender.isOp()){
+
+		if(Config.playerIsInBlacklistedWorld(cmdPlayer)) {
+			if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
+				sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
 				return true;
+			} else {
+				sender.sendMessage(Phrases.ALERT_BLACKLISTED_WORLD_OVERRIDE.toPrefixedString());
 			}
+		}
+
+		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail")) {
 
 			if(args.length == 0) {
-				GUIManager.getInstance().showGUI(new MainMenuGUI(), cmdPlayer);
-				//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
+				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
+					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
+				} else {
+					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(cmdPlayer)), cmdPlayer);
+				}
+				return true;
 			}
 			else if(args.length == 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_COMPOSE.toString())) {
-					if(Config.REQUIRE_NEARBY_MAILBOX) {
+					//check if a mailbox should be near by
+					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
 						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(cmdPlayer.getLocation(), 6);
 						if(!nearMailbox) {
 							sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
-							return true;
 						}
+					} else {
+						Utils.getComposeMessage(false, cmdPlayer).sendTo(sender);
 					}
-					InteractiveMessage im = new InteractiveMessage();
-					im.addElement(Phrases.COMPOSE_TEXT.toPrefixedString() + ": ");
-					MailType[] types = MailManager.getInstance().getMailTypes();
-					int remaining = types.length;
-					for(MailType type : types) {
-						String attachArg = "";
-						if(type.getAttachmentCommandArgument() != null && !type.getAttachmentCommandArgument().isEmpty()) {
-							attachArg = " " + type.getAttachmentCommandArgument() + ":";
-						}
-						InteractiveMessageElement ime = new InteractiveMessageElement(
-								new FormattedText(ChatColor.stripColor(type.getDisplayName()), ChatColor.AQUA),
-								HoverEvent.SHOW_TEXT,
-								new FormattedText(ChatColor.stripColor(type.getHoveroverDescription()), ChatColor.GOLD),
-								ClickEvent.SUGGEST_COMMAND,
-								"/" + Phrases.COMMAND_MAIL.toString() + " " + type.getDisplayName().toLowerCase() + " " + Phrases.COMMAND_ARG_TO.toString() + ": " + Phrases.COMMAND_ARG_MESSAGE.toString() + ":" + attachArg);
-						im.addElement(ime);
-						remaining--;
-						if(remaining > 0) {
-							im.addElement(", ", ChatColor.AQUA);
-						}
-					}
-					im.sendTo(sender);
+					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_HELP.toString())) {
+					// TODO: create help menu
 					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service Help", helpData, 1);
+					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_CHECK.toString())) {
 					User user = UserFactory.getUser(sender.getName());
 					Utils.unreadMailAlert(user, false);
+					return true;
 				}
 			}
 
 			else {
+				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
+					UserFactory.getUser(cmdPlayer).setTimeZone(args[1]);
+					sender.sendMessage(Phrases.ALERT_TIMEZONE_SET.toPrefixedString());
+					return true;
+				}
 				//check if a mailbox should be near by
-				if(Config.REQUIRE_NEARBY_MAILBOX) {
+				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
 					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(cmdPlayer.getLocation(), 6);
 					if(!nearMailbox) {
 						sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
@@ -179,10 +176,11 @@ public class MailCommands implements CommandExecutor {
 					sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", completedName));
 				} catch (MailException e) {
 					sender.sendMessage(Phrases.PREFIX.toString() + " " + e.getErrorMessage());
-					return true;
 				}
+				return true;
 			}
 		}
+		sender.sendMessage(Phrases.ERROR_UNKNOWN_COMMAND.toPrefixedString().replace("%command%", "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString()));
 		return true;
 	}
 }

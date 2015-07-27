@@ -9,21 +9,23 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
+import com.gmail.erikbigler.postalservice.mailbox.Mailbox;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
 
 public class MailboxListener implements Listener {
 
-	//TODO: Create phrases for mailboxlistner
-
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onBlockBreak(final BlockBreakEvent event) {
 		if(event.getBlock().getType() == Material.CHEST) {
-			if(MailboxManager.getInstance().locationHasMailbox(event.getBlock().getLocation())) {
+			Mailbox mb = MailboxManager.getInstance().getMailbox(event.getBlock().getLocation());
+			if(mb != null) {
 				event.setCancelled(true);
-				//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] This chest is registered as a mailbox. The owner must deregister the chest before it can be removed.");
+				event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_BREAK.toPrefixedString());
 			}
 		}
 	}
@@ -37,7 +39,7 @@ public class MailboxListener implements Listener {
 				if(MailboxManager.getInstance().mailboxSelectors.containsKey(event.getPlayer())) {
 					MailboxManager.getInstance().mailboxSelectors.remove(event.getPlayer());
 					event.setCancelled(true);
-					//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] Selected block is not a chest! Mailbox selection canceled.");
+					event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NOT_CHEST.toPrefixedString());
 				}
 			}
 			return;
@@ -46,7 +48,7 @@ public class MailboxListener implements Listener {
 			if(MailboxManager.getInstance().locationHasMailbox(event.getClickedBlock().getLocation())) {
 				if(!event.getPlayer().isSneaking()) {
 					event.setCancelled(true);
-					GUIManager.getInstance().showGUI(new MainMenuGUI(), event.getPlayer());
+					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(event.getPlayer())), event.getPlayer());
 				}
 			}
 		} else if(event.getAction() == Action.LEFT_CLICK_BLOCK) {
@@ -57,34 +59,34 @@ public class MailboxListener implements Listener {
 				if(selectType == MailboxSelect.SET) {
 					try {
 						MailboxManager.getInstance().addMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
-						//event.getPlayer().sendMessage(ChatColor.YELLOW + "[MPS]" + ChatColor.AQUA + " Mailbox registered!");
+						event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_REG.toPrefixedString());
 					} catch (MailboxException me) {
 						switch(me.getReason()) {
 						case ALREADY_EXISTS:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] A mailbox already exsists here! Selection canceled.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_ALREADY_EXISTS.toPrefixedString());
 							break;
 						case NO_PERMISSION:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] Unable to set mailbox, you don't have permission to build or place here! Selection canceled.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NO_PERM.toPrefixedString());
 							break;
 						default:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] There was an error setting your mailbox. Please try again.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());
 							break;
 						}
 					}
 				} else {
 					try {
 						MailboxManager.getInstance().removeMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
-						//event.getPlayer().sendMessage(ChatColor.YELLOW + "[MPS]" + ChatColor.AQUA + " Mailbox unregistered!");
+						event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_UNREG.toPrefixedString());
 					} catch (MailboxException me) {
 						switch(me.getReason()) {
 						case DOESNT_EXIST:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] A mailbox doesn't exsist here! Selection canceled.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_DOESNT_EXIST.toPrefixedString());
 							break;
 						case NOT_OWNER:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] Unable to remove mailbox, you don't own this mailbox! Selection canceled.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NOT_OWNER.toPrefixedString());
 							break;
 						default:
-							//event.getPlayer().sendMessage(ChatColor.RED + "[MPS] There was an error setting your mailbox. Please try again.");
+							event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());
 							break;
 						}
 					}

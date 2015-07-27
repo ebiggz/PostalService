@@ -2,9 +2,11 @@ package com.gmail.erikbigler.postalservice.config;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -30,24 +32,35 @@ public class Config {
 	private static List<String> DISABLED_MAILTYPES;
 	public static boolean ENABLE_DEBUG;
 	public static boolean USE_DATABASE = true;
+	public static boolean USE_UUIDS;
+	public static boolean FORCE_UUIDS = false;
+	public static boolean CHECK_FOR_UPDATES;
+	public static AutoDownloadType AUTO_DOWNLOAD_TYPE;
+
 	// User Settings
 	public static Map<String, Integer> INBOX_SIZES;
 	public static boolean UNREAD_NOTIFICATION_WORLD_CHANGE;
 	public static boolean UNREAD_NOTIFICATION_LOGIN;
-	public static boolean USE_UUIDS;
+
 	// Mailbox Settings
 	public static boolean ENABLE_MAILBOXES;
-	public static boolean REQUIRE_NEARBY_MAILBOX;
+	public static boolean REQUIRE_MAILBOX;
 	public static Map<String, Integer> MAILBOX_LIMITS;
 	// Trading Post Settings
 	public static boolean ENABLE_TRADINGPOST;
 	public static boolean REQUIRE_SAME_MAILBOX;
-	public static boolean REQUIRE_CROSS_WORLD_TRADES;
+	public static boolean ALLOW_CROSS_WORLD_TRADES;
 	// Language Settings
 	public static String DATE_FORMAT;
 	public static String LOCALE_TAG;
+	public static String DEFAULT_TIMEZONE;
+	public static List<String> TIMEZONES;
 
 	private static double CONFIG_VERSION = 1.0;
+
+	public static enum AutoDownloadType {
+		BUGFIXES, ALL, NONE
+	}
 
 	public static void loadFile() {
 		loadConfig();
@@ -75,6 +88,7 @@ public class Config {
 	}
 
 	private static void loadOptions() {
+		// TODO: load all options
 		FileConfiguration config = PostalService.getPlugin().getConfig();
 		/* Load world group options */
 		ENABLE_WORLD_GROUPS = config.getBoolean("enable-world-groups", false);
@@ -95,6 +109,7 @@ public class Config {
 			ENABLE_WORLD_GROUPS = false;
 		}
 		MAILTYPES_IGNORE_WORLD_GROUPS = config.getStringList("mail-types-that-ignore-world-groups");
+		WORLD_BLACKLIST = config.getStringList("world-blacklist");
 		/* Load general options */
 		DISABLED_MAILTYPES = new ArrayList<String>();
 		ConfigurationSection mtConfigSection = config.getConfigurationSection("enabled-mail-types");
@@ -104,14 +119,41 @@ public class Config {
 					DISABLED_MAILTYPES.add(mailTypeNode);
 			}
 		}
-		USE_UUIDS = config.getBoolean("use-uuids", true);
+
+		String uuidValue = config.getString("use-uuids", "true");
+		try {
+			USE_UUIDS = Boolean.parseBoolean(uuidValue);
+		} catch (Exception e) {
+			USE_UUIDS = true;
+			if(uuidValue.equalsIgnoreCase("always")) {
+				FORCE_UUIDS = true;
+			}
+		}
 		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
-		/* Load language options */
+		CHECK_FOR_UPDATES = config.getBoolean("update-checker.enabled", true);
+		String autoDownloadSetting = config.getString("update-checker.auto-download", "all");
+		AUTO_DOWNLOAD_TYPE = AutoDownloadType.ALL;
+		if(autoDownloadSetting.equalsIgnoreCase("bugfix")) {
+			AUTO_DOWNLOAD_TYPE = AutoDownloadType.BUGFIXES;
+		}
+		else if(autoDownloadSetting.equalsIgnoreCase("none") || autoDownloadSetting.equalsIgnoreCase("off") || autoDownloadSetting.equalsIgnoreCase("false")) {
+			AUTO_DOWNLOAD_TYPE = AutoDownloadType.NONE;
+		}
+
+		/* Load localization options */
 		DATE_FORMAT = config.getString("date-format", "MMM d, yyyy h:mm a");
 		LOCALE_TAG = config.getString("locale-tag", "en-US");
+		DEFAULT_TIMEZONE = config.getString("time-zone");
+		List<String> zonesTrim = new ArrayList<String>();
+		for(String zone : TimeZone.getAvailableIDs()) {
+			if(zone.length() > 3) continue;
+			zonesTrim.add(zone);
+		}
+		Collections.sort(zonesTrim);
+		TIMEZONES = zonesTrim;
 		/* User Settings */
 		INBOX_SIZES = new HashMap<String, Integer>();
-		ConfigurationSection inboxLimitsCS = config.getConfigurationSection("inbox-sizes");
+		ConfigurationSection inboxLimitsCS = config.getConfigurationSection("box-sizes");
 		if(inboxLimitsCS != null) {
 			for(String permGroup : inboxLimitsCS.getKeys(false)) {
 				INBOX_SIZES.put(permGroup, inboxLimitsCS.getInt(permGroup, 50));
@@ -120,6 +162,9 @@ public class Config {
 		if(!INBOX_SIZES.containsKey("default")) {
 			INBOX_SIZES.put("default", 50);
 		}
+		/* Mailbox Settings */
+		ENABLE_MAILBOXES = config.getBoolean("enable-mailboxes", true);
+		REQUIRE_MAILBOX = config.getBoolean("require-mailbox", true);
 		MAILBOX_LIMITS = new HashMap<String, Integer>();
 		ConfigurationSection mailboxLimitsCS = config.getConfigurationSection("mailbox-limits");
 		if(mailboxLimitsCS != null) {
@@ -146,6 +191,10 @@ public class Config {
 				return true;
 		}
 		return false;
+	}
+
+	public static boolean playerIsInBlacklistedWorld(Player player) {
+		return WORLD_BLACKLIST.contains(player.getWorld().getName());
 	}
 
 	@SuppressWarnings("deprecation")

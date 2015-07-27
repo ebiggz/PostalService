@@ -7,9 +7,11 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailTabCompleter implements TabCompleter {
@@ -22,13 +24,21 @@ public class MailTabCompleter implements TabCompleter {
 				return null;
 			}
 			else if(args.length == 1) {
-				List<String> mailTypeNames = new ArrayList<String>();
+				List<String> arg1List = new ArrayList<String>();
 				for(String name : MailManager.getInstance().getMailTypeNames()) {
-					mailTypeNames.add(name.toLowerCase());
+					if(!PermissionHandler.playerCanMailType(name, sender)) continue;
+					arg1List.add(name.toLowerCase());
 				}
-				return mailTypeNames;
+				arg1List.add(Phrases.COMMAND_ARG_CHECK.toString());
+				arg1List.add(Phrases.COMMAND_ARG_TIMEZONE.toString());
+				arg1List.add(Phrases.COMMAND_ARG_HELP.toString());
+				return arg1List;
 			}
 			else {
+
+				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
+					return Config.TIMEZONES;
+				}
 
 				List<String> matches = Utils.getNamesThatStartWith(args[args.length-1]);
 				if(!matches.isEmpty()) return matches;
