@@ -29,7 +29,7 @@ public class MailboxCommands implements CommandExecutor {
 		Player player = (Player) sender;
 
 		if(Config.playerIsInBlacklistedWorld(player)) {
-			if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
+			if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender, false)) {
 				sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
 				return true;
 			} else {
@@ -43,15 +43,19 @@ public class MailboxCommands implements CommandExecutor {
 				//FancyMenu.showClickableCommandList(sender, commandLabel, "Postal Service", commandData, 1);
 			} else if(args.length == 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString())) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, sender, true)) return true;
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.SET);
 					sender.sendMessage(Phrases.ALERT_MAILBOX_SET.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVE.toString())) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVE, sender, true)) return true;
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.REMOVE);
 					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVEALL.toString())) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALL, sender, true)) return true;
 					MailboxManager.getInstance().removeAllMailboxes(sender.getName());
 					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_FIND.toString())) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_FIND, sender, true)) return true;
 					if(MailboxManager.getInstance().markNearbyMailboxes(player)) {
 						sender.sendMessage(Phrases.ALERT_MAILBOX_FIND.toPrefixedString());
 					} else {

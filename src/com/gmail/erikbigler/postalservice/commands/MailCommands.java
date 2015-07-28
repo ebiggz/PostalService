@@ -42,7 +42,7 @@ public class MailCommands implements CommandExecutor {
 		if(sender instanceof Player) {
 			player = (Player) sender;
 			if(Config.playerIsInBlacklistedWorld(player)) {
-				if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
+				if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender, false)) {
 					sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
 					return true;
 				} else {
@@ -56,7 +56,8 @@ public class MailCommands implements CommandExecutor {
 		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail") || commandLabel.equalsIgnoreCase("postalservice") || commandLabel.equalsIgnoreCase("ps") || commandLabel.equalsIgnoreCase("m")) {
 			if(args.length == 0) {
 				if(senderIsConsole(sender)) return true;
-				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
+				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, sender, true)) return true;
+				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
 				} else {
 					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
@@ -67,7 +68,7 @@ public class MailCommands implements CommandExecutor {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_COMPOSE.toString())) {
 					if(senderIsConsole(sender)) return true;
 					//check if a mailbox should be near by
-					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
+					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
 						if(!nearMailbox) {
 							sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
@@ -89,31 +90,28 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_RELOAD.toString())) {
-					if(PermissionHandler.playerHasPermission(Perm.RELOAD, sender)) {
-						Config.loadFile();
-						Language.loadFile();
-						UUIDUtils.loadFile();
-						sender.sendMessage(Phrases.ALERT_RELOAD_COMPLETE.toPrefixedString());
-					}
+					if(!PermissionHandler.playerHasPermission(Perm.RELOAD, sender, true)) return true;
+					Config.loadFile();
+					Language.loadFile();
+					UUIDUtils.loadFile();
+					sender.sendMessage(Phrases.ALERT_RELOAD_COMPLETE.toPrefixedString());
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_DOWNLOAD.toString())) {
-					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender)) {
-						if(PostalService.getUpdater().getResult() == UpdateResult.UPDATE_AVAILABLE) {
-							sender.sendMessage(Phrases.ALERT_UPDATE_DOWNLOAD_BEGUN.toPrefixedString().replace("%version%", PostalService.getUpdater().getLatestName().replace("PostalService v", "")));
-							PostalService.downloadUpdate(sender);
-						} else {
-							sender.sendMessage(Phrases.ERORR_UPDATE_COMMAND_NONE.toPrefixedString());
-						}
-						return true;
+					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
+					if(PostalService.getUpdater().getResult() == UpdateResult.UPDATE_AVAILABLE) {
+						sender.sendMessage(Phrases.ALERT_UPDATE_DOWNLOAD_BEGUN.toPrefixedString().replace("%version%", PostalService.getUpdater().getLatestName().replace("PostalService v", "")));
+						PostalService.downloadUpdate(sender);
+					} else {
+						sender.sendMessage(Phrases.ERORR_UPDATE_COMMAND_NONE.toPrefixedString());
 					}
+					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_UPDATE.toString())) {
-					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender)) {
-						sender.sendMessage(Phrases.ALERT_UPDATE_CHECK_BEGUN.toPrefixedString());
-						PostalService.manualUpdateCheck(sender);
-						return true;
-					}
+					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
+					sender.sendMessage(Phrases.ALERT_UPDATE_CHECK_BEGUN.toPrefixedString());
+					PostalService.manualUpdateCheck(sender);
+					return true;
 				}
 			}
 
@@ -125,7 +123,7 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				//check if a mailbox should be near by
-				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
+				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
 					if(!nearMailbox) {
 						sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());

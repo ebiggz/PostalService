@@ -105,7 +105,7 @@ public class MailboxManager {
 			throw new MailboxException(Reason.DOESNT_EXIST);
 		} else if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
-		} else if(!mb.getOwner().getPlayerName().equals(player.getName()) && !PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEOTHER, player)) {
+		} else if(!mb.getOwner().getPlayerName().equals(player.getName()) && !PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEOTHER, player, false)) {
 			throw new MailboxException(Reason.NOT_OWNER);
 		} else {
 			if(Config.USE_DATABASE) {

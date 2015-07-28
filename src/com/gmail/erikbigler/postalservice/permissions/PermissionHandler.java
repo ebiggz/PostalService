@@ -12,6 +12,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.config.WorldGroup;
 
 public class PermissionHandler {
@@ -21,42 +22,62 @@ public class PermissionHandler {
 	}
 
 
-	public static boolean playerHasPermission(Perm perm, CommandSender player) {
+	public static boolean playerHasPermission(Perm perm, CommandSender player, boolean notify) {
+		boolean hasPerm = false;
 		switch(perm) {
 		case HELP:
-			return player.hasPermission("postalservice.help");
+			hasPerm = player.hasPermission("postalservice.help");
+			break;
 		case MAIL:
-			return player.hasPermission("postalservice.mail");
+			hasPerm = player.hasPermission("postalservice.mail");
+			break;
 		case MAILBOX_FIND:
-			return player.hasPermission("postalservice.mailbox.find");
+			hasPerm = player.hasPermission("postalservice.mailbox.find");
+			break;
 		case MAILBOX_REMOVE:
-			return player.hasPermission("postalservice.mailbox.remove");
+			hasPerm = player.hasPermission("postalservice.mailbox.remove");
+			break;
 		case MAILBOX_REMOVEALL:
-			return player.hasPermission("postalservice.mailbox.removeall");
+			hasPerm = player.hasPermission("postalservice.mailbox.removeall");
+			break;
 		case MAILBOX_REMOVEALLOTHER:
-			return player.hasPermission("postalservice.mailbox.removeallother");
+			hasPerm = player.hasPermission("postalservice.mailbox.removeallother");
+			break;
 		case MAILBOX_REMOVEOTHER:
-			return player.hasPermission("postalservice.mailbox.removeother");
+			hasPerm = player.hasPermission("postalservice.mailbox.removeother");
+			break;
 		case MAILBOX_SET:
-			return player.hasPermission("postalservice.mailbox.set");
+			hasPerm = player.hasPermission("postalservice.mailbox.set");
+			break;
 		case MAILBOX_SETOTHER:
-			return player.hasPermission("postalservice.mailbox.setother");
+			hasPerm = player.hasPermission("postalservice.mailbox.setother");
+			break;
 		case MAIL_CHECK:
-			return player.hasPermission("postalservice.mail.check");
+			hasPerm = player.hasPermission("postalservice.mail.check");
+			break;
 		case MAIL_READOTHER:
-			return player.hasPermission("postalservice.mail.readother");
+			hasPerm = player.hasPermission("postalservice.mail.readother");
+			break;
 		case RELOAD:
-			return player.hasPermission("postalservice.reload");
+			hasPerm = player.hasPermission("postalservice.reload");
+			break;
 		case UPDATE:
-			return player.hasPermission("postalservice.update");
+			hasPerm = player.hasPermission("postalservice.update");
+			break;
 		case OVERRIDE_REQUIRE_MAILBOX:
-			return player.hasPermission("postalservice.overriderequiremailbox");
+			hasPerm = player.hasPermission("postalservice.overriderequiremailbox");
+			break;
 		case OVERRIDE_WORLD_BLACKLIST:
-			return player.hasPermission("postalservice.overrideworldblacklist");
+			hasPerm = player.hasPermission("postalservice.overrideworldblacklist");
+			break;
 		case MAIL_READ:
-			return player.hasPermission("postalservice.mail.read");
+			hasPerm = player.hasPermission("postalservice.mail.read");
+			break;
 		}
-		return false;
+		if(!hasPerm) {
+			if(notify) player.sendMessage(Phrases.ERROR_NO_PERMISSION.toPrefixedString());
+		}
+		return hasPerm;
 	}
 
 	public static boolean playerCanMailType(String typeName, CommandSender sender) {

@@ -118,13 +118,12 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString(), "m", "ps", "postalservice");
+		this.registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
 		getCommand("mail").setExecutor(new MailCommands());
 		getCommand("mail").setTabCompleter(new MailTabCompleter());
 
-		this.registerCommand("mailbox", Phrases.COMMAND_MAILBOX.toString(), "mb");
+		this.registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
 		getCommand("mailbox").setExecutor(new MailboxCommands());
-
 
 		/*
 		 * Connect to database
@@ -166,7 +165,7 @@ public class PostalService extends JavaPlugin {
 		if(vault != null) {
 			getLogger().info("Hooked into Vault!");
 			if(!setupEconomy()) {
-				getLogger().warning("No plugin to handle currency. Payment mail type will be not be available if enabled!");
+				getLogger().warning("No plugin to handle currency. Payment mail type will be not be available!");
 			}
 			if(!setupPermissions()) {
 				getLogger().warning("No plugin to handle permission groups. Permission group settings will be ignored!");

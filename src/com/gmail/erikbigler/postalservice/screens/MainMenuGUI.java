@@ -84,9 +84,8 @@ public class MainMenuGUI implements GUI {
 	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickedEvent) {
 
 		if(!whoClicked.getName().equals(accountOwner.getPlayerName())) {
-			if(!PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, whoClicked)) {
+			if(!PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, whoClicked, true)) {
 				whoClicked.closeInventory();
-				whoClicked.sendMessage(Phrases.ERROR_NO_PERMISSION.toPrefixedString());
 				return;
 			}
 		}
