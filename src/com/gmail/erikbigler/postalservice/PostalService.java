@@ -1,11 +1,13 @@
 package com.gmail.erikbigler.postalservice;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandMap;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -13,6 +15,10 @@ import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
+import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.database.Database;
@@ -33,6 +39,8 @@ import com.gmail.erikbigler.postalservice.mail.mailtypes.Payment;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Updater;
+import com.gmail.erikbigler.postalservice.utils.Updater.UpdateCallback;
+import com.gmail.erikbigler.postalservice.utils.Updater.UpdateResult;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 import net.milkbowl.vault.economy.Economy;
@@ -51,12 +59,14 @@ public class PostalService extends JavaPlugin {
 	public static boolean hasPermPlugin = false;
 	public static boolean hasEconPlugin = false;
 	private static int projectId = 71726;
+	private static File file;
 
 	/** Called when PostalService is being enabled */
 	@Override
 	public void onEnable() {
 
 		plugin = this;
+		file = getFile();
 		new Utils();
 
 		/*
@@ -72,7 +82,6 @@ public class PostalService extends JavaPlugin {
 			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
-
 		/*
 		 * Check for and setup vault
 		 */
@@ -109,14 +118,13 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString());
+		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString(), "m", "ps", "postalservice");
 		getCommand("mail").setExecutor(new MailCommands());
 		getCommand("mail").setTabCompleter(new MailTabCompleter());
-		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
 
-		this.registerCommand("mailbox", Phrases.COMMAND_MAILBOX.toString());
+		this.registerCommand("mailbox", Phrases.COMMAND_MAILBOX.toString(), "mb");
 		getCommand("mailbox").setExecutor(new MailboxCommands());
-		getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
+
 
 		/*
 		 * Connect to database
@@ -257,12 +265,48 @@ public class PostalService extends JavaPlugin {
 		}
 	}
 
+	public static void manualUpdateCheck(final CommandSender sender) {
+		updater = new Updater(plugin, projectId, file, Updater.UpdateType.NO_DOWNLOAD, new UpdateCallback() {
+			@Override
+			public void onFinish(Updater updater) {
+				if(updater.getResult() == UpdateResult.UPDATE_AVAILABLE) {
+					InteractiveMessage im = new InteractiveMessage(new InteractiveMessageElement(Phrases.ALERT_UPDATE_AVAILABLE.toPrefixedString()));
+					im.addElement(
+							new InteractiveMessageElement(Phrases.UPDATE_BUTTON_VIEW_NOTES.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_VIEW_NOTES_HOVER.toString(), ClickEvent.OPEN_URL, updater.getLatestReleaseNotesLink()));
+					im.addElement(" ");
+					im.addElement(
+							new InteractiveMessageElement(Phrases.UPDATE_BUTTON_DOWNLOAD.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_DOWNLOAD_HOVER.toString(), ClickEvent.RUN_COMMAND, "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString()));
+					im.sendTo(sender);
+				} else {
+					sender.sendMessage(Phrases.ERORR_UPDATE_DOWNLOAD_FAIL.toPrefixedString());
+				}
+			}
+
+		}, true);
+	}
+
+	public static void downloadUpdate(final CommandSender sender) {
+		if(updater.getResult() == UpdateResult.UPDATE_AVAILABLE) {
+			updater = new Updater(plugin, projectId, file, Updater.UpdateType.NO_VERSION_CHECK, new UpdateCallback() {
+				@Override
+				public void onFinish(Updater updater) {
+					if(updater.getResult() == UpdateResult.SUCCESS) {
+						sender.sendMessage(Phrases.ALERT_UPDATE_DOWNLOAD_SUCCESS.toPrefixedString());
+					} else {
+						sender.sendMessage(Phrases.ERORR_UPDATE_DOWNLOAD_FAIL.toPrefixedString());
+					}
+				}
+
+			}, true);
+		}
+	}
+
 	/** Functions for registering command aliases in code. */
 
 	private void registerCommand(String... aliases) {
 		PluginCommand command = getCommand(aliases[0], this);
 		command.setAliases(Arrays.asList(aliases));
-		getCommandMap().register(plugin.getDescription().getName(), command);
+		getCommandMap().register("", command);
 	}
 
 	private static PluginCommand getCommand(String name, Plugin plugin) {
@@ -293,6 +337,8 @@ public class PostalService extends JavaPlugin {
 		}
 		return commandMap;
 	}
+
+	//knownCommands
 
 	private class UpdateCheckTask extends BukkitRunnable {
 
@@ -333,12 +379,13 @@ public class PostalService extends JavaPlugin {
 					plugin.getLogger().info("You are up to date!");
 					break;
 				case SUCCESS:
-					plugin.getLogger().info("The update was succussfully downloaded and will be available after the next server restart.");
-					plugin.getLogger().info("Read the release notes here: " + updater.getLatestReleaseNotesLink());
+					plugin.getLogger().info("An update was succussfully downloaded and will be available after the next server restart.");
+					plugin.getLogger().info("Read the update notes here: " + updater.getLatestReleaseNotesLink());
 					break;
 				case UPDATE_AVAILABLE:
-					plugin.getLogger().info("There is a new version available! New version: " + updater.getLatestName());
-					plugin.getLogger().info("Download the update here: " + updater.getLatestReleaseNotesLink());
+					plugin.getLogger().info("There is a new version available! (New version: " + updater.getLatestName() + " Current version: " + plugin.getDescription().getVersion() + ")");
+					plugin.getLogger().info("Read the update notes here: " + updater.getLatestReleaseNotesLink());
+					plugin.getLogger().info("Or type \"/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_UPDATE.toString() + "\" to download the update now.");
 					break;
 				}
 			}

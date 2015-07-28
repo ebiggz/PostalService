@@ -41,7 +41,7 @@ public class InboxTypeGUI implements GUI {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
 		this.accountOwner = accountOwner;
-		this.mails = accountOwner.getBoxFromType(type, Config.getWorldGroupFromWorld(Utils.getPlayerFromIdentifier(accountOwner.getIdentifier()).getWorld()));
+		this.mails = accountOwner.getBoxFromType(type);
 	}
 
 	public BoxType getType() {
@@ -148,17 +148,19 @@ public class InboxTypeGUI implements GUI {
 				else if(clickedEvent.getClick() == ClickType.RIGHT) {
 					if(boxType == BoxType.INBOX) {
 						if(mail.hasAttachments() && !mail.isClaimed()) {
-							if(mail.getType().useSummaryScreen()) {
-								GUIManager.getInstance().showGUI(new SummaryScreenGUI(mail, boxType, pageNumber), whoClicked);
-							} else {
-								try {
-									mail.getType().administerAttachments(whoClicked);
-									accountOwner.markMailAsClaimed(mail);
-									whoClicked.sendMessage(Phrases.PREFIX + " " + mail.getType().getAttachmentClaimMessage());
-									whoClicked.closeInventory();
-								} catch (MailException e) {
-									whoClicked.closeInventory();
-									whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + e.getMessage());
+							if(mail.getWorldGroup() == Config.getWorldGroupFromWorld(whoClicked.getWorld()) || mail.getWorldGroup().getName().equalsIgnoreCase("none") || Config.getMailTypesThatIgnoreWorldGroups().contains(mail.getType().getDisplayName())) {
+								if(mail.getType().useSummaryScreen()) {
+									GUIManager.getInstance().showGUI(new SummaryScreenGUI(mail, boxType, pageNumber), whoClicked);
+								} else {
+									try {
+										mail.getType().administerAttachments(whoClicked);
+										accountOwner.markMailAsClaimed(mail);
+										whoClicked.sendMessage(Phrases.PREFIX + " " + mail.getType().getAttachmentClaimMessage());
+										whoClicked.closeInventory();
+									} catch (MailException e) {
+										whoClicked.closeInventory();
+										whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + e.getMessage());
+									}
 								}
 							}
 						}
@@ -218,7 +220,7 @@ public class InboxTypeGUI implements GUI {
 				lore.add(ChatColor.YELLOW + line);
 			}
 		}
-		lore.add(boxType.equals(BoxType.INBOX) ? ChatColor.GRAY + "  " + Phrases.FROM.toString() + " " + ChatColor.WHITE + mail.getSender() : ChatColor.GRAY + "  " + Phrases.TO.toString() + " " + ChatColor.WHITE + mail.getRecipient());
+		lore.add(boxType.equals(BoxType.INBOX) ? ChatColor.GRAY + "  " + Phrases.MAIL_ICON_FROM.toString() + " " + ChatColor.WHITE + mail.getSender() : ChatColor.GRAY + "  " + Phrases.MAIL_ICON_TO.toString() + " " + ChatColor.WHITE + mail.getRecipient());
 		lore.add("  " + ChatColor.GRAY + mail.getTimeString(accountOwner.getTimeZone()));
 		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");
 		if(accountOwner.getPlayerName().equals(viewingPlayer.getName())) {
@@ -226,7 +228,11 @@ public class InboxTypeGUI implements GUI {
 				lore.add(Phrases.CLICK_ACTION_RESPOND.toString());
 				if(mail.hasAttachments()) {
 					if(!mail.isClaimed()) {
-						lore.add(Phrases.CLICK_ACTION_RIGHTCLAIM.toString());
+						if(mail.getWorldGroup() == Config.getWorldGroupFromWorld(viewingPlayer.getWorld()) || mail.getWorldGroup().getName().equalsIgnoreCase("none") || Config.getMailTypesThatIgnoreWorldGroups().contains(mail.getType().getDisplayName())) {
+							lore.add(Phrases.CLICK_ACTION_RIGHTCLAIM.toString());
+						} else {
+							lore.add(Phrases.MAIL_ICON_CLAIMWORLDGROUP.toString().replace("%worldgroup%", mail.getWorldGroup().getName()));
+						}
 					}
 				}
 			}

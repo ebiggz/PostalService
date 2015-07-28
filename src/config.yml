@@ -39,13 +39,13 @@ use-uuids: true
 
 ## Toggle on or off the update checker
 # If the update checker finds an update, it will notify players with the
-# postalservice.updatenotify permission when they login.
+# postalservice.update permission when they login.
 #
 # You can also choose to have new versions auto downloaded as well.
 # There are 3 auto download settings you can choose from:
 #   - all: This will download all updates as they become available.
 #   - bugfix: This will only download bugfix updates to your current version,
-#             and you will have to manually update for feature releases.
+#             and you will have to manually update for feature upates.
 #   - none: This will disable auto downloading for all updates.
 update-checker:
     enabled: true
@@ -60,12 +60,13 @@ debug-mode: false
 # World Settings #
 ##################
 
-## World groups allow you to segregate mail. This is useful if you have worlds with
-# different inventories and you don't want players sending things across universes.
+## World groups allow you to segregate where mail items can be claimed. 
+# This is useful if you have worlds with different inventories and you don't want
+# players sending things across universes.
 # For example, mail sent from a world in a "Survival Universe" would not be
-# accessible from a world in a "PvP Universe".
-# You can define as many groups as you like and the group names do not matter,
-# as long as they are different from each other.
+# claimable from a world in a "PvP Universe".
+# You can define as many groups as you like. Each group name must be 
+# different from one another.
 
 enable-world-groups: false
 
@@ -78,13 +79,13 @@ world-groups:
 #      - another_world
 
 ## Here you can set certain mail types to ignore world groups and 
-# be visible in all worlds.
-# For example, you may want Letters to ignore world groups so players can 
-# communicate across universes but want Packages to stay within world groups 
-# so items can't be
-# shared.
+# be claimable in all worlds.
+# For example, say all your universes share the same economy. 
+# In this case, you may want Payments to ignore world groups so players can 
+# send money across universes but may want Packages to stay within world groups 
+# so items can't be shared.
 mail-types-that-ignore-world-groups:
-#   - letter
+#   - payment
   
 ## Worlds listed in this blacklist prevent players from running any PostalService 
 # commands or opening mailboxes.

@@ -8,10 +8,12 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.meta.BookMeta;
 
+import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
@@ -20,9 +22,13 @@ import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
+import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
+import com.gmail.erikbigler.postalservice.utils.Updater.UpdateResult;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailCommands implements CommandExecutor {
+
+	boolean senderIsConsole = false;
 
 	enum Tracking {
 		TO, MESSAGE, ATTACHMENT
@@ -30,37 +36,44 @@ public class MailCommands implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
-		Player cmdPlayer = (Player) sender;
 
-		if(Config.playerIsInBlacklistedWorld(cmdPlayer)) {
-			if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
-				sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
-				return true;
-			} else {
-				sender.sendMessage(Phrases.ALERT_BLACKLISTED_WORLD_OVERRIDE.toPrefixedString());
+		Player player = null;
+
+		if(sender instanceof Player) {
+			player = (Player) sender;
+			if(Config.playerIsInBlacklistedWorld(player)) {
+				if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
+					sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
+					return true;
+				} else {
+					sender.sendMessage(Phrases.ALERT_BLACKLISTED_WORLD_OVERRIDE.toPrefixedString());
+				}
 			}
+		} else {
+			senderIsConsole = true;
 		}
 
-		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail")) {
-
+		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail") || commandLabel.equalsIgnoreCase("postalservice") || commandLabel.equalsIgnoreCase("ps") || commandLabel.equalsIgnoreCase("m")) {
 			if(args.length == 0) {
+				if(senderIsConsole(sender)) return true;
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
 					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
 				} else {
-					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(cmdPlayer)), cmdPlayer);
+					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
 				}
 				return true;
 			}
 			else if(args.length == 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_COMPOSE.toString())) {
+					if(senderIsConsole(sender)) return true;
 					//check if a mailbox should be near by
 					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
-						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(cmdPlayer.getLocation(), 6);
+						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
 						if(!nearMailbox) {
 							sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
 						}
 					} else {
-						Utils.getComposeMessage(false, cmdPlayer).sendTo(sender);
+						Utils.getComposeMessage(false, player).sendTo(sender);
 					}
 					return true;
 				}
@@ -70,21 +83,50 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_CHECK.toString())) {
+					if(senderIsConsole(sender)) return true;
 					User user = UserFactory.getUser(sender.getName());
 					Utils.unreadMailAlert(user, false);
 					return true;
 				}
+				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_RELOAD.toString())) {
+					if(PermissionHandler.playerHasPermission(Perm.RELOAD, sender)) {
+						Config.loadFile();
+						Language.loadFile();
+						UUIDUtils.loadFile();
+						sender.sendMessage(Phrases.ALERT_RELOAD_COMPLETE.toPrefixedString());
+					}
+					return true;
+				}
+				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_DOWNLOAD.toString())) {
+					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender)) {
+						if(PostalService.getUpdater().getResult() == UpdateResult.UPDATE_AVAILABLE) {
+							sender.sendMessage(Phrases.ALERT_UPDATE_DOWNLOAD_BEGUN.toPrefixedString().replace("%version%", PostalService.getUpdater().getLatestName().replace("PostalService v", "")));
+							PostalService.downloadUpdate(sender);
+						} else {
+							sender.sendMessage(Phrases.ERORR_UPDATE_COMMAND_NONE.toPrefixedString());
+						}
+						return true;
+					}
+				}
+				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_UPDATE.toString())) {
+					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender)) {
+						sender.sendMessage(Phrases.ALERT_UPDATE_CHECK_BEGUN.toPrefixedString());
+						PostalService.manualUpdateCheck(sender);
+						return true;
+					}
+				}
 			}
 
 			else {
+				if(senderIsConsole(sender)) return true;
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
-					UserFactory.getUser(cmdPlayer).setTimeZone(args[1]);
+					UserFactory.getUser(player).setTimeZone(args[1]);
 					sender.sendMessage(Phrases.ALERT_TIMEZONE_SET.toPrefixedString());
 					return true;
 				}
 				//check if a mailbox should be near by
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender)) {
-					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(cmdPlayer.getLocation(), 6);
+					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
 					if(!nearMailbox) {
 						sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
 						return true;
@@ -146,8 +188,8 @@ public class MailCommands implements CommandExecutor {
 				}
 
 				if(message.isEmpty()) {
-					if(cmdPlayer.getItemInHand().getType() == Material.BOOK_AND_QUILL) {
-						BookMeta bm = (BookMeta) cmdPlayer.getItemInHand().getItemMeta();
+					if(player.getItemInHand().getType() == Material.BOOK_AND_QUILL) {
+						BookMeta bm = (BookMeta) player.getItemInHand().getItemMeta();
 						if(bm.hasPages()) {
 							if(bm.getPageCount() > 1) {
 								sender.sendMessage(ChatColor.RED + "[MPS] Books can only contain 1 page of text to use them to send a message!");
@@ -172,7 +214,7 @@ public class MailCommands implements CommandExecutor {
 						attachmentData = attachmentArgs.split(" ");
 					}
 					User user = UserFactory.getUser(sender.getName());
-					user.sendMail(completedName, message, mailType.handleSendCommand(cmdPlayer, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user));
+					user.sendMail(completedName, message, mailType.handleSendCommand(player, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user));
 					sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", completedName));
 				} catch (MailException e) {
 					sender.sendMessage(Phrases.PREFIX.toString() + " " + e.getErrorMessage());
@@ -182,5 +224,13 @@ public class MailCommands implements CommandExecutor {
 		}
 		sender.sendMessage(Phrases.ERROR_UNKNOWN_COMMAND.toPrefixedString().replace("%command%", "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString()));
 		return true;
+	}
+
+	private boolean senderIsConsole(CommandSender sender) {
+		if(senderIsConsole) {
+			sender.sendMessage(Phrases.ERROR_CONSOLE_COMMAND.toPrefixedString());
+			return true;
+		}
+		return false;
 	}
 }

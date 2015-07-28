@@ -39,8 +39,8 @@ public class MainMenuGUI implements GUI {
 	@Override
 	public Inventory createInventory(Player viewingPlayer) {
 
-		int unread = accountOwner.getUnreadMailCount(Config.getWorldGroupFromWorld(viewingPlayer.getWorld().getName()));
-		int inboxSize = accountOwner.getBoxSizeFromType(BoxType.INBOX, Config.getWorldGroupFromWorld(viewingPlayer.getWorld().getName()));
+		int unread = accountOwner.getUnreadMailCount();
+		int inboxSize = accountOwner.getBoxSizeFromType(BoxType.INBOX);
 
 		Inventory inventory = Bukkit.createInventory(null, InventoryType.HOPPER, Phrases.MAINMENU_TITLE.toString());
 
@@ -132,7 +132,7 @@ public class MainMenuGUI implements GUI {
 			break;
 		case 2:
 			if(accountOwner.getPlayerName().equals(whoClicked.getName())) {
-				accountOwner.markAllMailAsRead(Config.getCurrentWorldGroupForUser(accountOwner));
+				accountOwner.markAllMailAsRead();
 			}
 			GUIManager.getInstance().showGUI(new InboxTypeGUI(accountOwner, BoxType.INBOX, 1), whoClicked);
 			break;

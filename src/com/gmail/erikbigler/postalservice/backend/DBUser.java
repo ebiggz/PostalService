@@ -95,23 +95,23 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public List<Mail> getInbox(WorldGroup worldGroup) {
-		return this.queryDBByType(BoxType.INBOX, worldGroup);
+	public List<Mail> getInbox() {
+		return this.queryDBByType(BoxType.INBOX);
 	}
 
 	@Override
-	public List<Mail> getSentbox(WorldGroup worldGroup) {
-		return this.queryDBByType(BoxType.SENT, worldGroup);
+	public List<Mail> getSentbox() {
+		return this.queryDBByType(BoxType.SENT);
 	}
 
-	private List<Mail> queryDBByType(BoxType type, WorldGroup worldGroup) {
+	private List<Mail> queryDBByType(BoxType type) {
 		StringBuilder query = new StringBuilder();
 		if (type == BoxType.INBOX) {
 			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
 		} else {
 			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
 		}
-		if (Config.ENABLE_WORLD_GROUPS) {
+		/*if (Config.ENABLE_WORLD_GROUPS) {
 			if (Config.containsMailTypesThatIgnoreWorldGroups()) {
 				query.append(" AND (Sent.WorldGroup = \"" + worldGroup.getName() + "\" OR (");
 				int remaining = Config.getMailTypesThatIgnoreWorldGroups().size();
@@ -126,8 +126,8 @@ public class DBUser implements User {
 			} else {
 				query.append(" AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
 			}
-		}
-		query.append(" ORDER BY Sent.TimeStamp DESC LIMIT 100");
+		}*/
+		query.append(" ORDER BY Sent.TimeStamp DESC LIMIT " + Config.getMailboxLimitForPlayer(playerName));
 		List<Mail> sentMail = new ArrayList<Mail>();
 		try {
 			// Build list of mail
@@ -138,7 +138,7 @@ public class DBUser implements User {
 				if (mailType == null) {
 					continue;
 				}
-				sentMail.add(new Mail(rs.getLong("MailID"), rs.getLong("ReceivedID"), rs.getString("Sender"), rs.getString("Recipient"), rs.getString("Message"), rs.getString("Attachments"), mailType, rs.getTimestamp("TimeStamp"), mm.getMailStatusFromID(rs.getInt("Status"))));
+				sentMail.add(new Mail(rs.getLong("MailID"), rs.getLong("ReceivedID"), rs.getString("Sender"), rs.getString("Recipient"), rs.getString("Message"), rs.getString("Attachments"), mailType, rs.getTimestamp("TimeStamp"), mm.getMailStatusFromID(rs.getInt("Status")), Config.getWorldGroupFromWorld(rs.getString("WorldGroup"))));
 			}
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
@@ -182,18 +182,18 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public List<Mail> getBoxFromType(BoxType type, WorldGroup worldGroup) {
+	public List<Mail> getBoxFromType(BoxType type) {
 		if (type == BoxType.INBOX) {
-			return getInbox(worldGroup);
+			return getInbox();
 		} else {
-			return getSentbox(worldGroup);
+			return getSentbox();
 		}
 	}
 
 	@Override
-	public int getUnreadMailCount(WorldGroup worldGroup) {
+	public int getUnreadMailCount() {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT count(ReceivedID) AS UnreadCount FROM ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0 AND Received.Status = 0 AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT count(ReceivedID) AS UnreadCount FROM ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0 AND Received.Status = 0");
 			rs.next();
 			return rs.getInt("UnreadCount");
 		} catch (Exception e) {
@@ -204,34 +204,18 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public boolean inboxIsFull(WorldGroup worldGroup) {
-		return (getBoxSizeFromType(BoxType.INBOX, worldGroup) >= Config.getMaxInboxSizeForPlayer(playerName));
+	public boolean inboxIsFull() {
+		return (getBoxSizeFromType(BoxType.INBOX) >= Config.getMaxInboxSizeForPlayer(playerName));
 	}
 
 	@Override
-	public int getBoxSizeFromType(BoxType type, WorldGroup worldGroup) {
+	public int getBoxSizeFromType(BoxType type) {
 		try {
 			StringBuilder query = new StringBuilder();
 			if (type == BoxType.INBOX) {
 				query.append("SELECT count(Received.ReceivedID) as Size FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
 			} else {
 				query.append("SELECT count(Sent.MailID) as Size FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
-			}
-			if (Config.ENABLE_WORLD_GROUPS) {
-				if (Config.containsMailTypesThatIgnoreWorldGroups()) {
-					query.append(" AND (Sent.WorldGroup = \"" + worldGroup.getName() + "\" OR (");
-					int remaining = Config.getMailTypesThatIgnoreWorldGroups().size();
-					for (String mailType : Config.getMailTypesThatIgnoreWorldGroups()) {
-						query.append("MailType = \"" + mailType.toLowerCase() + "\"");
-						remaining--;
-						if (remaining > 0) {
-							query.append(" OR ");
-						}
-					}
-					query.append("))");
-				} else {
-					query.append(" AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
-				}
 			}
 
 			ResultSet rs = PostalService.getPSDatabase().querySQL(query.toString());
@@ -273,9 +257,9 @@ public class DBUser implements User {
 	}
 
 	@Override
-	public boolean markAllMailAsRead(WorldGroup worldGroup) {
+	public boolean markAllMailAsRead() {
 		try {
-			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID SET Received.Status = 1 WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Status = 0 AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
+			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID SET Received.Status = 1 WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Status = 0	");
 			return true;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)

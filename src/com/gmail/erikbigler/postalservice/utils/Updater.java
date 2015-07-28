@@ -174,8 +174,8 @@ public class Updater {
 		 */
 		DEFAULT,
 		/**
-		 * Run a version, and only download the newest version if the update is
-		 * a minor release, eg v1.0.1
+		 * Run a version check, and only download the newest version if the update is
+		 * a maintenance release, eg v1.0.1
 		 */
 		BUGFIX_ONLY,
 		/**
@@ -592,9 +592,9 @@ public class Updater {
 			final String localVersion = this.plugin.getDescription().getVersion();
 			if (title.split(DELIMETER).length == 2) {
 				// Get the newest file's version number
-				final String remoteVersion = title.split(DELIMETER)[1].split(" ")[0];
+				final String remoteVersion = title.trim().split(DELIMETER)[1].split(" ")[0];
 
-				if (this.hasTag(localVersion) || !this.shouldUpdate(localVersion, remoteVersion)) {
+				if (this.hasTag(localVersion) || !this.shouldUpdate(localVersion.trim().split(" ")[0], remoteVersion)) {
 					// We already have the latest version, or this build is
 					// tagged for no-update
 					this.result = Updater.UpdateResult.NO_UPDATE;

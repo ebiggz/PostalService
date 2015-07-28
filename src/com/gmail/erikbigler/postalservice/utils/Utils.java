@@ -186,7 +186,7 @@ public class Utils {
 	}
 
 	public static void unreadMailAlert(User user, boolean onlyUnreadAlert) {
-		int unread = user.getUnreadMailCount(Config.getCurrentWorldGroupForUser(user));
+		int unread = user.getUnreadMailCount();
 		if (unread == 0) {
 			if (!onlyUnreadAlert) {
 				messagePlayerIfOnline(user.getIdentifier(), Phrases.ALERT_NO_UNREAD_MAIL.toPrefixedString());

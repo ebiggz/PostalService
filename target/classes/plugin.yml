@@ -5,14 +5,6 @@ author: ebiggz
 description: A mail system for Bukkit servers
 softdepends: [Vault]
 commands:
-    mail:
-        description: Access to Mail commands.
-        usage: /<command> ?
-        aliases: [m, ps, postalservice]
-    mailbox:
-        description: Access to Mailbox commands.
-        usage: /<command>
-        aliases: [mb]
 permissions:
     postalservice.mailtype.*:
         default: true

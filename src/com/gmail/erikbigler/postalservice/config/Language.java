@@ -43,7 +43,18 @@ public class Language {
 		ALERT_SENT_MAIL("You have mailed a %mailtype% to %recipient%."),
 		ALERT_UNREAD_MAIL("You have %count% unread mail message(s)!"),
 		ALERT_BLACKLISTED_WORLD_OVERRIDE("&eCareful, you are running a command in a world that is normally blacklisted."),
+		ALERT_RELOAD_COMPLETE("Reload complete!"),
 		ALERT_TIMEZONE_SET("&bTime zone set!"),
+		ALERT_UPDATE_DOWNLOAD_BEGUN("&bDownloading %version%..."),
+		ALERT_UPDATE_CHECK_BEGUN("&bChecking for updates..."),
+		ALERT_UPDATE_DOWNLOAD_SUCCESS("&bThe update was successfully downloaded and will be available after the next server restart."),
+		ERORR_UPDATE_DOWNLOAD_FAIL("&cThe update was not downloaded. Check the console for more details."),
+		ERORR_UPDATE_COMMAND_NONE("You are already up-to-date!"),
+		ALERT_UPDATE_AVAILABLE("&bAn update is available for download!"),
+		UPDATE_BUTTON_VIEW_NOTES("(&nUpdate Notes&r)"),
+		UPDATE_BUTTON_VIEW_NOTES_HOVER("Click to view the update notes on Bukkit."),
+		UPDATE_BUTTON_DOWNLOAD("(&nDownload&r)"),
+		UPDATE_BUTTON_DOWNLOAD_HOVER("Click to download the update now."),
 		BUTTON_ACCOUNTINFO("Account Info"),
 		BUTTON_COMPOSE("Compose"),
 		BUTTON_COMPOSE_PACKAGE("&e&lCompose Package"),
@@ -75,6 +86,9 @@ public class Language {
 		COMMAND_ARG_REMOVE("remove"),
 		COMMAND_ARG_REMOVEALL("removeall"),
 		COMMAND_ARG_TIMEZONE("timezone"),
+		COMMAND_ARG_RELOAD("reload"),
+		COMMAND_ARG_UPDATE("update"),
+		COMMAND_ARG_DOWNLOAD("download"),
 		COMMAND_ARG_SET("set"),
 		COMMAND_ARG_TO("to"),
 		COMMAND_MAIL("mail"),
@@ -111,7 +125,7 @@ public class Language {
 		ERROR_NO_PERMISSION("&cYou don't have permission to do that!"),
 		ERROR_PLAYER_NOT_FOUND("&cCouldn't find a player matching that name!"),
 		ERROR_BLACKLISTED_WORLD("&cYou do not have permission to do that in this world!"),
-		FROM("from"),
+		MAIL_ICON_FROM("from"),
 		MAILTYPE_EXPERIENCE("Experience"),
 		MAILTYPE_EXPERIENCE_HOVERTEXT("Mail XP points (not levels)!"),
 		MAILTYPE_EXPERIENCE_ITEMDESC("%count% XP point(s)"),
@@ -129,7 +143,8 @@ public class Language {
 		REPLY_SUMMARY_MESSAGE("%sender% mailed you a %mailtype% with the message: \"%message%\" at %timestamp%"),
 		REPLY_SUMMARY_NOMESSAGE("%sender% mailed you a %mailtype% at %timestamp%"),
 		REPLY_TEXT("&eReply with a (Click one)"),
-		TO("to");
+		MAIL_ICON_TO("to"),
+		MAIL_ICON_CLAIMWORLDGROUP("Claim in the %worldgroup%");
 		// @formatter:on
 		private String text;
 

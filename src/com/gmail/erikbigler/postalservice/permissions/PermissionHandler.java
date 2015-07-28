@@ -17,14 +17,11 @@ import com.gmail.erikbigler.postalservice.config.WorldGroup;
 public class PermissionHandler {
 
 	public enum Perm {
-		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, ADMIN
+		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
 	}
 
-	public static boolean playerHasPermission(Perm perm, CommandSender sender) {
-		return playerHasPermission(perm, (Player) sender);
-	}
 
-	public static boolean playerHasPermission(Perm perm, Player player) {
+	public static boolean playerHasPermission(Perm perm, CommandSender player) {
 		switch(perm) {
 		case HELP:
 			return player.hasPermission("postalservice.help");
@@ -48,8 +45,10 @@ public class PermissionHandler {
 			return player.hasPermission("postalservice.mail.check");
 		case MAIL_READOTHER:
 			return player.hasPermission("postalservice.mail.readother");
-		case ADMIN:
-			return player.hasPermission("postalservice.admin");
+		case RELOAD:
+			return player.hasPermission("postalservice.reload");
+		case UPDATE:
+			return player.hasPermission("postalservice.update");
 		case OVERRIDE_REQUIRE_MAILBOX:
 			return player.hasPermission("postalservice.overriderequiremailbox");
 		case OVERRIDE_WORLD_BLACKLIST:
@@ -65,7 +64,7 @@ public class PermissionHandler {
 	}
 
 	public static boolean playerCanMailType(String typeName, Player player) {
-		return (player.hasPermission("postalservice.mail.type." + typeName.toLowerCase()) || player.hasPermission("postalservice.mail.type." + typeName) || player.hasPermission("postalservice.mail.type.*"));
+		return (player.hasPermission("postalservice.mail.send." + typeName.toLowerCase()) || player.hasPermission("postalservice.mail.send." + typeName) || player.hasPermission("postalservice.mail.send.*"));
 	}
 
 	public static boolean playerHasMetMailboxLimit(Player player, WorldGroup group) {

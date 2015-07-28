@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.WorldGroup;
 
 public class Mail {
 
@@ -18,8 +19,9 @@ public class Mail {
 	private MailType type;
 	private Date time;
 	private MailStatus status;
+	private WorldGroup worldGroup;
 
-	public Mail(long mailID, long receivedID, String sender, String recipient, String message, String attachmentData, MailType type, Date time, MailStatus status) {
+	public Mail(long mailID, long receivedID, String sender, String recipient, String message, String attachmentData, MailType type, Date time, MailStatus status, WorldGroup worldGroup) {
 		this.mailID = mailID;
 		this.receivedID = receivedID;
 		this.sender = sender;
@@ -27,6 +29,7 @@ public class Mail {
 		this.message = message;
 		this.time = time;
 		this.status = status;
+		this.worldGroup = worldGroup;
 		if(attachmentData != null && !attachmentData.equalsIgnoreCase("null")) {
 			this.attachmentData = attachmentData;
 		}
@@ -94,5 +97,9 @@ public class Mail {
 
 	public MailType getType() {
 		return type;
+	}
+
+	public WorldGroup getWorldGroup() {
+		return worldGroup;
 	}
 }

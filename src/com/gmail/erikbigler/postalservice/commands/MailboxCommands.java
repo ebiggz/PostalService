@@ -12,14 +12,33 @@ import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 
 public class MailboxCommands implements CommandExecutor {
 
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if(!Config.ENABLE_MAILBOXES) return true;
+
+		if(!(sender instanceof Player)) {
+			sender.sendMessage(Phrases.ERROR_CONSOLE_COMMAND.toString());
+			return true;
+		}
+
 		Player player = (Player) sender;
-		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString()) || commandLabel.equalsIgnoreCase("mailbox")) {
+
+		if(Config.playerIsInBlacklistedWorld(player)) {
+			if(!PermissionHandler.playerHasPermission(Perm.OVERRIDE_WORLD_BLACKLIST, sender)) {
+				sender.sendMessage(Phrases.ERROR_BLACKLISTED_WORLD.toPrefixedString());
+				return true;
+			} else {
+				sender.sendMessage(Phrases.ALERT_BLACKLISTED_WORLD_OVERRIDE.toPrefixedString());
+			}
+		}
+
+
+		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString()) || commandLabel.equalsIgnoreCase("mailbox") || commandLabel.equalsIgnoreCase("mb")) {
 			if(args.length == 0) {
 				//FancyMenu.showClickableCommandList(sender, commandLabel, "Postal Service", commandData, 1);
 			} else if(args.length == 1) {

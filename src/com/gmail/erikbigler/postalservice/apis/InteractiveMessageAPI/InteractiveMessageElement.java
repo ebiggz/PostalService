@@ -72,7 +72,7 @@ public class InteractiveMessageElement {
 	}
 
 	public enum ClickEvent {
-		SUGGEST_COMMAND, RUN_COMMAND, NONE
+		SUGGEST_COMMAND, RUN_COMMAND, OPEN_URL, NONE
 	}
 
 	public FormattedText getMainText() {
