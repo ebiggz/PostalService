@@ -25,7 +25,7 @@ public class MailboxListener implements Listener {
 			Mailbox mb = MailboxManager.getInstance().getMailbox(event.getBlock().getLocation());
 			if(mb != null) {
 				event.setCancelled(true);
-				event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_BREAK.toPrefixedString());
+				event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_BREAK.toPrefixedString().replace("%owner%", mb.getOwner().getPlayerName()));
 			}
 		}
 	}

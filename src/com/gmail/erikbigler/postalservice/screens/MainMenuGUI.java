@@ -50,7 +50,7 @@ public class MainMenuGUI implements GUI {
 				Phrases.BUTTON_ACCOUNTINFO.toString(),
 				Arrays.asList(
 						ChatColor.GRAY + "Mailboxes: " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(accountOwner.getPlayerName(), Config.getWorldGroupFromWorld(viewingPlayer.getWorld())) + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
-						ChatColor.GRAY + "Inbox Size: " + ChatColor.WHITE + inboxSize + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
+						ChatColor.GRAY + "Inbox Size: " + ChatColor.WHITE + inboxSize + "/" + Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()),
 						Phrases.CLICK_ACTION_HELP.toString()));
 
 		ItemStack composeBook = GUIUtils.createButton(

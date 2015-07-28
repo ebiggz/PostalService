@@ -18,7 +18,7 @@ import com.gmail.erikbigler.postalservice.config.WorldGroup;
 public class PermissionHandler {
 
 	public enum Perm {
-		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOTHER, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
+		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOVERRIDE, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
 	}
 
 
@@ -49,8 +49,8 @@ public class PermissionHandler {
 		case MAILBOX_SET:
 			hasPerm = player.hasPermission("postalservice.mailbox.set");
 			break;
-		case MAILBOX_SETOTHER:
-			hasPerm = player.hasPermission("postalservice.mailbox.setother");
+		case MAILBOX_SETOVERRIDE:
+			hasPerm = player.hasPermission("postalservice.mailbox.setoverride");
 			break;
 		case MAIL_CHECK:
 			hasPerm = player.hasPermission("postalservice.mail.check");

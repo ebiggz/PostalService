@@ -22,7 +22,7 @@ permissions:
         default: false
     postalservice.mailbox.find:
         default: false
-    postalservice.mailbox.setother:
+    postalservice.mailbox.setoverride:
         default: false
     postalservice.mailbox.removeother:
         default: false
@@ -52,7 +52,7 @@ permissions:
     postalservice.mod:
         default: false
         children:
-            postalservice.mailbox.setother: true
+            postalservice.mailbox.setoverride: true
             postalservice.mailbox.removeother: true
             postalservice.mailbox.removeallother: true
             postalservice.mail.readother: true
@@ -65,6 +65,8 @@ permissions:
             postalservice.overrideworldblacklist: true
     postalservice.*:
         default: op
-        children:
-            postalservice.mod: true
-            postalservice.admin: true
+
+            children:
+
+                postalservice.mod: true
+                postalservice.admin: true

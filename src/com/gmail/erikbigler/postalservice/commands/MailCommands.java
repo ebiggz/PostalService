@@ -1,5 +1,6 @@
 package com.gmail.erikbigler.postalservice.commands;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -34,6 +35,7 @@ public class MailCommands implements CommandExecutor {
 		TO, MESSAGE, ATTACHMENT
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 
@@ -112,6 +114,17 @@ public class MailCommands implements CommandExecutor {
 					sender.sendMessage(Phrases.ALERT_UPDATE_CHECK_BEGUN.toPrefixedString());
 					PostalService.manualUpdateCheck(sender);
 					return true;
+				}
+				else if(PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, sender, false)){
+					if(senderIsConsole(sender)) return true;
+					String completedName = Utils.completeName(args[0]);
+					if(completedName == null || completedName.isEmpty()) {
+						if(Bukkit.getOfflinePlayer(args[0]).hasPlayedBefore()) {
+							GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(args[0])), player);
+						}
+					} else {
+						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(completedName)), player);
+					}
 				}
 			}
 

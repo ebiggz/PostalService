@@ -78,10 +78,10 @@ public class MailboxManager {
 		User user = UserFactory.getUser(player.getName());
 		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
-		} else if(!PermissionHandler.playerCanCreateMailboxAtLoc(location, player)) {
-			throw new MailboxException(Reason.NO_PERMISSION);
 		} else if(this.locationHasMailbox(location)) {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
+		} else if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETOVERRIDE, player, false) && !PermissionHandler.playerCanCreateMailboxAtLoc(location, player)) {
+			throw new MailboxException(Reason.NO_PERMISSION);
 		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld())) >= Config.getMailboxLimitForPlayer(player.getName())) {
 			throw new MailboxException(Reason.MAX_REACHED);
 		} else {

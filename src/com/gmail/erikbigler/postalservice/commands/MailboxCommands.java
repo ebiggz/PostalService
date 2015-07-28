@@ -14,6 +14,7 @@ import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
+import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailboxCommands implements CommandExecutor {
 
@@ -41,7 +42,7 @@ public class MailboxCommands implements CommandExecutor {
 		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString()) || commandLabel.equalsIgnoreCase("mailbox") || commandLabel.equalsIgnoreCase("mb")) {
 			if(args.length == 0) {
 				//FancyMenu.showClickableCommandList(sender, commandLabel, "Postal Service", commandData, 1);
-			} else if(args.length == 1) {
+			} else if(args.length >= 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString())) {
 					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, sender, true)) return true;
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.SET);
@@ -51,9 +52,19 @@ public class MailboxCommands implements CommandExecutor {
 					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.REMOVE);
 					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVEALL.toString())) {
-					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALL, sender, true)) return true;
-					MailboxManager.getInstance().removeAllMailboxes(sender.getName());
-					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL.toPrefixedString());
+					if(args.length == 1) {
+						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALL, sender, true)) return true;
+						MailboxManager.getInstance().removeAllMailboxes(sender.getName());
+						sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL.toPrefixedString());
+					} else {
+						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALLOTHER, sender, true)) return true;
+						String completedName = Utils.completeName(args[1]);
+						if(completedName == null || completedName.isEmpty()) {
+							completedName = args[1];
+						}
+						MailboxManager.getInstance().removeAllMailboxes(completedName);
+						sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL_OTHER.toPrefixedString().replace("%player%", completedName));
+					}
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_FIND.toString())) {
 					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_FIND, sender, true)) return true;
 					if(MailboxManager.getInstance().markNearbyMailboxes(player)) {
