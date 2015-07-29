@@ -18,6 +18,8 @@ import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailboxCommands implements CommandExecutor {
 
+	//TODO: Create tab completer for this
+
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if(!Config.ENABLE_MAILBOXES) return true;

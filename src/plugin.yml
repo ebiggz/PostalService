@@ -65,8 +65,6 @@ permissions:
             postalservice.overrideworldblacklist: true
     postalservice.*:
         default: op
-
-            children:
-
-                postalservice.mod: true
-                postalservice.admin: true
+        children:
+            postalservice.mod: true
+            postalservice.admin: true

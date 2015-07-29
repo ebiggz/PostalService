@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -67,8 +69,6 @@ public class Updater {
 	private static final String HOST = "https://api.curseforge.com";
 	// User-agent when querying Curse
 	private static final String USER_AGENT = "Updater (by Gravity)";
-	// Used for locating version numbers in file names
-	private static final String DELIMETER = "^v|[\\s_-]v";
 	// If the version number contains one of these, don't update.
 	private static final String[] NO_UPDATE_TAG = { "-DEV", "-PRE", "-SNAPSHOT" };
 	// Used for downloading files
@@ -433,7 +433,8 @@ public class Updater {
 			}
 		} catch (Exception ex) {
 			this.plugin.getLogger().log(Level.WARNING,
-					"The auto-updater tried to download a new update, but was unsuccessful.", ex);
+					"The auto-updater tried to download a new update, but was unsuccessful.");
+			if(Config.ENABLE_DEBUG) ex.printStackTrace();
 			this.result = Updater.UpdateResult.FAIL_DOWNLOAD;
 		} finally {
 			try {
@@ -441,14 +442,16 @@ public class Updater {
 					in.close();
 				}
 			} catch (final IOException ex) {
-				this.plugin.getLogger().log(Level.SEVERE, null, ex);
+				if(Config.ENABLE_DEBUG)
+					this.plugin.getLogger().log(Level.SEVERE, null, ex);
 			}
 			try {
 				if (fout != null) {
 					fout.close();
 				}
 			} catch (final IOException ex) {
-				this.plugin.getLogger().log(Level.SEVERE, null, ex);
+				if(Config.ENABLE_DEBUG)
+					this.plugin.getLogger().log(Level.SEVERE, null, ex);
 			}
 		}
 	}
@@ -587,28 +590,14 @@ public class Updater {
 	 *         remote's newest.
 	 */
 	private boolean versionCheck() {
-		final String title = this.versionName;
 		if (this.type != UpdateType.NO_VERSION_CHECK) {
 			final String localVersion = this.plugin.getDescription().getVersion();
-			if (title.split(DELIMETER).length == 2) {
-				// Get the newest file's version number
-				final String remoteVersion = title.trim().split(DELIMETER)[1].split(" ")[0];
+			final String remoteVersion = this.versionName;
 
-				if (this.hasTag(localVersion) || !this.shouldUpdate(localVersion.trim().split(" ")[0], remoteVersion)) {
-					// We already have the latest version, or this build is
-					// tagged for no-update
-					this.result = Updater.UpdateResult.NO_UPDATE;
-					return false;
-				}
-			} else {
-				// The file's name did not contain the string 'vVersion'
-				final String authorInfo = this.plugin.getDescription().getAuthors().isEmpty() ? ""
-						: " (" + this.plugin.getDescription().getAuthors().get(0) + ")";
-				this.plugin.getLogger().warning(
-						"The author of this plugin" + authorInfo + " has misconfigured their Auto Update system");
-				this.plugin.getLogger().warning("File versions should follow the format 'PluginName vVERSION'");
-				this.plugin.getLogger().warning("Please notify the author of this error.");
-				this.result = Updater.UpdateResult.FAIL_NOVERSION;
+			if (this.hasTag(localVersion) || !this.shouldUpdate(localVersion, remoteVersion)) {
+				// We already have the latest version, or this build is
+				// tagged for no-update
+				this.result = Updater.UpdateResult.NO_UPDATE;
 				return false;
 			}
 		}
@@ -650,8 +639,14 @@ public class Updater {
 	 *         false if not.
 	 */
 	public boolean shouldUpdate(String localVersion, String remoteVersion) {
-		Version remote = new Version(remoteVersion.split("\\."));
-		Version local = new Version(localVersion.split("\\."));
+		// Get the newest file's version number
+		Pattern p = Pattern.compile("\\D*(\\d\\.\\d\\.?\\d?)\\D*");
+		Matcher m = p.matcher(remoteVersion);
+		m.matches();
+		Version remote = new Version(m.group(1).split("\\."));
+		m = p.matcher(localVersion);
+		m.matches();
+		Version local = new Version(m.group(1).split("\\."));
 		this.isBugfix = remote.isMaintenanceUpdateTo(local);
 		return remote.isUpdateTo(local);
 	}
@@ -716,7 +711,9 @@ public class Updater {
 						"If you have not recently modified your configuration and this is the first time you are seeing this message, the site may be experiencing temporary downtime.");
 				this.result = UpdateResult.FAIL_DBO;
 			}
-			this.plugin.getLogger().log(Level.SEVERE, null, e);
+			if(Config.ENABLE_DEBUG) {
+				e.printStackTrace();
+			}
 			return false;
 		}
 	}

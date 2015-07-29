@@ -1,13 +1,25 @@
 package com.gmail.erikbigler.postalservice.listeners;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitScheduler;
 
+import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.backend.UserFactory;
+import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
+import com.gmail.erikbigler.postalservice.utils.Updater.UpdateResult;
+import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class PlayerListener implements Listener {
 
@@ -22,5 +34,33 @@ public class PlayerListener implements Listener {
 			event.setCancelled(true);
 			MailManager.getInstance().willDropBook.remove(event.getPlayer());
 		}
+	}
+
+	@EventHandler(priority = EventPriority.MONITOR)
+	public void onPlayerJoin(PlayerJoinEvent event) {
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.runTaskLaterAsynchronously(PostalService.getPlugin(), new Runnable() {
+			private Player player;
+			@Override
+			public void run() {
+				if(Config.UNREAD_NOTIFICATION_LOGIN) {
+					User user = UserFactory.getUser(player);
+					Utils.unreadMailAlert(user, true);
+				}
+				if(PermissionHandler.playerHasPermission(Perm.UPDATE, player, false)) {
+					UpdateResult result = PostalService.getUpdater().getResult();
+					if(result == UpdateResult.UPDATE_AVAILABLE) {
+						Utils.getUpdateAvailableMessage().sendTo(player);
+					}
+					else if(result == UpdateResult.SUCCESS) {
+						Utils.getUpdateDownloadedMessage().sendTo(player);
+					}
+				}
+			}
+			private Runnable init(Player player){
+				this.player = player;
+				return this;
+			}
+		}.init(event.getPlayer()), 20L);
 	}
 }

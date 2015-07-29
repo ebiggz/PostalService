@@ -40,7 +40,34 @@ public class FormattedText {
 	}
 
 	public FormattedText setColor(ChatColor color) {
-		this.color = color;
+		if(color != null && color.isColor())
+			this.color = color;
+		return this;
+	}
+
+	public FormattedText setFormat(ChatColor color) {
+		if(color != null) {
+			switch(color) {
+			case BOLD:
+				setBold(true);
+				break;
+			case ITALIC:
+				setItalic(true);
+				break;
+			case MAGIC:
+				setObfuscated(true);
+				break;
+			case STRIKETHROUGH:
+				setStrikethrough(true);
+				break;
+			case UNDERLINE:
+				setUnderlined(true);
+				break;
+			default:
+				break;
+
+			}
+		}
 		return this;
 	}
 

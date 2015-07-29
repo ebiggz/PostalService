@@ -47,13 +47,13 @@ public class Language {
 		ALERT_TIMEZONE_SET("&bTime zone set!"),
 		ALERT_UPDATE_DOWNLOAD_BEGUN("&bDownloading %version%..."),
 		ALERT_UPDATE_CHECK_BEGUN("&bChecking for updates..."),
-		ALERT_UPDATE_DOWNLOAD_SUCCESS("&bThe update was successfully downloaded and will be available after the next server restart."),
-		ERORR_UPDATE_DOWNLOAD_FAIL("&cThe update was not downloaded. Check the console for more details."),
-		ERORR_UPDATE_COMMAND_NONE("You are already up-to-date!"),
-		ALERT_UPDATE_AVAILABLE("&bAn update is available for download!"),
-		UPDATE_BUTTON_VIEW_NOTES("(&nUpdate Notes&r)"),
+		ALERT_UPDATE_DOWNLOAD_SUCCESS("&aAn update was successfully downloaded and it will be available after the next server restart."),
+		ERORR_UPDATE_DOWNLOAD_FAIL("&cAn error occured with the updater. Check the console for more details."),
+		ERORR_UPDATE_COMMAND_NONE("&aYou are up-to-date!"),
+		ALERT_UPDATE_AVAILABLE("An update is available for download!"),
+		UPDATE_BUTTON_VIEW_NOTES("[View Update Notes]"),
 		UPDATE_BUTTON_VIEW_NOTES_HOVER("Click to view the update notes on Bukkit."),
-		UPDATE_BUTTON_DOWNLOAD("(&nDownload&r)"),
+		UPDATE_BUTTON_DOWNLOAD("[Download]"),
 		UPDATE_BUTTON_DOWNLOAD_HOVER("Click to download the update now."),
 		BUTTON_ACCOUNTINFO("Account Info"),
 		BUTTON_COMPOSE("Compose"),
@@ -160,6 +160,58 @@ public class Language {
 		public String toPrefixedString() {
 			return PREFIX + " " + this.text;
 		}
+
+		public ChatColor getFirstColor() {
+			for (int index = 0; index < text.length(); index++) {
+				char section = text.charAt(index);
+				if ((section == '§') && (index < text.length() - 1)) {
+					char c = text.charAt(index + 1);
+					ChatColor color = ChatColor.getByChar(c);
+
+					if (color != null) {
+						if ((color.isColor()) || (color.equals(ChatColor.RESET)))
+						{
+							return color;
+						}
+					}
+				}
+			}
+			return null;
+		}
+		public ChatColor getFirstFormat() {
+			for (int index = 0; index < text.length(); index++) {
+				char section = text.charAt(index);
+				if ((section == '§') && (index < text.length() - 1)) {
+					char c = text.charAt(index + 1);
+					ChatColor color = ChatColor.getByChar(c);
+
+					if (color != null) {
+						if ((color.isFormat()) || (color.equals(ChatColor.RESET)))
+						{
+							break;
+						}
+					}
+				}
+			}
+			return null;
+		}
+	}
+
+	public static String getToRegex() {
+		String to = Phrases.COMMAND_ARG_TO.toString();
+		StringBuilder sb = new StringBuilder();
+		for(char letter : to.toCharArray()) {
+			sb.append("[");
+			if(Character.isAlphabetic(letter)) {
+				sb.append(Character.toUpperCase(letter));
+				sb.append(Character.toLowerCase(letter));
+			} else {
+				sb.append(letter);
+			}
+			sb.append("]");
+		}
+		sb.append(":(\\s)?(\\w+)\\b|$");
+		return sb.toString();
 	}
 
 	private static void writeDefaults() {

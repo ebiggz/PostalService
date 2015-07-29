@@ -15,10 +15,6 @@ import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
-import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.database.Database;
@@ -269,13 +265,7 @@ public class PostalService extends JavaPlugin {
 			@Override
 			public void onFinish(Updater updater) {
 				if(updater.getResult() == UpdateResult.UPDATE_AVAILABLE) {
-					InteractiveMessage im = new InteractiveMessage(new InteractiveMessageElement(Phrases.ALERT_UPDATE_AVAILABLE.toPrefixedString()));
-					im.addElement(
-							new InteractiveMessageElement(Phrases.UPDATE_BUTTON_VIEW_NOTES.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_VIEW_NOTES_HOVER.toString(), ClickEvent.OPEN_URL, updater.getLatestReleaseNotesLink()));
-					im.addElement(" ");
-					im.addElement(
-							new InteractiveMessageElement(Phrases.UPDATE_BUTTON_DOWNLOAD.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_DOWNLOAD_HOVER.toString(), ClickEvent.RUN_COMMAND, "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString()));
-					im.sendTo(sender);
+					Utils.getUpdateAvailableMessage().sendTo(sender);
 				} else {
 					sender.sendMessage(Phrases.ERORR_UPDATE_DOWNLOAD_FAIL.toPrefixedString());
 				}
@@ -384,7 +374,7 @@ public class PostalService extends JavaPlugin {
 				case UPDATE_AVAILABLE:
 					plugin.getLogger().info("There is a new version available! (New version: " + updater.getLatestName() + " Current version: " + plugin.getDescription().getVersion() + ")");
 					plugin.getLogger().info("Read the update notes here: " + updater.getLatestReleaseNotesLink());
-					plugin.getLogger().info("Or type \"/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_UPDATE.toString() + "\" to download the update now.");
+					plugin.getLogger().info("Or type \"/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString() + "\" to download the update now.");
 					break;
 				}
 			}

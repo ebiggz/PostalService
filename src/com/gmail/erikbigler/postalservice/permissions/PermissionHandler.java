@@ -85,7 +85,7 @@ public class PermissionHandler {
 	}
 
 	public static boolean playerCanMailType(String typeName, Player player) {
-		return (player.hasPermission("postalservice.mail.send." + typeName.toLowerCase()) || player.hasPermission("postalservice.mail.send." + typeName) || player.hasPermission("postalservice.mail.send.*"));
+		return (player.hasPermission("postalservice.mail.send." + typeName.toLowerCase()) || player.hasPermission("postalservice.mail.send." + typeName));
 	}
 
 	public static boolean playerHasMetMailboxLimit(Player player, WorldGroup group) {

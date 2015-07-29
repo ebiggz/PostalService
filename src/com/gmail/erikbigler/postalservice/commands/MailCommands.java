@@ -100,7 +100,7 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_DOWNLOAD.toString())) {
-					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
+					if(!PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
 					if(PostalService.getUpdater().getResult() == UpdateResult.UPDATE_AVAILABLE) {
 						sender.sendMessage(Phrases.ALERT_UPDATE_DOWNLOAD_BEGUN.toPrefixedString().replace("%version%", PostalService.getUpdater().getLatestName().replace("PostalService v", "")));
 						PostalService.downloadUpdate(sender);
@@ -110,7 +110,7 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_UPDATE.toString())) {
-					if(PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
+					if(!PermissionHandler.playerHasPermission(Perm.UPDATE, sender, true)) return true;
 					sender.sendMessage(Phrases.ALERT_UPDATE_CHECK_BEGUN.toPrefixedString());
 					PostalService.manualUpdateCheck(sender);
 					return true;

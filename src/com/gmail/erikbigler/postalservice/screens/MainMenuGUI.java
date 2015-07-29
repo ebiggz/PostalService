@@ -36,6 +36,8 @@ public class MainMenuGUI implements GUI {
 		this.accountOwner = accountOwner;
 	}
 
+	//TODO: phrase remain text in here
+
 	@Override
 	public Inventory createInventory(Player viewingPlayer) {
 

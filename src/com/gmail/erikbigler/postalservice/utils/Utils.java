@@ -122,6 +122,27 @@ public class Utils {
 		return false;
 	}
 
+	public static InteractiveMessage getUpdateAvailableMessage() {
+		InteractiveMessage im = new InteractiveMessage(new InteractiveMessageElement(new FormattedText(Phrases.ALERT_UPDATE_AVAILABLE.toPrefixedString()).setColor(Phrases.ALERT_UPDATE_AVAILABLE.getFirstColor()).setFormat(Phrases.ALERT_UPDATE_AVAILABLE.getFirstFormat())));
+		im.addElement("\n");
+		im.addElement(Phrases.PREFIX.toString() + " ");
+		im.addElement(
+				new InteractiveMessageElement(Phrases.UPDATE_BUTTON_VIEW_NOTES.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_VIEW_NOTES_HOVER.toString(), ClickEvent.OPEN_URL, PostalService.getUpdater().getLatestReleaseNotesLink()));
+		im.addElement(" ");
+		im.addElement(
+				new InteractiveMessageElement(Phrases.UPDATE_BUTTON_DOWNLOAD.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_DOWNLOAD_HOVER.toString(), ClickEvent.RUN_COMMAND, "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString()));
+		return im;
+	}
+
+	public static InteractiveMessage getUpdateDownloadedMessage() {
+		InteractiveMessage im = new InteractiveMessage(new InteractiveMessageElement(new FormattedText(Phrases.ALERT_UPDATE_DOWNLOAD_SUCCESS.toPrefixedString()).setColor(Phrases.ALERT_UPDATE_DOWNLOAD_SUCCESS.getFirstColor()).setFormat(Phrases.ALERT_UPDATE_DOWNLOAD_SUCCESS.getFirstFormat())));
+		im.addElement("\n");
+		im.addElement(Phrases.PREFIX.toString() + " ");
+		im.addElement(
+				new InteractiveMessageElement(Phrases.UPDATE_BUTTON_VIEW_NOTES.toString(), HoverEvent.SHOW_TEXT, Phrases.UPDATE_BUTTON_VIEW_NOTES_HOVER.toString(), ClickEvent.OPEN_URL, PostalService.getUpdater().getLatestReleaseNotesLink()));
+		return im;
+	}
+
 	public static InteractiveMessage getComposeMessage(boolean isReply, Player player) {
 		InteractiveMessage im = new InteractiveMessage();
 		if(isReply) {
