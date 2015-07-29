@@ -21,6 +21,7 @@ import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIUtils;
 import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.config.Config;
+import com.gmail.erikbigler.postalservice.config.Language;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
@@ -36,8 +37,6 @@ public class MainMenuGUI implements GUI {
 		this.accountOwner = accountOwner;
 	}
 
-	//TODO: phrase remain text in here
-
 	@Override
 	public Inventory createInventory(Player viewingPlayer) {
 
@@ -51,8 +50,8 @@ public class MainMenuGUI implements GUI {
 				Material.SIGN,
 				Phrases.BUTTON_ACCOUNTINFO.toString(),
 				Arrays.asList(
-						ChatColor.GRAY + "Mailboxes: " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(accountOwner.getPlayerName(), Config.getWorldGroupFromWorld(viewingPlayer.getWorld())) + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
-						ChatColor.GRAY + "Inbox Size: " + ChatColor.WHITE + inboxSize + "/" + Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()),
+						ChatColor.GRAY + Phrases.ACCOUNT_INFO_MAILBOXES.toString() + ": " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(accountOwner.getPlayerName(), Config.getWorldGroupFromWorld(viewingPlayer.getWorld())) + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
+						ChatColor.GRAY + Phrases.ACCOUNT_INFO_INBOXSIZE.toString() + ": " + ChatColor.WHITE + inboxSize + "/" + Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()),
 						Phrases.CLICK_ACTION_HELP.toString()));
 
 		ItemStack composeBook = GUIUtils.createButton(
@@ -67,7 +66,7 @@ public class MainMenuGUI implements GUI {
 								: Arrays.asList(Phrases.CLICK_ACTION_COMPOSE.toString()))
 						:  Arrays.asList(""));
 
-		ItemStack inboxChest = GUIUtils.createButton(Material.CHEST, Phrases.BUTTON_INBOX.toString(), Arrays.asList(ChatColor.WHITE + "" + unread + " Unread", Phrases.CLICK_ACTION_OPEN.toString()));
+		ItemStack inboxChest = GUIUtils.createButton(Material.CHEST, Phrases.BUTTON_INBOX.toString(), Arrays.asList(ChatColor.WHITE + Phrases.BUTTON_INBOX_UNREAD.toString().replace("%count%", Integer.toString(unread)), Phrases.CLICK_ACTION_OPEN.toString()));
 
 		ItemStack sentEnderchest = GUIUtils.createButton(Material.ENDER_CHEST, Phrases.BUTTON_SENT.toString(), Arrays.asList(Phrases.CLICK_ACTION_OPEN.toString()));
 
@@ -108,8 +107,7 @@ public class MainMenuGUI implements GUI {
 							BookMeta bm = (BookMeta) clickedEvent.getCursor().getItemMeta();
 							if(bm.hasPages()) {
 								String pageData = bm.getPage(1).replaceAll(System.getProperty("line.separator"), "");
-								// TODO: generate "to" regex with localized to in phrases
-								String regex = "[tT][oO]:(\\s)?(\\w+)\\b|$";
+								String regex = Language.getToRegex();
 								Matcher matcher = Pattern.compile(regex).matcher(pageData);
 								if(matcher.find()) {
 									String[] split = matcher.group().split(":");

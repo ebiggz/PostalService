@@ -22,6 +22,7 @@ import com.gmail.erikbigler.postalservice.backend.database.MySQL;
 import com.gmail.erikbigler.postalservice.commands.MailCommands;
 import com.gmail.erikbigler.postalservice.commands.MailTabCompleter;
 import com.gmail.erikbigler.postalservice.commands.MailboxCommands;
+import com.gmail.erikbigler.postalservice.commands.MailboxTabCompleter;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
@@ -114,12 +115,13 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		this.registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
+		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString(), "m", "ps", "postalservice");
 		getCommand("mail").setExecutor(new MailCommands());
 		getCommand("mail").setTabCompleter(new MailTabCompleter());
 
-		this.registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
+		this.registerCommand("mailbox",Phrases.COMMAND_MAILBOX.toString(), "mb");
 		getCommand("mailbox").setExecutor(new MailboxCommands());
+		getCommand("mailbox").setTabCompleter(new MailboxTabCompleter());
 
 		/*
 		 * Connect to database

@@ -122,6 +122,17 @@ public class Utils {
 		return false;
 	}
 
+	public static List<String> getAllStartsWith(String key, List<String> list) {
+		if(key == null || key.isEmpty()) return list;
+		List<String> filtered = new ArrayList<String>();
+		for(String item : list) {
+			if(item.toLowerCase().startsWith(key.toLowerCase())) {
+				filtered.add(item);
+			}
+		}
+		return filtered;
+	}
+
 	public static InteractiveMessage getUpdateAvailableMessage() {
 		InteractiveMessage im = new InteractiveMessage(new InteractiveMessageElement(new FormattedText(Phrases.ALERT_UPDATE_AVAILABLE.toPrefixedString()).setColor(Phrases.ALERT_UPDATE_AVAILABLE.getFirstColor()).setFormat(Phrases.ALERT_UPDATE_AVAILABLE.getFirstFormat())));
 		im.addElement("\n");

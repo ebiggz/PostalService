@@ -32,12 +32,12 @@ public class MailTabCompleter implements TabCompleter {
 				arg1List.add(Phrases.COMMAND_ARG_CHECK.toString());
 				arg1List.add(Phrases.COMMAND_ARG_TIMEZONE.toString());
 				arg1List.add(Phrases.COMMAND_ARG_HELP.toString());
-				return arg1List;
+				return Utils.getAllStartsWith(args[0], arg1List);
 			}
 			else {
 
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
-					return Config.TIMEZONES;
+					return Utils.getAllStartsWith(args[0], Config.TIMEZONES);
 				}
 
 				List<String> matches = Utils.getNamesThatStartWith(args[args.length-1]);
@@ -60,7 +60,7 @@ public class MailTabCompleter implements TabCompleter {
 							cmdArgs.add(typeArg + ":");
 						}
 					}
-					return cmdArgs;
+					return Utils.getAllStartsWith(args[0], cmdArgs);
 				}
 			}
 		}

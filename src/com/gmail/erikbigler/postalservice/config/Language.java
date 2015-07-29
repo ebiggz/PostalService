@@ -59,6 +59,7 @@ public class Language {
 		BUTTON_COMPOSE("Compose"),
 		BUTTON_COMPOSE_PACKAGE("&e&lCompose Package"),
 		BUTTON_INBOX("Inbox"),
+		BUTTON_INBOX_UNREAD("%count% Unread"),
 		BUTTON_MAINMENU("Main Menu"),
 		BUTTON_NEXT("Next ->"),
 		BUTTON_PREVIOUS("<- Previous"),
@@ -144,6 +145,8 @@ public class Language {
 		REPLY_SUMMARY_NOMESSAGE("%sender% mailed you a %mailtype% at %timestamp%"),
 		REPLY_TEXT("&eReply with a (Click one)"),
 		MAIL_ICON_TO("to"),
+		ACCOUNT_INFO_MAILBOXES("Mailboxes"),
+		ACCOUNT_INFO_INBOXSIZE("Inbox Size"),
 		MAIL_ICON_CLAIMWORLDGROUP("Claim in the %worldgroup%");
 		// @formatter:on
 		private String text;
