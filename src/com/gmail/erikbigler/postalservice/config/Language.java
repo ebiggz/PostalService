@@ -147,7 +147,10 @@ public class Language {
 		MAIL_ICON_TO("to"),
 		ACCOUNT_INFO_MAILBOXES("Mailboxes"),
 		ACCOUNT_INFO_INBOXSIZE("Inbox Size"),
-		MAIL_ICON_CLAIMWORLDGROUP("Claim in the %worldgroup%");
+		MAIL_ICON_CLAIMWORLDGROUP("Claim in the %worldgroup%"),
+		HELPMENU_TITLE("PostalService Commands"),
+		HELPMENU_TIP("&7&o(Hover over a &a&ocommand&7&o for info, click to run it."),
+		HELPMENU_HELP_DESC("This help menu.");
 		// @formatter:on
 		private String text;
 

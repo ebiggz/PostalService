@@ -55,10 +55,12 @@ public class PostalService extends JavaPlugin {
 	public static boolean vaultEnabled = false;
 	public static boolean hasPermPlugin = false;
 	public static boolean hasEconPlugin = false;
-	private static int projectId = 71726;
+	private static int projectId = 93931;
 	private static File file;
 
-	/** Called when PostalService is being enabled */
+	/**
+	 * Called when PostalService is being enabled
+	 */
 	@Override
 	public void onEnable() {
 

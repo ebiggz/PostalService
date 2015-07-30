@@ -33,6 +33,9 @@ public class FancyMenu {
 
 	public void addCommand(String text, String hoverText, ClickEvent clickAction, String command) {
 		InteractiveMessage newCmd = new InteractiveMessage();
+		if(command == null || command.isEmpty()) {
+			command = text;
+		}
 		newCmd.addElement(new InteractiveMessageElement(new FormattedText(text, ChatColor.AQUA), (hoverText != null) ? HoverEvent.SHOW_TEXT : HoverEvent.NONE, new FormattedText(hoverText), clickAction, command));
 		commands.add(newCmd);
 	}

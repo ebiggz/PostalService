@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -182,6 +183,17 @@ public class Utils {
 			}
 		}
 		return im;
+	}
+
+	public static FancyMenu fancyHelpMenu(CommandSender player, String commandLabel) {
+		FancyMenu fancyMenu = new FancyMenu(Phrases.HELPMENU_TITLE.toString(), commandLabel);
+		fancyMenu.addText(Phrases.HELPMENU_TIP.toString());
+		fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString(), "This help menu.", ClickEvent.RUN_COMMAND, null);
+
+		if (player.hasPermission("voteroulette.votecommand")) {
+			fancyMenu.addCommand("/vote", "View the links to vote on.", ClickEvent.RUN_COMMAND, "/vote");
+		}
+		return fancyMenu;
 	}
 
 	public static Player getPlayerFromIdentifier(String identifier) {
