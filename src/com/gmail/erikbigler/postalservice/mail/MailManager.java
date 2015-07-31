@@ -3,6 +3,7 @@ package com.gmail.erikbigler.postalservice.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -39,7 +40,7 @@ public class MailManager {
 		}
 		mailTypes.add(newType);
 		Permission permission = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase(), PermissionDefault.FALSE);
-		permission.addParent("postalservice.mail.send.*", false);
+		permission.addParent(Bukkit.getServer().getPluginManager().getPermission("postalservice.mail.send.*"), false);
 		PostalService.getPlugin().getServer().getPluginManager().addPermission(permission);
 	}
 
