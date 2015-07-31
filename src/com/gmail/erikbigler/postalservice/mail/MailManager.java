@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
@@ -36,17 +38,26 @@ public class MailManager {
 			}
 		}
 		mailTypes.add(newType);
+		Permission permission = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase(), PermissionDefault.FALSE);
+		permission.addParent("postalservice.mail.send.*", false);
+		PostalService.getPlugin().getServer().getPluginManager().addPermission(permission);
 	}
 
 	public void deregisterMailType(MailType mailType) {
 		mailTypes.remove(mailType);
+		PostalService.getPlugin().getServer().getPluginManager().removePermission("postalservice.mail.send." + mailType.getDisplayName().toLowerCase());
 	}
 
 	public void deregisterMailTypeByIdentifier(String identifier) {
+		MailType typeToRemove = null;
 		for(MailType type : mailTypes) {
 			if(type.getIdentifier().equalsIgnoreCase(identifier)) {
-				mailTypes.remove(type);
+				typeToRemove = type;
 			}
+		}
+		if(typeToRemove != null) {
+			mailTypes.remove(typeToRemove);
+			PostalService.getPlugin().getServer().getPluginManager().removePermission("postalservice.mail.send." + typeToRemove.getDisplayName().toLowerCase());
 		}
 	}
 

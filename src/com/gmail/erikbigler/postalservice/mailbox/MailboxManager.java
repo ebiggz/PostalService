@@ -127,7 +127,7 @@ public class MailboxManager {
 				continue;
 			if(player.getLocation().distance(mailbox.getLocation()) < 20) {
 				Location loc = mailbox.getLocation().clone();
-				ParticleEffect effect = new ParticleEffect(ParticleEffect.ParticleType.VILLAGER_HAPPY, 0, 100, 0, 3, 0);
+				ParticleEffect effect = new ParticleEffect(ParticleEffect.ParticleType.VILLAGER_HAPPY, 0, 200, 0, 3, 0);
 				loc.setX(loc.getX() + 0.5);
 				loc.setZ(loc.getZ() + 0.5);
 				loc.setY(loc.getY() + 4);
@@ -148,9 +148,10 @@ public class MailboxManager {
 					e.printStackTrace();
 			}
 		}
-		for(Mailbox mailbox : this.mailboxes) {
+		for(int i = 0; i< this.mailboxes.size(); i++) {
+			Mailbox mailbox = this.mailboxes.get(i);
 			if(mailbox.getOwner().getPlayerName().equals(owner))
-				mailboxes.remove(mailbox);
+				mailboxes.remove(i);
 		}
 	}
 

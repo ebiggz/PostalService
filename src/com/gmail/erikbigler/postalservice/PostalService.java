@@ -81,6 +81,7 @@ public class PostalService extends JavaPlugin {
 			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
+
 		/*
 		 * Check for and setup vault
 		 */
