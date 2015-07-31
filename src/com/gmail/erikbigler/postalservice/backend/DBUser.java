@@ -107,27 +107,11 @@ public class DBUser implements User {
 	private List<Mail> queryDBByType(BoxType type) {
 		StringBuilder query = new StringBuilder();
 		if (type == BoxType.INBOX) {
-			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
+			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
 		} else {
-			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
+			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
 		}
-		/*if (Config.ENABLE_WORLD_GROUPS) {
-			if (Config.containsMailTypesThatIgnoreWorldGroups()) {
-				query.append(" AND (Sent.WorldGroup = \"" + worldGroup.getName() + "\" OR (");
-				int remaining = Config.getMailTypesThatIgnoreWorldGroups().size();
-				for (String mailType : Config.getMailTypesThatIgnoreWorldGroups()) {
-					query.append("MailType = \"" + mailType.toLowerCase() + "\"");
-					remaining--;
-					if (remaining > 0) {
-						query.append(" OR ");
-					}
-				}
-				query.append("))");
-			} else {
-				query.append(" AND Sent.WorldGroup = \"" + worldGroup.getName() + "\"");
-			}
-		}*/
-		query.append(" ORDER BY Sent.TimeStamp DESC LIMIT " + Config.getMailboxLimitForPlayer(playerName));
+		query.append(" ORDER BY Sent.TimeStamp DESC LIMIT " + Config.getMaxInboxSizeForPlayer(playerName));
 		List<Mail> sentMail = new ArrayList<Mail>();
 		try {
 			// Build list of mail

@@ -37,7 +37,7 @@ public class MailTabCompleter implements TabCompleter {
 			else {
 
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
-					return Utils.getAllStartsWith(args[0], Config.TIMEZONES);
+					return Utils.getAllStartsWith(args[1], Config.TIMEZONES);
 				}
 
 				List<String> matches = Utils.getNamesThatStartWith(args[args.length-1]);

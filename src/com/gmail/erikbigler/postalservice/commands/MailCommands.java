@@ -125,13 +125,14 @@ public class MailCommands implements CommandExecutor {
 					} else {
 						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(completedName)), player);
 					}
+					return true;
 				}
 			}
 
 			else {
 				if(senderIsConsole(sender)) return true;
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
-					UserFactory.getUser(player).setTimeZone(args[1]);
+					UserFactory.getUser(player).setTimeZone(args[1].toUpperCase());
 					sender.sendMessage(Phrases.ALERT_TIMEZONE_SET.toPrefixedString());
 					return true;
 				}

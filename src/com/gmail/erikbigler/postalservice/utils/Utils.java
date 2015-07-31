@@ -124,10 +124,11 @@ public class Utils {
 	}
 
 	public static List<String> getAllStartsWith(String key, List<String> list) {
-		if(key == null || key.isEmpty()) return list;
+		if(key == null || key.trim().isEmpty()) return list;
 		List<String> filtered = new ArrayList<String>();
 		for(String item : list) {
-			if(item.toLowerCase().startsWith(key.toLowerCase())) {
+			if(item.toLowerCase().trim().startsWith(key.toLowerCase().trim())) {
+				System.out.println(item + " starts with " + key);
 				filtered.add(item);
 			}
 		}
