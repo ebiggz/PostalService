@@ -1,5 +1,8 @@
 package com.gmail.erikbigler.postalservice.permissions;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -9,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.Permission;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
@@ -78,6 +82,16 @@ public class PermissionHandler {
 			if(notify) player.sendMessage(Phrases.ERROR_NO_PERMISSION.toPrefixedString());
 		}
 		return hasPerm;
+	}
+
+	public static void registerPermissions() {
+		//parents
+		//
+		List<Permission> perms = new ArrayList<Permission>();
+		//user perms
+		//TODO register perms in code
+		//new Permission("postalservice.mail.send.*", PermissionDefault.FALSE).;
+
 	}
 
 	public static boolean playerCanMailType(String typeName, CommandSender sender) {
