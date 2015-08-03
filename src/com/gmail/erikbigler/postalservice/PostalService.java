@@ -1,6 +1,7 @@
 package com.gmail.erikbigler.postalservice;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Payment;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.utils.Metrics;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Updater;
 import com.gmail.erikbigler.postalservice.utils.Updater.UpdateCallback;
@@ -153,9 +155,15 @@ public class PostalService extends JavaPlugin {
 
 		MailboxManager.getInstance().loadMailboxes();
 
-		//start timed checker
-
 		scheduleTasks();
+
+		//submit metrics
+		try {
+			Metrics metrics = new Metrics(this);
+			metrics.start();
+		} catch (IOException e) {
+			// Failed to submit the metrics :-(
+		}
 
 		getLogger().info("Enabled!");
 	}
