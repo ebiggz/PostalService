@@ -15,6 +15,8 @@ import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
 import com.gmail.erikbigler.postalservice.mailbox.Mailbox;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
 
 public class MailboxListener implements Listener {
@@ -46,10 +48,9 @@ public class MailboxListener implements Listener {
 		}
 		if(event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			if(MailboxManager.getInstance().locationHasMailbox(event.getClickedBlock().getLocation())) {
-				if(!event.getPlayer().isSneaking()) {
-					event.setCancelled(true);
-					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(event.getPlayer())), event.getPlayer());
-				}
+				event.setCancelled(true);
+				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, event.getPlayer(), true)) return;
+				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(event.getPlayer())), event.getPlayer());
 			}
 		} else if(event.getAction() == Action.LEFT_CLICK_BLOCK) {
 			if(MailboxManager.getInstance().mailboxSelectors.containsKey(event.getPlayer())) {

@@ -127,10 +127,10 @@ public class MailboxManager {
 				continue;
 			if(player.getLocation().distance(mailbox.getLocation()) < 20) {
 				Location loc = mailbox.getLocation().clone();
-				ParticleEffect effect = new ParticleEffect(ParticleEffect.ParticleType.VILLAGER_HAPPY, 0, 200, 0, 3, 0);
+				ParticleEffect effect = new ParticleEffect(ParticleEffect.ParticleType.VILLAGER_HAPPY, 0, 200, 0, 4, 0);
 				loc.setX(loc.getX() + 0.5);
 				loc.setZ(loc.getZ() + 0.5);
-				loc.setY(loc.getY() + 4);
+				loc.setY(loc.getY() + 10);
 				effect.sendToLocation(loc, player);
 				found = true;
 			}

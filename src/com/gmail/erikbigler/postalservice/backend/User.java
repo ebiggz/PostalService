@@ -49,7 +49,7 @@ public interface User {
 
 	public boolean markMailAsClaimed(Mail mail);
 
-	public boolean markMailAsDeleted(Mail mail);
+	public boolean markMailAsDeleted(Mail mail, BoxType type);
 
 	public String getTimeZone();
 

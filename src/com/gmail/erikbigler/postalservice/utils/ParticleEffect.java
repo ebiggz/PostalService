@@ -11,6 +11,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
+import com.gmail.erikbigler.postalservice.PostalService;
+
 /**
  * Particle effects utility library
  * @author Maxim Roncace
@@ -48,24 +50,19 @@ public class ParticleEffect {
 			v = Double.parseDouble(array[0] + "." + array[1]);
 		}
 		try {
-			Bukkit.getLogger().info("[ParticleLib] Server major/minor version: " + v);
 			if (v < 1.7) {
-				Bukkit.getLogger().info("[ParticleLib] Hooking into pre-Netty NMS classes");
 				netty = false;
 				packetClass = getNmsClass("Packet63WorldParticles");
 				packetConstructor = packetClass.getConstructor();
 				fields = packetClass.getDeclaredFields();
 			}
 			else {
-				Bukkit.getLogger().info("[ParticleLib] Hooking into Netty NMS classes");
 				packetClass = getNmsClass("PacketPlayOutWorldParticles");
 				if (v < 1.8){
-					Bukkit.getLogger().info("[ParticleLib] Version is < 1.8 - using old packet constructor");
 					packetConstructor = packetClass.getConstructor(String.class, float.class, float.class, float.class,
 							float.class, float.class, float.class, float.class, int.class);
 				}
 				else { // use the new constructor for 1.8
-					Bukkit.getLogger().info("[ParticleLib] Version is >= 1.8 - using new packet constructor");
 					newParticlePacketConstructor = true;
 					enumParticle = (Class<Enum>)getNmsClass("EnumParticle");
 					packetConstructor = packetClass.getDeclaredConstructor(enumParticle, boolean.class, float.class,
@@ -76,7 +73,7 @@ public class ParticleEffect {
 		}
 		catch (Exception ex){
 			ex.printStackTrace();
-			Bukkit.getLogger().severe("[ParticleLib] Failed to initialize NMS components!");
+			PostalService.getPlugin().getLogger().severe("Failed to initialize NMS components for Particle effects! /mailbox find may not function as normal.");
 			compatible = false;
 		}
 	}

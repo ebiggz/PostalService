@@ -100,7 +100,6 @@ world-blacklist:
 
 ## This is the max inbox/sent size per permission group.
 # If a permission group is undefined, the default is used.
-# Be mindful in how high you set these limits, especially on larger servers.
 # This feature requires Vault. If Vault is not present, the default is used
 # for everyone.
 box-sizes:
@@ -110,17 +109,15 @@ box-sizes:
 
 ## Set this to true to make players be unable to receive mail if their inbox is full.
 # If set to false, old mail will instead make way for new mail automatically. 
-# Old mail is never deleted in this case, however, and will reappear if the player 
+# Old mail is never deleted in this case, and will reappear if the player 
 # deletes other mail to make room.
-hard-enforce-inbox-limit: false
+hard-enforce-inbox-limit: true
 
 
 ## Enable or disable when the unread mail notification is shown to players.
-# If you have world groups enabled, on-world-change will only notify the player
-# if they change world groups.
 unread-mail-notifications:
+    on-receive-mail: true
     on-login: true
-    on-world-change: false
 
 
 ####################

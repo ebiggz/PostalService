@@ -1,7 +1,6 @@
 package com.gmail.erikbigler.postalservice.commands;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -54,13 +53,12 @@ public class MailCommands implements CommandExecutor {
 		} else {
 			senderIsConsole = true;
 		}
-
 		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail") || commandLabel.equalsIgnoreCase("postalservice") || commandLabel.equalsIgnoreCase("ps") || commandLabel.equalsIgnoreCase("m")) {
 			if(args.length == 0) {
 				if(senderIsConsole(sender)) return true;
 				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, sender, true)) return true;
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
-					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service", commandData, 1);
+					Utils.fancyHelpMenu(sender, commandLabel + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
 				} else {
 					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
 				}
@@ -74,19 +72,20 @@ public class MailCommands implements CommandExecutor {
 						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
 						if(!nearMailbox) {
 							sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
+							return true;
 						}
-					} else {
-						Utils.getComposeMessage(false, player).sendTo(sender);
 					}
+					Utils.getComposeMessage(false, player).sendTo(sender);
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_HELP.toString())) {
-					// TODO: create help menu
-					//FancyMenu.showClickableCommandList(sender, commandLabel, "Mythian Postal Service Help", helpData, 1);
+					if(!PermissionHandler.playerHasPermission(Perm.HELP, sender, true)) return true;
+					Utils.fancyHelpMenu(sender, commandLabel + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_CHECK.toString())) {
 					if(senderIsConsole(sender)) return true;
+					if(!PermissionHandler.playerHasPermission(Perm.MAIL_CHECK, sender, true)) return true;
 					User user = UserFactory.getUser(sender.getName());
 					Utils.unreadMailAlert(user, false);
 					return true;
@@ -121,21 +120,32 @@ public class MailCommands implements CommandExecutor {
 					if(completedName == null || completedName.isEmpty()) {
 						if(Bukkit.getOfflinePlayer(args[0]).hasPlayedBefore()) {
 							GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(args[0])), player);
+							return true;
 						}
 					} else {
 						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(completedName)), player);
+						return true;
 					}
-					return true;
 				}
 			}
 
 			else {
 				if(senderIsConsole(sender)) return true;
+				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_HELP.toString())) {
+					try {
+						int pageNumber = Integer.parseInt(args[1]);
+						Utils.fancyHelpMenu(sender, commandLabel + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(pageNumber, sender);
+					} catch (Exception e) {
+						sender.sendMessage(Phrases.ERROR_INVALID_NUMBER.toPrefixedString());
+					}
+					return true;
+				}
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_TIMEZONE.toString())) {
 					UserFactory.getUser(player).setTimeZone(args[1].toUpperCase());
 					sender.sendMessage(Phrases.ALERT_TIMEZONE_SET.toPrefixedString());
 					return true;
 				}
+
 				//check if a mailbox should be near by
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
@@ -151,6 +161,11 @@ public class MailCommands implements CommandExecutor {
 					sender.sendMessage(Phrases.ERROR_MAILTYPE_NOT_FOUND.toPrefixedString().replace("%mailtype%", args[0]));
 					return true;
 				}
+				if(!PermissionHandler.playerCanMailType(mailType.getDisplayName(), sender)) {
+					sender.sendMessage(Phrases.ERROR_NO_PERMISSION.toPrefixedString());
+					return true;
+				}
+
 				String to = "", message = "", attachmentArgs = "";
 				Tracking tracking = null;
 				for(int i = 1; i < args.length; i++) {
@@ -193,8 +208,13 @@ public class MailCommands implements CommandExecutor {
 				String completedName = Utils.completeName(to);
 				if(completedName == null) {
 					completedName = to;
+					if(!Bukkit.getOfflinePlayer(completedName).hasPlayedBefore()) {
+						sender.sendMessage(Phrases.ERROR_PLAYER_NOT_FOUND.toPrefixedString());
+						return true;
+					}
 				}
-				if(completedName.equals(sender.getName())) {
+
+				if(completedName.equals(sender.getName()) && !PermissionHandler.playerHasPermission(Perm.MAIL_SELF, sender, false)) {
 					sender.sendMessage(Phrases.ERROR_CANT_MAIL_YOURSELF.toPrefixedString());
 					return true;
 				}
@@ -204,7 +224,11 @@ public class MailCommands implements CommandExecutor {
 						BookMeta bm = (BookMeta) player.getItemInHand().getItemMeta();
 						if(bm.hasPages()) {
 							if(bm.getPageCount() > 1) {
-								sender.sendMessage(ChatColor.RED + "[MPS] Books can only contain 1 page of text to use them to send a message!");
+								sender.sendMessage(Phrases.ERROR_BOOK_TOOLONG.toPrefixedString());
+								return true;
+							}
+							if(bm.getPage(1).trim().isEmpty()) {
+								sender.sendMessage(Phrases.ERROR_EMPTY_MESSAGE.toPrefixedString());
 								return true;
 							}
 							message = bm.getPage(1).trim();
@@ -226,8 +250,9 @@ public class MailCommands implements CommandExecutor {
 						attachmentData = attachmentArgs.split(" ");
 					}
 					User user = UserFactory.getUser(sender.getName());
-					user.sendMail(completedName, message, mailType.handleSendCommand(player, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user));
-					sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", completedName));
+					if(user.sendMail(completedName, message, mailType.handleSendCommand(player, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user))) {
+						sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", completedName));
+					}
 				} catch (MailException e) {
 					sender.sendMessage(Phrases.PREFIX.toString() + " " + e.getErrorMessage());
 				}

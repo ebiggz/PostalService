@@ -34,6 +34,7 @@ import com.gmail.erikbigler.postalservice.mail.mailtypes.Letter;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Package;
 import com.gmail.erikbigler.postalservice.mail.mailtypes.Payment;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.utils.UUIDUtils;
 import com.gmail.erikbigler.postalservice.utils.Updater;
 import com.gmail.erikbigler.postalservice.utils.Updater.UpdateCallback;
@@ -88,6 +89,12 @@ public class PostalService extends JavaPlugin {
 		if(setupVault()) {
 			vaultEnabled = true;
 		}
+
+		/*
+		 * Register permissions
+		 */
+
+		PermissionHandler.registerPermissions();
 
 		/*
 		 * Register listeners
@@ -362,13 +369,6 @@ public class PostalService extends JavaPlugin {
 					plugin.getLogger().info("Update checking has been disabled in the config.");
 					plugin.updateCheckTask.cancel();
 					break;
-				case FAIL_APIKEY:
-				case FAIL_BADID:
-				case FAIL_DBO:
-				case FAIL_DOWNLOAD:
-				case FAIL_NOVERSION:
-					plugin.getLogger().warning("An error occured while trying to check for updates. Error: " + updater.getResult().toString());
-					break;
 				case NO_UPDATE:
 					plugin.getLogger().info("You are up to date!");
 					break;
@@ -380,6 +380,8 @@ public class PostalService extends JavaPlugin {
 					plugin.getLogger().info("There is a new version available! (New version: " + updater.getLatestName() + " Current version: " + plugin.getDescription().getVersion() + ")");
 					plugin.getLogger().info("Read the update notes here: " + updater.getLatestReleaseNotesLink());
 					plugin.getLogger().info("Or type \"/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString() + "\" to download the update now.");
+					break;
+				default:
 					break;
 				}
 			}

@@ -1,7 +1,7 @@
 package com.gmail.erikbigler.postalservice.permissions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,16 +13,18 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.config.WorldGroup;
+import com.gmail.erikbigler.postalservice.mail.MailManager;
 
 public class PermissionHandler {
 
 	public enum Perm {
-		MAIL, MAIL_CHECK, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOVERRIDE, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
+		MAIL_CHECK, MAIL_SELF, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOVERRIDE, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
 	}
 
 
@@ -31,9 +33,6 @@ public class PermissionHandler {
 		switch(perm) {
 		case HELP:
 			hasPerm = player.hasPermission("postalservice.help");
-			break;
-		case MAIL:
-			hasPerm = player.hasPermission("postalservice.mail");
 			break;
 		case MAILBOX_FIND:
 			hasPerm = player.hasPermission("postalservice.mailbox.find");
@@ -77,6 +76,12 @@ public class PermissionHandler {
 		case MAIL_READ:
 			hasPerm = player.hasPermission("postalservice.mail.read");
 			break;
+		case MAIL_SELF:
+			hasPerm = player.hasPermission("postalservice.mail.self");
+			break;
+		default:
+			hasPerm = false;
+			break;
 		}
 		if(!hasPerm) {
 			if(notify) player.sendMessage(Phrases.ERROR_NO_PERMISSION.toPrefixedString());
@@ -85,13 +90,49 @@ public class PermissionHandler {
 	}
 
 	public static void registerPermissions() {
-		//parents
-		//
-		List<Permission> perms = new ArrayList<Permission>();
-		//user perms
-		//TODO register perms in code
-		//new Permission("postalservice.mail.send.*", PermissionDefault.FALSE).;
+		Map<String, Boolean> userChildren = new HashMap<String, Boolean>();
+		userChildren.put("postalservice.mail.read", true);
+		userChildren.put("postalservice.mail.send.*", true);
+		userChildren.put("postalservice.mail.check", true);
+		userChildren.put("postalservice.mailbox.set", true);
+		userChildren.put("postalservice.mailbox.remove", true);
+		userChildren.put("postalservice.mailbox.removeall", true);
+		userChildren.put("postalservice.find", true);
+		userChildren.put("postalservice.help", true);
+		Bukkit.getPluginManager().addPermission(new Permission("postalservice.user", PermissionDefault.FALSE, userChildren));
 
+		Map<String, Boolean> modChildren = new HashMap<String, Boolean>();
+		modChildren.put("postalservice.mailbox.setoverride", true);
+		modChildren.put("postalservice.mailbox.removeother", true);
+		modChildren.put("postalservice.mailbox.removeallother", true);
+		modChildren.put("postalservice.mail.readother", true);
+		Bukkit.getPluginManager().addPermission(new Permission("postalservice.mod", PermissionDefault.FALSE, modChildren));
+
+		Map<String, Boolean> adminChildren = new HashMap<String, Boolean>();
+		adminChildren.put("postalservice.update", true);
+		adminChildren.put("postalservice.reload", true);
+		adminChildren.put("postalservice.overriderequiremailbox", true);
+		adminChildren.put("postalservice.overrideworldblacklist", true);
+		adminChildren.put("postalservice.mail.self", true);
+		Bukkit.getPluginManager().addPermission(new Permission("postalservice.admin", PermissionDefault.FALSE, adminChildren));
+
+		Map<String, Boolean> opChildren = new HashMap<String, Boolean>();
+		opChildren.put("postalservice.user", true);
+		opChildren.put("postalservice.mod", true);
+		opChildren.put("postalservice.admin", true);
+		Bukkit.getPluginManager().addPermission(new Permission("postalservice.*", PermissionDefault.OP, opChildren));
+
+		for(String perm : userChildren.keySet()) {
+			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
+		}
+
+		for(String perm : modChildren.keySet()) {
+			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
+		}
+
+		for(String perm : adminChildren.keySet()) {
+			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
+		}
 	}
 
 	public static boolean playerCanMailType(String typeName, CommandSender sender) {
@@ -99,7 +140,14 @@ public class PermissionHandler {
 	}
 
 	public static boolean playerCanMailType(String typeName, Player player) {
-		return (player.hasPermission("postalservice.mail.send." + typeName.toLowerCase()));
+		return (player.hasPermission("postalservice.mail.send." + typeName.toLowerCase().trim()));
+	}
+
+	public static boolean playerCanMailSomething(CommandSender sender) {
+		for(String typeName : MailManager.getInstance().getMailTypeNames()) {
+			if(playerCanMailType(typeName, sender)) return true;
+		}
+		return false;
 	}
 
 	public static boolean playerHasMetMailboxLimit(Player player, WorldGroup group) {

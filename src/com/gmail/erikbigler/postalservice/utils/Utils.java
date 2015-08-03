@@ -32,6 +32,7 @@ import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 
 public class Utils {
 
@@ -128,7 +129,6 @@ public class Utils {
 		List<String> filtered = new ArrayList<String>();
 		for(String item : list) {
 			if(item.toLowerCase().trim().startsWith(key.toLowerCase().trim())) {
-				System.out.println(item + " starts with " + key);
 				filtered.add(item);
 			}
 		}
@@ -164,9 +164,12 @@ public class Utils {
 			im.addElement(Phrases.COMPOSE_TEXT.toPrefixedString() + ": ");
 		}
 		MailType[] types = MailManager.getInstance().getMailTypes();
-		int remaining = types.length;
+		int count = 0;
 		for(MailType type : types) {
-			if(!PermissionHandler.playerCanMailType(type.getDisplayName(), player)) continue;
+			if(!PermissionHandler.playerCanMailType(type.getDisplayName().toLowerCase().trim(), player)) continue;
+			if(count > 0) {
+				im.addElement(", ", ChatColor.AQUA);
+			}
 			String attachArg = "";
 			if(type.getAttachmentCommandArgument() != null && !type.getAttachmentCommandArgument().isEmpty()) {
 				attachArg = " " + type.getAttachmentCommandArgument() + ":";
@@ -178,10 +181,7 @@ public class Utils {
 					ClickEvent.SUGGEST_COMMAND,
 					"/" + Phrases.COMMAND_MAIL.toString() + " " + type.getDisplayName().toLowerCase() + " " + Phrases.COMMAND_ARG_TO.toString() + ": " + Phrases.COMMAND_ARG_MESSAGE.toString() + ":" + attachArg);
 			im.addElement(ime);
-			remaining--;
-			if(remaining > 0) {
-				im.addElement(", ", ChatColor.AQUA);
-			}
+			count++;
 		}
 		return im;
 	}
@@ -189,10 +189,47 @@ public class Utils {
 	public static FancyMenu fancyHelpMenu(CommandSender player, String commandLabel) {
 		FancyMenu fancyMenu = new FancyMenu(Phrases.HELPMENU_TITLE.toString(), commandLabel);
 		fancyMenu.addText(Phrases.HELPMENU_TIP.toString());
-		fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString(), "This help menu.", ClickEvent.RUN_COMMAND, null);
-
-		if (player.hasPermission("voteroulette.votecommand")) {
-			fancyMenu.addCommand("/vote", "View the links to vote on.", ClickEvent.RUN_COMMAND, "/vote");
+		if(!Config.REQUIRE_MAILBOX) {
+			if(PermissionHandler.playerHasPermission(Perm.MAIL_READ, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString(), Phrases.HELPMENU_MAIL_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			}
+		}
+		if(PermissionHandler.playerHasPermission(Perm.RELOAD, player, false)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_RELOAD.toString(), Phrases.HELPMENU_RELOAD_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+		}
+		if(PermissionHandler.playerHasPermission(Perm.UPDATE, player, false)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_UPDATE.toString(), Phrases.HELPMENU_UPDATE_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_DOWNLOAD.toString(), Phrases.HELPMENU_DOWNLOAD_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+		}
+		if(PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, player, false)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.HELPMENU_PLAYER_VARIABLE.toString(), Phrases.HELPMENU_READOTHER_DESC.toString(), ClickEvent.SUGGEST_COMMAND, "/" + Phrases.COMMAND_MAIL.toString() + " ");
+		}
+		if(PermissionHandler.playerHasPermission(Perm.HELP, player, false)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString(), Phrases.HELPMENU_HELP_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+		}
+		if(PermissionHandler.playerCanMailSomething(player)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_COMPOSE.toString(), Phrases.HELPMENU_COMPOSE_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+		}
+		if(PermissionHandler.playerHasPermission(Perm.MAIL_CHECK, player, false)) {
+			fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_CHECK.toString(), Phrases.HELPMENU_CHECK_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+		}
+		fancyMenu.addCommand("/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_TIMEZONE.toString() + " " + Phrases.HELPMENU_TIMEZONE_VARIABLE.toString(), Phrases.HELPMENU_TIMEZONE_DESC.toString(), ClickEvent.SUGGEST_COMMAND, "/" + Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_TIMEZONE.toString() + " ");
+		if(Config.ENABLE_MAILBOXES) {
+			if(PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_SET.toString(), Phrases.HELPMENU_SET_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			}
+			if(PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVE, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_REMOVE.toString(), Phrases.HELPMENU_REMOVE_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			}
+			if(PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALL, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_REMOVEALL.toString(), Phrases.HELPMENU_REMOVEALL_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			}
+			if(PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALLOTHER, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_REMOVEALL.toString() + " " + Phrases.HELPMENU_PLAYER_VARIABLE.toString(), Phrases.HELPMENU_REMOVEALLOTHER_DESC.toString(), ClickEvent.SUGGEST_COMMAND, "/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_REMOVEALL.toString() + " ");
+			}
+			if(PermissionHandler.playerHasPermission(Perm.MAILBOX_FIND, player, false)) {
+				fancyMenu.addCommand("/" + Phrases.COMMAND_MAILBOX.toString() + " " + Phrases.COMMAND_ARG_FIND.toString(), Phrases.HELPMENU_FIND_DESC.toString(), ClickEvent.RUN_COMMAND, null);
+			}
 		}
 		return fancyMenu;
 	}
@@ -258,6 +295,7 @@ public class Utils {
 
 	public static List<String> getNamesThatStartWith(String prefix) {
 		List<String> matches = new ArrayList<String>();
+		if(prefix == null || prefix.trim().isEmpty()) return matches;
 		boolean prefixTo = false;
 		if (prefix.startsWith(Phrases.COMMAND_ARG_TO.toString() + ":")) {
 			prefix = prefix.replace(Phrases.COMMAND_ARG_TO.toString() + ":", "");

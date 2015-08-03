@@ -55,7 +55,7 @@ public class Package implements MailType {
 		User user = UserFactory.getUser(sender.getName());
 		List<ItemStack> dropBoxContents = user.getDropbox(Config.getCurrentWorldGroupForUser(user));
 		if(dropBoxContents == null || dropBoxContents.isEmpty()) {
-			throw new MailException(Phrases.ERROR_MAILTYPE_PACKAGE_NO_ITEMS.toPrefixedString());
+			throw new MailException(Phrases.ERROR_MAILTYPE_PACKAGE_NO_ITEMS.toString());
 		} else {
 			user.saveDropbox(null, Config.getCurrentWorldGroupForUser(user));
 			return Arrays.toString(Utils.itemsToBytes(dropBoxContents));

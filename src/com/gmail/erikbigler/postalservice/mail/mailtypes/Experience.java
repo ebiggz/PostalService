@@ -47,7 +47,6 @@ public class Experience implements MailType {
 		} else {
 			try {
 				int amount = Integer.parseInt(commandArgs[0]);
-				System.out.println(amount);
 				if(sender.getTotalExperience() < amount) {
 					throw new MailException(Phrases.ERROR_MAILTYPE_EXPERIENCE_NOTENOUGH.toString());
 				}

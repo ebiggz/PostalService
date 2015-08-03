@@ -101,6 +101,7 @@ public class InboxTypeGUI implements GUI {
 				//previous button
 			}
 		}
+		GUIManager.getInstance().setGUIInv(this, Arrays.asList(inventory.getContents()));
 		return inventory;
 	}
 
@@ -168,7 +169,7 @@ public class InboxTypeGUI implements GUI {
 				}
 				else if(clickedEvent.getClick() == ClickType.SHIFT_RIGHT) {
 					if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
-						accountOwner.markMailAsDeleted(mail);
+						accountOwner.markMailAsDeleted(mail, boxType);
 						mails.remove(mail);
 						clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
 					}
@@ -198,10 +199,10 @@ public class InboxTypeGUI implements GUI {
 
 		if(mail.hasAttachments()) {
 			if(mail.isClaimed()) {
-				info = ChatColor.GRAY + "*" + Phrases.CLAIMED.toString() + "*";
+				info = ChatColor.GRAY + "*" + ChatColor.stripColor(Phrases.CLAIMED.toString()) + "*";
 			} else {
 				if(mail.getType().getAttachmentDescription() != null && !mail.getType().getAttachmentDescription().isEmpty()) {
-					info = ChatColor.GRAY + ChatColor.stripColor(mail.getType().getAttachmentDescription());
+					info = ChatColor.WHITE + ChatColor.stripColor(mail.getType().getAttachmentDescription());
 				}
 			}
 		}

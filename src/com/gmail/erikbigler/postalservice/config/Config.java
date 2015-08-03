@@ -19,6 +19,7 @@ import org.bukkit.plugin.PluginManager;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.backend.User;
+import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
@@ -39,8 +40,9 @@ public class Config {
 
 	// User Settings
 	public static Map<String, Integer> INBOX_SIZES;
-	public static boolean UNREAD_NOTIFICATION_WORLD_CHANGE;
+	public static boolean UNREAD_NOTIFICATION_ON_RECEIVE;
 	public static boolean UNREAD_NOTIFICATION_LOGIN;
+	public static boolean HARD_ENFORCE_INBOX_LIMIT;
 
 	// Mailbox Settings
 	public static boolean ENABLE_MAILBOXES;
@@ -66,7 +68,7 @@ public class Config {
 		loadConfig();
 		loadOptions();
 		if(CONFIG_VERSION != 1.0) {
-			// out of date config version
+			PostalService.getPlugin().getLogger().warning("Your config file appears to be out of date and there may be new options. Rename your current config to have a new one generate!");
 		}
 	}
 
@@ -88,8 +90,8 @@ public class Config {
 	}
 
 	private static void loadOptions() {
-		// TODO: load all options
 		FileConfiguration config = PostalService.getPlugin().getConfig();
+		CONFIG_VERSION = config.getDouble("config-version");
 		/* Load world group options */
 		ENABLE_WORLD_GROUPS = config.getBoolean("enable-world-groups", false);
 		WORLD_GROUPS = new ArrayList<WorldGroup>();
@@ -115,8 +117,10 @@ public class Config {
 		ConfigurationSection mtConfigSection = config.getConfigurationSection("enabled-mail-types");
 		if(mtConfigSection != null) {
 			for(String mailTypeNode : mtConfigSection.getKeys(false)) {
-				if(!mtConfigSection.getBoolean(mailTypeNode, true))
+				if(!mtConfigSection.getBoolean(mailTypeNode, true)) {
 					DISABLED_MAILTYPES.add(mailTypeNode);
+					MailManager.getInstance().deregisterMailTypeByName(mailTypeNode);
+				}
 			}
 		}
 
@@ -162,10 +166,15 @@ public class Config {
 		if(!INBOX_SIZES.containsKey("default")) {
 			INBOX_SIZES.put("default", 50);
 		}
+		UNREAD_NOTIFICATION_LOGIN = config.getBoolean("unread-mail-notifications.on-login", true);
+		UNREAD_NOTIFICATION_ON_RECEIVE = config.getBoolean("unread-mail-notifications.on-recieve-mail", true);
+		HARD_ENFORCE_INBOX_LIMIT = config.getBoolean("hard-enforce-inbox-limit", true);
+
 		/* Mailbox Settings */
 		ENABLE_MAILBOXES = config.getBoolean("enable-mailboxes", true);
 		REQUIRE_MAILBOX = config.getBoolean("require-mailbox", true);
 		MAILBOX_LIMITS = new HashMap<String, Integer>();
+
 		ConfigurationSection mailboxLimitsCS = config.getConfigurationSection("mailbox-limits");
 		if(mailboxLimitsCS != null) {
 			for(String permGroup : mailboxLimitsCS.getKeys(false)) {
@@ -259,5 +268,15 @@ public class Config {
 
 	public static List<String> getMailTypesThatIgnoreWorldGroups() {
 		return MAILTYPES_IGNORE_WORLD_GROUPS;
+	}
+
+	public static WorldGroup getWorldGroupFromGroupName(String string) {
+		if(!Config.ENABLE_WORLD_GROUPS)
+			return new WorldGroup("None", new ArrayList<String>());
+		for(WorldGroup worldGroup : WORLD_GROUPS) {
+			if(worldGroup.getName().equalsIgnoreCase(string))
+				return worldGroup;
+		}
+		return new WorldGroup("None", new ArrayList<String>());
 	}
 }

@@ -17,13 +17,8 @@ public class MailboxTabCompleter implements TabCompleter {
 	@Override
 	public List<String> onTabComplete(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString())) {
-			if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString())) {
-				if(args.length == 0) {
-					return null;
-				}
-				else if(args.length == 1) {
-					return Utils.getAllStartsWith(args[0], subCommands);
-				}
+			if(args.length == 1) {
+				return Utils.getAllStartsWith(args[0], subCommands);
 			}
 		}
 		return null;

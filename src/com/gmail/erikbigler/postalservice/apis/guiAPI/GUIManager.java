@@ -48,6 +48,13 @@ public class GUIManager {
 		}
 	}
 
+	public void setGUIInv(GUI gui, List<ItemStack> items) {
+		if(guiInvs.containsKey(gui)) {
+			guiInvs.remove(gui);
+			guiInvs.put(gui, items);
+		}
+	}
+
 	public GUI getPlayersCurrentGUI(Player player) {
 		if(openGUIs.containsKey(player)) {
 			return openGUIs.get(player);

@@ -106,7 +106,7 @@ public class DropboxGUI implements GUI {
 				items.add(item);
 			}
 		}
-		UserFactory.getUser(whoClosed).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().toString()));
+		UserFactory.getUser(whoClosed).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().getName()));
 	}
 
 	@Override

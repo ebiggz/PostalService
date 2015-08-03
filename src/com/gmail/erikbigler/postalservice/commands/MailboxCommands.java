@@ -41,7 +41,7 @@ public class MailboxCommands implements CommandExecutor {
 
 		if(commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAILBOX.toString()) || commandLabel.equalsIgnoreCase("mailbox") || commandLabel.equalsIgnoreCase("mb")) {
 			if(args.length == 0) {
-				//FancyMenu.showClickableCommandList(sender, commandLabel, "Postal Service", commandData, 1);
+				Utils.fancyHelpMenu(sender, Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
 			} else if(args.length >= 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString())) {
 					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, sender, true)) return true;

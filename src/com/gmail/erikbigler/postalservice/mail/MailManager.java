@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
@@ -36,9 +38,9 @@ public class MailManager {
 			}
 		}
 		mailTypes.add(newType);
-		//		Permission permission = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase(), PermissionDefault.FALSE);
-		//		permission.addParent(Bukkit.getServer().getPluginManager().getPermission("postalservice.mail.send.*"), false);
-		//		PostalService.getPlugin().getServer().getPluginManager().addPermission(permission);
+		Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
+		typePerm.addParent("postalservice.mail.send.*", true);
+		PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
 	}
 
 	public void deregisterMailType(MailType mailType) {
@@ -50,6 +52,19 @@ public class MailManager {
 		MailType typeToRemove = null;
 		for(MailType type : mailTypes) {
 			if(type.getIdentifier().equalsIgnoreCase(identifier)) {
+				typeToRemove = type;
+			}
+		}
+		if(typeToRemove != null) {
+			mailTypes.remove(typeToRemove);
+			PostalService.getPlugin().getServer().getPluginManager().removePermission("postalservice.mail.send." + typeToRemove.getDisplayName().toLowerCase());
+		}
+	}
+
+	public void deregisterMailTypeByName(String name) {
+		MailType typeToRemove = null;
+		for(MailType type : mailTypes) {
+			if(type.getDisplayName().equalsIgnoreCase(name)) {
 				typeToRemove = type;
 			}
 		}

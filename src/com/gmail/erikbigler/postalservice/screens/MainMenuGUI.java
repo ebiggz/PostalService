@@ -42,6 +42,7 @@ public class MainMenuGUI implements GUI {
 
 		int unread = accountOwner.getUnreadMailCount();
 		int inboxSize = accountOwner.getBoxSizeFromType(BoxType.INBOX);
+		int percent = Math.round((float) inboxSize / (float) Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()) * 100);
 
 		Inventory inventory = Bukkit.createInventory(null, InventoryType.HOPPER, Phrases.MAINMENU_TITLE.toString());
 
@@ -49,10 +50,13 @@ public class MainMenuGUI implements GUI {
 		ItemStack infoSign = GUIUtils.createButton(
 				Material.SIGN,
 				Phrases.BUTTON_ACCOUNTINFO.toString(),
-				Arrays.asList(
+				Config.ENABLE_MAILBOXES ? Arrays.asList(
 						ChatColor.GRAY + Phrases.ACCOUNT_INFO_MAILBOXES.toString() + ": " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(accountOwner.getPlayerName(), Config.getWorldGroupFromWorld(viewingPlayer.getWorld())) + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
 						ChatColor.GRAY + Phrases.ACCOUNT_INFO_INBOXSIZE.toString() + ": " + ChatColor.WHITE + inboxSize + "/" + Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()),
-						Phrases.CLICK_ACTION_HELP.toString()));
+						Phrases.CLICK_ACTION_HELP.toString()) :
+							Arrays.asList(
+									ChatColor.GRAY + Phrases.ACCOUNT_INFO_INBOXSIZE.toString() + ": " + ChatColor.WHITE + inboxSize + "/" + Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()),
+									Phrases.CLICK_ACTION_HELP.toString()));
 
 		ItemStack composeBook = GUIUtils.createButton(
 				Material.BOOK_AND_QUILL,
@@ -66,11 +70,23 @@ public class MainMenuGUI implements GUI {
 								: Arrays.asList(Phrases.CLICK_ACTION_COMPOSE.toString()))
 						:  Arrays.asList(""));
 
-		ItemStack inboxChest = GUIUtils.createButton(Material.CHEST, Phrases.BUTTON_INBOX.toString(), Arrays.asList(ChatColor.WHITE + Phrases.BUTTON_INBOX_UNREAD.toString().replace("%count%", Integer.toString(unread)), Phrases.CLICK_ACTION_OPEN.toString()));
+		ItemStack inboxChest = GUIUtils.createButton(
+				Material.CHEST,
+				Phrases.BUTTON_INBOX.toString(),
+				Arrays.asList(
+						ChatColor.WHITE + Phrases.BUTTON_INBOX_UNREAD.toString().replace("%count%", Integer.toString(unread)),
+						Phrases.INBOX_PERCENT_FULL.toString().replace("%percent%", Integer.toString(percent)),
+						Phrases.CLICK_ACTION_OPEN.toString()));
 
-		ItemStack sentEnderchest = GUIUtils.createButton(Material.ENDER_CHEST, Phrases.BUTTON_SENT.toString(), Arrays.asList(Phrases.CLICK_ACTION_OPEN.toString()));
+		ItemStack sentEnderchest = GUIUtils.createButton(
+				Material.ENDER_CHEST,
+				Phrases.BUTTON_SENT.toString(),
+				Arrays.asList(Phrases.CLICK_ACTION_OPEN.toString()));
 
-		ItemStack tradingPost = GUIUtils.createButton(Material.FENCE, Phrases.BUTTON_TRADINGPOST.toString(), Arrays.asList(ChatColor.GRAY + "*Coming Soon*"));
+		ItemStack tradingPost = GUIUtils.createButton(
+				Material.FENCE,
+				Phrases.BUTTON_TRADINGPOST.toString(),
+				Arrays.asList(ChatColor.GRAY + "*Coming Soon*"));
 
 		inventory.setItem(0, infoSign);
 		inventory.setItem(1, composeBook);

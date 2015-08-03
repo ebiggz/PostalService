@@ -25,9 +25,9 @@ public class FancyMenu {
 		this.commandLabel = commandLabel;
 		this.header = header;
 
-		previous = new InteractiveMessageElement(new FormattedText("Previous", ChatColor.YELLOW), HoverEvent.SHOW_TEXT, new FormattedText("Click for previous page"), ClickEvent.RUN_COMMAND, "");
+		previous = new InteractiveMessageElement(new FormattedText(Phrases.HELPMENU_PREVIOUS_BUTTON.toString(), ChatColor.YELLOW), HoverEvent.SHOW_TEXT, new FormattedText(Phrases.HELPMENU_PREVIOUS_DESC.toString()), ClickEvent.RUN_COMMAND, "");
 
-		next = new InteractiveMessageElement(new FormattedText("Next", ChatColor.YELLOW), HoverEvent.SHOW_TEXT, new FormattedText("Click for next page"), ClickEvent.RUN_COMMAND, "");
+		next = new InteractiveMessageElement(new FormattedText(Phrases.HELPMENU_NEXT_BUTTON.toString(), ChatColor.YELLOW), HoverEvent.SHOW_TEXT, new FormattedText(Phrases.HELPMENU_NEXT_DESC.toString()), ClickEvent.RUN_COMMAND, "");
 
 	}
 
@@ -36,7 +36,7 @@ public class FancyMenu {
 		if(command == null || command.isEmpty()) {
 			command = text;
 		}
-		newCmd.addElement(new InteractiveMessageElement(new FormattedText(text, ChatColor.AQUA), (hoverText != null) ? HoverEvent.SHOW_TEXT : HoverEvent.NONE, new FormattedText(hoverText), clickAction, command));
+		newCmd.addElement(new InteractiveMessageElement(new FormattedText(text, ChatColor.GREEN), (hoverText != null) ? HoverEvent.SHOW_TEXT : HoverEvent.NONE, new FormattedText(hoverText), clickAction, command));
 		commands.add(newCmd);
 	}
 
@@ -54,7 +54,7 @@ public class FancyMenu {
 			sender.sendMessage(Phrases.ERROR_INVALID_NUMBER.toPrefixedString());
 			return;
 		}
-		sender.sendMessage(ChatColor.GOLD + "" + ChatColor.STRIKETHROUGH + "-----" + ChatColor.GOLD + "[" + ChatColor.YELLOW + header + ChatColor.GOLD + " | " + ChatColor.YELLOW + "Page " + pageNumber + "/" + totalPages + ChatColor.GOLD + "]");
+		sender.sendMessage(ChatColor.GOLD + "" + ChatColor.STRIKETHROUGH + "-----" + ChatColor.GOLD + "[" + ChatColor.YELLOW + header + ChatColor.GOLD + " | " + ChatColor.YELLOW + Phrases.HELPMENU_PAGE.toString() + " " + pageNumber + "/" + totalPages + ChatColor.GOLD + "]");
 		int count = 0 + (7 * (pageNumber - 1));
 		while (count < 7 * pageNumber && count < commands.size()) {
 			InteractiveMessage command = commands.get(count);

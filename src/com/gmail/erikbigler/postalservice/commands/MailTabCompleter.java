@@ -12,6 +12,7 @@ import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
+import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailTabCompleter implements TabCompleter {
@@ -29,9 +30,14 @@ public class MailTabCompleter implements TabCompleter {
 					if(!PermissionHandler.playerCanMailType(name, sender)) continue;
 					arg1List.add(name.toLowerCase());
 				}
-				arg1List.add(Phrases.COMMAND_ARG_CHECK.toString());
+				if(PermissionHandler.playerHasPermission(Perm.MAIL_CHECK, sender, false)) {
+					arg1List.add(Phrases.COMMAND_ARG_CHECK.toString());
+				}
+				if(PermissionHandler.playerHasPermission(Perm.MAIL_CHECK, sender, false)) {
+					arg1List.add(Phrases.COMMAND_ARG_HELP.toString());
+				}
+
 				arg1List.add(Phrases.COMMAND_ARG_TIMEZONE.toString());
-				arg1List.add(Phrases.COMMAND_ARG_HELP.toString());
 				return Utils.getAllStartsWith(args[0], arg1List);
 			}
 			else {
@@ -60,7 +66,7 @@ public class MailTabCompleter implements TabCompleter {
 							cmdArgs.add(typeArg + ":");
 						}
 					}
-					return Utils.getAllStartsWith(args[0], cmdArgs);
+					return Utils.getAllStartsWith(args[args.length-1], cmdArgs);
 				}
 			}
 		}
