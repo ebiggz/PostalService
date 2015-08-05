@@ -155,7 +155,7 @@ public class Language {
 		MAILTYPE_LETTER("Letter"),
 		MAILTYPE_LETTER_HOVERTEXT("Mail a text-only letter!"),
 		MAILTYPE_PACKAGE("Package"),
-		MAILTYPE_PACKAGE_CLAIM_BUTTON("Claim Package"),
+		MAILTYPE_PACKAGE_CLAIM_BUTTON("&e&lClaim Package"),
 		MAILTYPE_PACKAGE_HOVERTEXT("Mail in-game items!"),
 		MAILTYPE_PACKAGE_ITEMDESC("%count% Required Slot(s)"),
 		MAILTYPE_PACKAGE_SUMMARYSCREEN_TITLE("Package Contents"),

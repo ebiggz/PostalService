@@ -58,7 +58,7 @@ public class PostalService extends JavaPlugin {
 	public static boolean vaultEnabled = false;
 	public static boolean hasPermPlugin = false;
 	public static boolean hasEconPlugin = false;
-	private static int projectId = 93931;
+	private static final int projectId = 93931;
 	private static File file;
 
 	/**
@@ -127,9 +127,9 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		this.registerCommand("postalservice", Phrases.COMMAND_MAIL.toString(), "m", "ps", "mail");
-		getCommand("postalservice").setExecutor(new MailCommands());
-		getCommand("postalservice").setTabCompleter(new MailTabCompleter());
+		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString(), "m", "ps", "postalservice");
+		getCommand("mail").setExecutor(new MailCommands());
+		getCommand("mail").setTabCompleter(new MailTabCompleter());
 
 		this.registerCommand("mailbox",Phrases.COMMAND_MAILBOX.toString(), "mb");
 		getCommand("mailbox").setExecutor(new MailboxCommands());
@@ -147,9 +147,11 @@ public class PostalService extends JavaPlugin {
 		}
 
 		if(!getServer().getOnlineMode()) {
-			if(!Config.FORCE_UUIDS) {
-				Config.USE_UUIDS = false;
-				getLogger().warning("UUIDs are enabled but the server is running in Offline Mode. UUIDs have been disabled. To force the use of UUIDs while in Offline mode, set \"use-uuids\" to \"always\" in the config.");
+			if(Config.USE_UUIDS){
+				if(!Config.FORCE_UUIDS) {
+					Config.USE_UUIDS = false;
+					getLogger().warning("UUIDs are enabled but the server is running in Offline Mode. UUIDs have been disabled. To force the use of UUIDs while in Offline mode, set \"use-uuids\" to \"always\" in the config.");
+				}
 			}
 		}
 
@@ -162,6 +164,7 @@ public class PostalService extends JavaPlugin {
 			Metrics metrics = new Metrics(this);
 			metrics.start();
 		} catch (IOException e) {
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
 			// Failed to submit the metrics :-(
 		}
 
@@ -176,6 +179,7 @@ public class PostalService extends JavaPlugin {
 		getLogger().info("Disabled!");
 	}
 
+	/** Vault set up methods */
 	private boolean setupVault() {
 		Plugin vault = getServer().getPluginManager().getPlugin("Vault");
 		if(vault != null) {
@@ -213,6 +217,7 @@ public class PostalService extends JavaPlugin {
 		return (permission != null);
 	}
 
+	/** Connect to the database */
 	public boolean loadDatabase() {
 		reloadConfig();
 		database = new MySQL(this, getConfig().getString("database.host", "127.0.0.1"), getConfig().getString("database.port", "3306"), getConfig().getString("database.database", "someName"), getConfig().getString("database.user", "user"), getConfig().getString("database.password", "password"));
@@ -226,6 +231,7 @@ public class PostalService extends JavaPlugin {
 		}
 	}
 
+	/** @return PostalServices updater class */
 	public static Updater getUpdater() {
 		return updater;
 	}
@@ -250,6 +256,7 @@ public class PostalService extends JavaPlugin {
 		return database;
 	}
 
+	/** @return PostalService's Bukkit Project ID */
 	public int getProjectID() {
 		return projectId;
 	}
@@ -265,6 +272,7 @@ public class PostalService extends JavaPlugin {
 		return "";
 	}
 
+	/** Bukkit task and update handlers */
 	private void scheduleTasks() {
 		//cancel any previously set tasks
 		cancelTasks();
@@ -347,7 +355,7 @@ public class PostalService extends JavaPlugin {
 		return commandMap;
 	}
 
-	//knownCommands
+	/** Update checker **/
 
 	private class UpdateCheckTask extends BukkitRunnable {
 
