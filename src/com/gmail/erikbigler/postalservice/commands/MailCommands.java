@@ -28,8 +28,6 @@ import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailCommands implements CommandExecutor {
 
-	boolean senderIsConsole = false;
-
 	enum Tracking {
 		TO, MESSAGE, ATTACHMENT
 	}
@@ -37,6 +35,7 @@ public class MailCommands implements CommandExecutor {
 	@SuppressWarnings("deprecation")
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
+		boolean isConsole = false;
 
 		Player player = null;
 
@@ -51,11 +50,11 @@ public class MailCommands implements CommandExecutor {
 				}
 			}
 		} else {
-			senderIsConsole = true;
+			isConsole = true;
 		}
 		if (commandLabel.equalsIgnoreCase(Phrases.COMMAND_MAIL.toString()) || commandLabel.equalsIgnoreCase("mail") || commandLabel.equalsIgnoreCase("postalservice") || commandLabel.equalsIgnoreCase("ps") || commandLabel.equalsIgnoreCase("m")) {
 			if(args.length == 0) {
-				if(senderIsConsole(sender)) return true;
+				if(senderIsConsole(sender, isConsole)) return true;
 				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, sender, true)) return true;
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 					Utils.fancyHelpMenu(sender, commandLabel + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
@@ -66,7 +65,7 @@ public class MailCommands implements CommandExecutor {
 			}
 			else if(args.length == 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_COMPOSE.toString())) {
-					if(senderIsConsole(sender)) return true;
+					if(senderIsConsole(sender, isConsole)) return true;
 					//check if a mailbox should be near by
 					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
@@ -84,7 +83,7 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_CHECK.toString())) {
-					if(senderIsConsole(sender)) return true;
+					if(senderIsConsole(sender, isConsole)) return true;
 					if(!PermissionHandler.playerHasPermission(Perm.MAIL_CHECK, sender, true)) return true;
 					User user = UserFactory.getUser(sender.getName());
 					Utils.unreadMailAlert(user, false);
@@ -115,7 +114,7 @@ public class MailCommands implements CommandExecutor {
 					return true;
 				}
 				else if(PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, sender, false)){
-					if(senderIsConsole(sender)) return true;
+					if(senderIsConsole(sender, isConsole)) return true;
 					String completedName = Utils.completeName(args[0]);
 					if(completedName == null || completedName.isEmpty()) {
 						if(Bukkit.getOfflinePlayer(args[0]).hasPlayedBefore()) {
@@ -130,7 +129,7 @@ public class MailCommands implements CommandExecutor {
 			}
 
 			else {
-				if(senderIsConsole(sender)) return true;
+				if(senderIsConsole(sender, isConsole)) return true;
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_HELP.toString())) {
 					try {
 						int pageNumber = Integer.parseInt(args[1]);
@@ -263,8 +262,8 @@ public class MailCommands implements CommandExecutor {
 		return true;
 	}
 
-	private boolean senderIsConsole(CommandSender sender) {
-		if(senderIsConsole) {
+	private boolean senderIsConsole(CommandSender sender, boolean isConsole) {
+		if(isConsole) {
 			sender.sendMessage(Phrases.ERROR_CONSOLE_COMMAND.toPrefixedString());
 			return true;
 		}
