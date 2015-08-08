@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>PostalService</groupId>
   <artifactId>PostalService</artifactId>
-  <version>1.0.2 - SNAPSHOT</version>
+  <version>1.0.2 SNAPSHOT</version>
   <name>PostalService</name>
   <description>A mail service for Bukkit servers.</description>
             <repositories>
@@ -39,7 +39,15 @@
                 </dependency>
         </dependencies>
   <build>
-    <sourceDirectory>src</sourceDirectory>
+  <sourceDirectory>src</sourceDirectory>
+  <resources>
+  <resource>
+  <directory>src</directory>
+  <excludes>
+  <exclude>**/*.java</exclude>
+  </excludes>
+  </resource>
+    </resources>
     <plugins>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
