@@ -2,6 +2,7 @@
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/listeners/PlayerListener.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/commands/MailCommands.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/mail/MailManager.java
+/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/events/PlayerOpenMailMenuEvent.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/commands/MailTabCompleter.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/screens/SummaryScreenGUI.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/utils/UUIDUtils.java
@@ -15,8 +16,9 @@
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/utils/NameFetcher.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/apis/guiAPI/GUIUtils.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/apis/InteractiveMessageAPI/FormattedText.java
-/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/tradingpost/TradingPostMenuGUI.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/tradingpost/TradeManager.java
+/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/tradingpost/TradingPostMenuGUI.java
+/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/events/PlayerUnregisterMailboxEvent.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/utils/Paginate.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/config/Config.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/commands/MailboxCommands.java
@@ -38,6 +40,7 @@
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/tradingpost/TradeSession.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/mail/mailtypes/Letter.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/screens/DropboxGUI.java
+/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/events/PlayerRegisterMailboxEvent.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/config/ConfigAccessor.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/tradingpost/TradeLogButton.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/apis/InteractiveMessageAPI/InteractiveMessageElement.java
@@ -56,3 +59,4 @@
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/utils/Updater.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/screens/MainMenuGUI.java
 /Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/exceptions/MailException.java
+/Users/erikbigler/Documents/My Plugins/PostalService/src/com/gmail/erikbigler/postalservice/events/PlayerSendMailEvent.java
