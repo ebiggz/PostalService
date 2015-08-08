@@ -12,7 +12,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.SimplePluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -315,7 +314,7 @@ public class PostalService extends JavaPlugin {
 	private void registerCommand(String... aliases) {
 		PluginCommand command = getCommand(aliases[0], this);
 		command.setAliases(Arrays.asList(aliases));
-		getCommandMap().register("", command);
+		getCommandMap().register("PostalService", command);
 	}
 
 	private static PluginCommand getCommand(String name, Plugin plugin) {
@@ -334,12 +333,10 @@ public class PostalService extends JavaPlugin {
 	private static CommandMap getCommandMap() {
 		CommandMap commandMap = null;
 		try {
-			if(Bukkit.getPluginManager() instanceof SimplePluginManager) {
-				Field f = SimplePluginManager.class.getDeclaredField("commandMap");
-				f.setAccessible(true);
+			Field f = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
+			f.setAccessible(true);
 
-				commandMap = (CommandMap) f.get(Bukkit.getPluginManager());
-			}
+			commandMap = (CommandMap) f.get(Bukkit.getPluginManager());
 		} catch (Exception e) {
 			if(Config.ENABLE_DEBUG)
 				e.printStackTrace();

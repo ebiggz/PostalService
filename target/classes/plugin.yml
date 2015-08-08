@@ -4,3 +4,4 @@ version: 1.0.2 SNAPSHOT
 author: ebiggz
 description: A mail system for Bukkit servers
 softdepends: [Vault]
+
