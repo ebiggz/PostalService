@@ -126,13 +126,13 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		this.registerCommand("mail", Phrases.COMMAND_MAIL.toString(), "m", "ps", "postalservice");
-		getCommand("mail").setExecutor(new MailCommands());
-		getCommand("mail").setTabCompleter(new MailTabCompleter());
+		this.registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
+		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
+		getCommand(Phrases.COMMAND_MAIL.toString()).setTabCompleter(new MailTabCompleter());
 
-		this.registerCommand("mailbox",Phrases.COMMAND_MAILBOX.toString(), "mb");
-		getCommand("mailbox").setExecutor(new MailboxCommands());
-		getCommand("mailbox").setTabCompleter(new MailboxTabCompleter());
+		this.registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
+		getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
+		getCommand(Phrases.COMMAND_MAILBOX.toString()).setTabCompleter(new MailboxTabCompleter());
 
 		/*
 		 * Connect to database
