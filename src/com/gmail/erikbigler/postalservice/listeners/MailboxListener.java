@@ -32,6 +32,14 @@ public class MailboxListener implements Listener {
 		}
 	}
 
+	//TODO: Convert GUI shower from interact to open event
+	/*@EventHandler
+    public void onInventoryOpenEvent(InventoryOpenEvent e){
+        if (e.getInventory().getHolder() instanceof Chest || e.getInventory().getHolder() instanceof DoubleChest){
+            // rawr
+        }
+    }*/
+
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if(!event.hasBlock())

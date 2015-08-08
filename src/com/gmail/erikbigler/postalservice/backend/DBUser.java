@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -13,6 +14,7 @@ import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
 import com.gmail.erikbigler.postalservice.config.WorldGroup;
+import com.gmail.erikbigler.postalservice.events.PlayerSendMailEvent;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
@@ -225,8 +227,15 @@ public class DBUser implements User {
 				sender.sendMessage(Phrases.ERROR_INBOX_FULL.toPrefixedString().replace("%recipient%", recipient));
 				return false;
 			}
-			PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,\"" + mailType.getIdentifier().toLowerCase() + "\",\"" + message + "\",\"" + attachmentData + "\", now(), \"" + getIdentifier() + "\", 0, \"" + worldGroup.getName() + "\")");
-			return recipientUser.receieveMail(sender, mailType);
+
+			PlayerSendMailEvent event = new PlayerSendMailEvent(this, recipientUser, message, attachmentData, mailType, worldGroup);
+			Bukkit.getServer().getPluginManager().callEvent(event);
+			if(!event.isCancelled()) {
+				PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,\"" + event.getMailType().getIdentifier().toLowerCase() + "\",\"" + event.getMessage() + "\",\"" + event.getAttachmentData() + "\", now(), \"" + event.getSender().getIdentifier() + "\", 0, \"" + event.getWorldGroup().getName() + "\")");
+				return recipientUser.receieveMail(Utils.getPlayerFromIdentifier(event.getSender().getIdentifier()), event.getMailType());
+			} else {
+				return false;
+			}
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
