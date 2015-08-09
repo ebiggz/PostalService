@@ -1,12 +1,12 @@
 package com.gmail.erikbigler.postalservice.mailbox;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Chest;
+import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
 
 import com.gmail.erikbigler.postalservice.PostalService;
@@ -24,7 +24,7 @@ import com.gmail.erikbigler.postalservice.utils.Utils;
 public class MailboxManager {
 
 	public HashMap<Player, MailboxSelect> mailboxSelectors = new HashMap<Player, MailboxSelect>();
-	private List<Mailbox> mailboxes = new ArrayList<Mailbox>();
+	private HashMap<Location,Mailbox> mailboxes = new HashMap<Location,Mailbox>();
 
 	protected MailboxManager() {
 	/* exists to block instantiation */ }
@@ -56,7 +56,8 @@ public class MailboxManager {
 					String location = rs.getString("Location");
 					String playerIdentifier = rs.getString("PlayerID");
 					if(location != null || playerIdentifier != null) {
-						mailboxes.add(new Mailbox(Utils.stringToLocation(location), playerIdentifier));
+						Location loc = Utils.stringToLocation(location);
+						mailboxes.put(loc, new Mailbox(loc, playerIdentifier));
 					}
 				}
 			} catch (Exception e) {
@@ -67,9 +68,8 @@ public class MailboxManager {
 	}
 
 	public Mailbox getMailbox(Location loc) {
-		for(Mailbox mailbox : mailboxes) {
-			if(mailbox.getLocation().equals(loc))
-				return mailbox;
+		if(mailboxes.containsKey(loc)) {
+			return mailboxes.get(loc);
 		}
 		return null;
 	}
@@ -78,6 +78,8 @@ public class MailboxManager {
 		User user = UserFactory.getUser(player.getName());
 		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
+		} else if(((Chest) location.getBlock().getState()).getInventory().getHolder() instanceof DoubleChest) {
+			throw new MailboxException(Reason.DOUBLE_CHEST);
 		} else if(this.locationHasMailbox(location)) {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
 		} else if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETOVERRIDE, player, false) && !PermissionHandler.playerCanCreateMailboxAtLoc(location, player)) {
@@ -93,7 +95,7 @@ public class MailboxManager {
 						e.printStackTrace();
 				}
 			}
-			this.mailboxes.add(new Mailbox(location, user.getIdentifier()));
+			this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
 		}
 	}
 
@@ -110,7 +112,7 @@ public class MailboxManager {
 		} else {
 			if(Config.USE_DATABASE) {
 				try {
-					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = " + Utils.locationToString(mb.getLocation()));
+					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = \"" + Utils.locationToString(mb.getLocation()) + "\"");
 				} catch (Exception e) {
 					if(Config.ENABLE_DEBUG)
 						e.printStackTrace();
@@ -122,11 +124,11 @@ public class MailboxManager {
 
 	public boolean markNearbyMailboxes(Player player) {
 		boolean found = false;
-		for(Mailbox mailbox : this.mailboxes) {
-			if(mailbox.getLocation().getWorld() != player.getLocation().getWorld())
+		for(Location mailboxLoc : this.mailboxes.keySet()) {
+			if(mailboxLoc.getWorld() != player.getLocation().getWorld())
 				continue;
-			if(player.getLocation().distance(mailbox.getLocation()) < 20) {
-				Location loc = mailbox.getLocation().clone();
+			if(player.getLocation().distance(mailboxLoc) < 20) {
+				Location loc = mailboxLoc.clone();
 				ParticleEffect effect = new ParticleEffect(ParticleEffect.ParticleType.VILLAGER_HAPPY, 0, 200, 0, 4, 0);
 				loc.setX(loc.getX() + 0.5);
 				loc.setZ(loc.getZ() + 0.5);
@@ -157,7 +159,7 @@ public class MailboxManager {
 
 	public int getMailboxCount(String name, WorldGroup group) {
 		int count = 0;
-		for(Mailbox mailbox : this.mailboxes) {
+		for(Mailbox mailbox : mailboxes.values()) {
 			if(!mailbox.getOwner().getPlayerName().equals(name)) continue;
 			if(Config.getWorldGroupFromWorld(mailbox.getLocation().getWorld()).getName().equals(group.getName())) {
 				count++;
@@ -167,8 +169,8 @@ public class MailboxManager {
 	}
 
 	public boolean mailboxIsNearby(Location location, int distance) {
-		for(Mailbox mailbox : mailboxes) {
-			if(location.distance(mailbox.getLocation()) < distance)
+		for(Location mailboxLoc : mailboxes.keySet()) {
+			if(location.distance(mailboxLoc) < distance)
 				return true;
 		}
 		return false;

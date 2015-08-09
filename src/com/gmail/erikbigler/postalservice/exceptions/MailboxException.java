@@ -4,7 +4,7 @@ package com.gmail.erikbigler.postalservice.exceptions;
 public class MailboxException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1L;
 
@@ -15,7 +15,7 @@ public class MailboxException extends Exception {
 	}
 
 	public enum Reason {
-		ALREADY_EXISTS, MAX_REACHED, NO_PERMISSION, NOT_CHEST, DOESNT_EXIST, NOT_OWNER
+		ALREADY_EXISTS, MAX_REACHED, NO_PERMISSION, NOT_CHEST, DOESNT_EXIST, NOT_OWNER, DOUBLE_CHEST
 	}
 
 	public Reason getReason() {

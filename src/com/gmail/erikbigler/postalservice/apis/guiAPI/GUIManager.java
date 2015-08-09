@@ -4,9 +4,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitScheduler;
+
+import com.gmail.erikbigler.postalservice.PostalService;
 
 
 public class GUIManager {
@@ -27,11 +31,36 @@ public class GUIManager {
 	//present a gui on players screen
 	public void showGUI(GUI gui, Player player) {
 		if(gui == null || player == null) return;
-		player.closeInventory();
-		openGUIs.put(player, gui);
-		Inventory inv = gui.createInventory(player);
-		guiInvs.put(gui, Arrays.asList(inv.getContents()));
-		player.openInventory(inv);
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
+			private GUI gui;
+			private Player player;
+			@Override
+			public void run() {
+				Inventory inv = gui.createInventory(player);
+				BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+				scheduler.runTask(PostalService.getPlugin(), new Runnable() {
+					private Inventory inv;
+					@Override
+					public void run() {
+						player.closeInventory();
+						openGUIs.put(player, gui);
+						guiInvs.put(gui, Arrays.asList(inv.getContents()));
+						player.openInventory(inv);
+					}
+					public Runnable init(Inventory inv) {
+						this.inv = inv;
+						return this;
+					}
+				}.init(inv));
+			}
+			public Runnable init(GUI gui, Player player) {
+				this.gui = gui;
+				this.player = player;
+				return this;
+			}
+		}.init(gui, player));
+
 	}
 
 	//used by GUIListener to remove players from GUI storage
