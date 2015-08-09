@@ -34,14 +34,20 @@ public class InboxTypeGUI implements GUI {
 	private BoxType boxType;
 	private User accountOwner;
 	private int pageNumber;
-	private int totalPages;
+	private int totalPages = 1;
 	private List<Mail> mails;
 
 	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber) {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
 		this.accountOwner = accountOwner;
-		this.mails = accountOwner.getBoxFromType(type);
+	}
+
+	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber, int totalPages) {
+		this.boxType = type;
+		this.pageNumber = pageNumber;
+		this.accountOwner = accountOwner;
+		this.totalPages = totalPages;
 	}
 
 	public BoxType getType() {
@@ -49,7 +55,10 @@ public class InboxTypeGUI implements GUI {
 	}
 
 	@Override
-	public Inventory createInventory(Player player) {
+	public ItemStack[] loadContents(Player player) {
+		if(mails == null) {
+			this.mails = accountOwner.getBoxFromType(boxType);
+		}
 		String boxTypeStr = boxType == BoxType.INBOX ? Phrases.BUTTON_INBOX.toString() : Phrases.BUTTON_SENT.toString();
 		Inventory inventory = Bukkit.createInventory(null, 9*5, ChatColor.stripColor(boxTypeStr));
 		int boxSize = mails.size();
@@ -102,6 +111,47 @@ public class InboxTypeGUI implements GUI {
 			}
 		}
 		GUIManager.getInstance().setGUIInv(this, Arrays.asList(inventory.getContents()));
+		return inventory.getContents();
+	}
+
+	@Override
+	public Inventory createBaseInventory(Player player) {
+		String boxTypeStr = boxType == BoxType.INBOX ? Phrases.BUTTON_INBOX.toString() : Phrases.BUTTON_SENT.toString();
+		Inventory inventory = Bukkit.createInventory(null, 9*5, ChatColor.stripColor(boxTypeStr));
+
+		ItemStack seperator = GUIUtils.createButton(Material.STONE_BUTTON, ChatColor.STRIKETHROUGH + "---", null);
+		for(int i = 27; i < 36; i++) {
+			inventory.setItem(i, seperator);
+		}
+
+		ItemStack mainMenu = GUIUtils.createButton(
+				Material.BOOK_AND_QUILL,
+				Phrases.BUTTON_MAINMENU.toString(),
+				Arrays.asList(
+						Phrases.CLICK_ACTION_LEFTRETURN.toString()));
+		inventory.setItem(40, mainMenu);
+
+		if(totalPages > 1) {
+			if(pageNumber + 1 <= totalPages) {
+				ItemStack next = GUIUtils.createButton(
+						Material.IRON_PLATE,
+						ChatColor.GOLD + Phrases.BUTTON_NEXT.toString(),
+						Arrays.asList(
+								Phrases.CLICK_ACTION_NEXTPAGE.toString()));
+				inventory.setItem(41, next);
+				//next button
+			}
+			if(pageNumber - 1 >= 1) {
+				ItemStack previous = GUIUtils.createButton(
+						Material.IRON_PLATE,
+						Phrases.BUTTON_PREVIOUS.toString(),
+						Arrays.asList(
+								Phrases.CLICK_ACTION_PREVIOUSPAGE.toString()));
+				inventory.setItem(39, previous);
+				//previous button
+			}
+		}
+		GUIManager.getInstance().setGUIInv(this, Arrays.asList(inventory.getContents()));
 		return inventory;
 	}
 
@@ -114,7 +164,7 @@ public class InboxTypeGUI implements GUI {
 		case 39:
 			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
 				this.pageNumber = pageNumber-1;
-				clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
+				clickedEvent.getInventory().setContents(loadContents(whoClicked));
 			}
 			break;
 		case 40:
@@ -125,7 +175,7 @@ public class InboxTypeGUI implements GUI {
 		case 41:
 			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
 				this.pageNumber = pageNumber+1;
-				clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
+				clickedEvent.getInventory().setContents(loadContents(whoClicked));
 			}
 			break;
 		default:
@@ -171,7 +221,7 @@ public class InboxTypeGUI implements GUI {
 					if(boxType == BoxType.SENT || !mail.hasAttachments() || mail.isClaimed()) {
 						accountOwner.markMailAsDeleted(mail, boxType);
 						mails.remove(mail);
-						clickedEvent.getInventory().setContents(createInventory(whoClicked).getContents());
+						clickedEvent.getInventory().setContents(loadContents(whoClicked));
 					}
 				}
 			}
@@ -211,7 +261,7 @@ public class InboxTypeGUI implements GUI {
 		}
 
 		ItemMeta im = button.getItemMeta();
-		String name = ChatColor.GOLD + "" + ChatColor.BOLD + Utils.capitalize(mail.getType().getDisplayName().toLowerCase(), null);
+		String name = ChatColor.GOLD + "" + ChatColor.BOLD + mail.getType().getDisplayName();
 		im.setDisplayName(name);
 
 		lore.add(ChatColor.GRAY + "" + ChatColor.STRIKETHROUGH + "-----------");

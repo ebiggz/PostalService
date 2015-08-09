@@ -26,6 +26,7 @@ public class SummaryScreenGUI implements GUI {
 	private Mail mail;
 	private BoxType previous;
 	private int prevPage;
+	private ItemStack[] contents;
 
 	public SummaryScreenGUI(Mail mail, BoxType previous, int prevPage) {
 		this.mail = mail;
@@ -34,7 +35,12 @@ public class SummaryScreenGUI implements GUI {
 	}
 
 	@Override
-	public Inventory createInventory(Player player) {
+	public ItemStack[] loadContents(Player player) {
+		return contents;
+	}
+
+	@Override
+	public Inventory createBaseInventory(Player player) {
 		Inventory inventory = Bukkit.createInventory(null, 9*5, mail.getType().getSummaryScreenTitle());
 
 		for(ItemStack item : mail.getType().getSummaryIcons()) {
@@ -61,6 +67,7 @@ public class SummaryScreenGUI implements GUI {
 							Phrases.CLICK_ACTION_LEFTRETURN.toString()));
 			inventory.setItem(40, mainMenu);
 		}
+		this.contents = inventory.getContents();
 		return inventory;
 	}
 

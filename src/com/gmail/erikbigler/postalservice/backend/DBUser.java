@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.config.Config;
@@ -223,7 +224,7 @@ public class DBUser implements User {
 		try {
 			User recipientUser = UserFactory.getUser(recipient);
 			Player sender = Utils.getPlayerFromIdentifier(getIdentifier());
-			if(recipientUser.inboxIsFull() && Config.HARD_ENFORCE_INBOX_LIMIT) {
+			if(Config.HARD_ENFORCE_INBOX_LIMIT && recipientUser.inboxIsFull()) {
 				sender.sendMessage(Phrases.ERROR_INBOX_FULL.toPrefixedString().replace("%recipient%", recipient));
 				return false;
 			}
@@ -231,8 +232,27 @@ public class DBUser implements User {
 			PlayerSendMailEvent event = new PlayerSendMailEvent(this, recipientUser, message, attachmentData, mailType, worldGroup);
 			Bukkit.getServer().getPluginManager().callEvent(event);
 			if(!event.isCancelled()) {
-				PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,\"" + event.getMailType().getIdentifier().toLowerCase() + "\",\"" + event.getMessage() + "\",\"" + event.getAttachmentData() + "\", now(), \"" + event.getSender().getIdentifier() + "\", 0, \"" + event.getWorldGroup().getName() + "\")");
-				return recipientUser.receieveMail(Utils.getPlayerFromIdentifier(event.getSender().getIdentifier()), event.getMailType());
+				sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", recipient));
+				BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+				scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
+					private PlayerSendMailEvent event;
+					private User recipientUser;
+					@Override
+					public void run() {
+						try {
+							PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,\"" + event.getMailType().getIdentifier().toLowerCase() + "\",\"" + event.getMessage() + "\",\"" + event.getAttachmentData() + "\", now(), \"" + event.getSender().getIdentifier() + "\", 0, \"" + event.getWorldGroup().getName() + "\")");
+							recipientUser.receieveMail(Utils.getPlayerFromIdentifier(event.getSender().getIdentifier()), event.getMailType());
+						} catch (Exception e) {
+							if(Config.ENABLE_DEBUG) e.printStackTrace();
+						}
+					}
+					public Runnable init(PlayerSendMailEvent event, User recipientUser) {
+						this.event = event;
+						this.recipientUser = recipientUser;
+						return this;
+					}
+				}.init(event, recipientUser));
+				return true;
 			} else {
 				return false;
 			}
@@ -246,7 +266,6 @@ public class DBUser implements User {
 	@Override
 	public boolean receieveMail(Player sender, MailType mailType) {
 		try {
-			if(inboxIsFull() && Config.HARD_ENFORCE_INBOX_LIMIT) return false;
 			PostalService.getPSDatabase().updateSQL("INSERT INTO ps_received VALUES (0,\"" + this.getIdentifier() + "\",LAST_INSERT_ID(), 0, 0)");
 			if(Config.UNREAD_NOTIFICATION_ON_RECEIVE) {
 				Utils.messagePlayerIfOnline(this.getIdentifier(), Phrases.ALERT_RECEIVED_MAIL.toPrefixedString().replace("%sender%", sender.getName()));
@@ -274,7 +293,22 @@ public class DBUser implements User {
 	@Override
 	public boolean markMailAsClaimed(Mail mail) {
 		try {
-			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received SET Received.Status = 2 WHERE Received.ReceivedID = " + mail.getReceivedID());
+			BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+			scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
+				private Mail mail;
+				@Override
+				public void run() {
+					try {
+						PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received SET Received.Status = 2 WHERE Received.ReceivedID = " + mail.getReceivedID());
+					} catch (Exception e) {
+						if(Config.ENABLE_DEBUG) e.printStackTrace();
+					}
+				}
+				public Runnable init(Mail mail) {
+					this.mail = mail;
+					return this;
+				}
+			}.init(mail));
 			return true;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
@@ -286,11 +320,28 @@ public class DBUser implements User {
 	@Override
 	public boolean markMailAsDeleted(Mail mail, BoxType type) {
 		try {
-			if (type == BoxType.SENT) {
-				PostalService.getPSDatabase().updateSQL("UPDATE ps_mail AS Sent SET Sent.Deleted = 1 WHERE Sent.MailID = " + mail.getMailID());
-			} else {
-				PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received SET Received.Deleted = 1 WHERE Received.ReceivedID = " + mail.getReceivedID());
-			}
+			BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+			scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
+				private Mail mail;
+				private BoxType type;
+				@Override
+				public void run() {
+					try {
+						if (type == BoxType.SENT) {
+							PostalService.getPSDatabase().updateSQL("UPDATE ps_mail AS Sent SET Sent.Deleted = 1 WHERE Sent.MailID = " + mail.getMailID());
+						} else {
+							PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received SET Received.Deleted = 1 WHERE Received.ReceivedID = " + mail.getReceivedID());
+						}
+					} catch (Exception e) {
+						if(Config.ENABLE_DEBUG) e.printStackTrace();
+					}
+				}
+				public Runnable init(Mail mail, BoxType type) {
+					this.mail = mail;
+					this.type = type;
+					return this;
+				}
+			}.init(mail, type));
 			return true;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)

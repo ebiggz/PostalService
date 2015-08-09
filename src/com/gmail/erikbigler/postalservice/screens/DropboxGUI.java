@@ -13,7 +13,9 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitScheduler;
 
+import com.gmail.erikbigler.postalservice.PostalService;
 import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.FormattedText;
 import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
 import com.gmail.erikbigler.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
@@ -32,8 +34,10 @@ import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class DropboxGUI implements GUI {
 
+	private boolean contentsLoaded = false;
+
 	@Override
-	public Inventory createInventory(Player player) {
+	public ItemStack[] loadContents(Player player) {
 		Inventory inventory = Bukkit.createInventory(null, 9*5, Phrases.DROPBOX_TITLE.toString());
 		User user = UserFactory.getUser(player.getName());
 		List<ItemStack> dbItems = user.getDropbox(Config.getWorldGroupFromWorld(player.getWorld().getName()));
@@ -65,11 +69,40 @@ public class DropboxGUI implements GUI {
 						Phrases.CLICK_ACTION_COMPOSE.toString(),
 						Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
 		inventory.setItem(40, mainMenu);
+		contentsLoaded = true;
+		return inventory.getContents();
+	}
+
+	@Override
+	public Inventory createBaseInventory(Player player) {
+		Inventory inventory = Bukkit.createInventory(null, 9*5, Phrases.DROPBOX_TITLE.toString());
+		ItemStack seperator = GUIUtils.createButton(Material.STONE_BUTTON, ChatColor.STRIKETHROUGH + "---", null);
+		for(int i = 27; i < 36; i++) {
+			inventory.setItem(i, seperator);
+		}
+
+		ItemStack infoSign = GUIUtils.createButton(
+				Material.SIGN,
+				Phrases.DROPBOX_HELP.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
+		inventory.setItem(39, infoSign);
+
+		ItemStack mainMenu = GUIUtils.createButton(
+				Material.BOOK_AND_QUILL,
+				Phrases.BUTTON_COMPOSE_PACKAGE.toString(),
+				Arrays.asList(
+						Phrases.CLICK_ACTION_COMPOSE.toString(),
+						Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
+		inventory.setItem(40, mainMenu);
 		return inventory;
 	}
 
 	@Override
 	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickedEvent) {
+		if(!contentsLoaded) {
+			clickedEvent.setCancelled(true);
+			return;
+		}
 		ItemStack clickedItem = clickedEvent.getCurrentItem();
 		if(clickedEvent.getSlot() < 27) {
 			clickedEvent.setCancelled(false);
@@ -99,14 +132,27 @@ public class DropboxGUI implements GUI {
 
 	@Override
 	public void onInventoryClose(Player whoClosed, InventoryCloseEvent closeEvent) {
-		List<ItemStack> items = new ArrayList<ItemStack>();
-		for(int i = 0; i < 26; i++) {
-			ItemStack item = closeEvent.getInventory().getItem(i);
-			if(item != null && item.getType() != Material.AIR) {
-				items.add(item);
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
+			private Player whoClosed;
+			private InventoryCloseEvent closeEvent;
+			@Override
+			public void run() {
+				List<ItemStack> items = new ArrayList<ItemStack>();
+				for(int i = 0; i < 26; i++) {
+					ItemStack item = closeEvent.getInventory().getItem(i);
+					if(item != null && item.getType() != Material.AIR) {
+						items.add(item);
+					}
+				}
+				UserFactory.getUser(whoClosed).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().getName()));
 			}
-		}
-		UserFactory.getUser(whoClosed).saveDropbox(items, Config.getWorldGroupFromWorld(whoClosed.getWorld().getName()));
+			public Runnable init(Player whoClosed, InventoryCloseEvent closeEvent) {
+				this.whoClosed = whoClosed;
+				this.closeEvent = closeEvent;
+				return this;
+			}
+		}.init(whoClosed, closeEvent));
 	}
 
 	@Override

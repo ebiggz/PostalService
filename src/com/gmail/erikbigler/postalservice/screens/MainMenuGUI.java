@@ -38,8 +38,7 @@ public class MainMenuGUI implements GUI {
 	}
 
 	@Override
-	public Inventory createInventory(Player viewingPlayer) {
-
+	public ItemStack[] loadContents(Player viewingPlayer) {
 		int unread = accountOwner.getUnreadMailCount();
 		int inboxSize = accountOwner.getBoxSizeFromType(BoxType.INBOX);
 		int percent = Math.round((float) inboxSize / (float) Config.getMaxInboxSizeForPlayer(accountOwner.getPlayerName()) * 100);
@@ -87,6 +86,46 @@ public class MainMenuGUI implements GUI {
 				Material.FENCE,
 				Phrases.BUTTON_TRADINGPOST.toString(),
 				Arrays.asList(ChatColor.GRAY + "*Coming Soon*"));
+
+		inventory.setItem(0, infoSign);
+		inventory.setItem(1, composeBook);
+		inventory.setItem(2, inboxChest);
+		inventory.setItem(3, sentEnderchest);
+		inventory.setItem(4, tradingPost);
+
+		return inventory.getContents();
+	}
+
+	@Override
+	public Inventory createBaseInventory(Player viewingPlayer) {
+
+		Inventory inventory = Bukkit.createInventory(null, InventoryType.HOPPER, Phrases.MAINMENU_TITLE.toString());
+
+
+		ItemStack infoSign = GUIUtils.createButton(
+				Material.SIGN,
+				Phrases.BUTTON_ACCOUNTINFO.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
+
+		ItemStack composeBook = GUIUtils.createButton(
+				Material.BOOK_AND_QUILL,
+				Phrases.BUTTON_COMPOSE.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
+
+		ItemStack inboxChest = GUIUtils.createButton(
+				Material.CHEST,
+				Phrases.BUTTON_INBOX.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
+
+		ItemStack sentEnderchest = GUIUtils.createButton(
+				Material.ENDER_CHEST,
+				Phrases.BUTTON_SENT.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
+
+		ItemStack tradingPost = GUIUtils.createButton(
+				Material.FENCE,
+				Phrases.BUTTON_TRADINGPOST.toString(),
+				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 
 		inventory.setItem(0, infoSign);
 		inventory.setItem(1, composeBook);

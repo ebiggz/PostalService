@@ -31,28 +31,34 @@ public class GUIManager {
 	//present a gui on players screen
 	public void showGUI(GUI gui, Player player) {
 		if(gui == null || player == null) return;
+		player.closeInventory();
+		Inventory inv = gui.createBaseInventory(player);
+		openGUIs.put(player, gui);
+		guiInvs.put(gui, Arrays.asList(inv.getContents()));
+		player.openInventory(inv);
+
 		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
 			private GUI gui;
 			private Player player;
 			@Override
 			public void run() {
-				Inventory inv = gui.createInventory(player);
+				ItemStack[] contents = gui.loadContents(player);
 				BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 				scheduler.runTask(PostalService.getPlugin(), new Runnable() {
-					private Inventory inv;
+					private ItemStack[] contents;
 					@Override
 					public void run() {
-						player.closeInventory();
-						openGUIs.put(player, gui);
-						guiInvs.put(gui, Arrays.asList(inv.getContents()));
-						player.openInventory(inv);
+						if(GUIManager.getInstance().playerIsViewingGUI(player, gui)) {
+							guiInvs.put(gui, Arrays.asList(contents));
+							player.getOpenInventory().getTopInventory().setContents(contents);;
+						}
 					}
-					public Runnable init(Inventory inv) {
-						this.inv = inv;
+					public Runnable init(ItemStack[] contents) {
+						this.contents = contents;
 						return this;
 					}
-				}.init(inv));
+				}.init(contents));
 			}
 			public Runnable init(GUI gui, Player player) {
 				this.gui = gui;
@@ -90,6 +96,11 @@ public class GUIManager {
 		} else {
 			return null;
 		}
+	}
+
+	public boolean playerIsViewingGUI(Player player, GUI gui) {
+		GUI openGUI = getPlayersCurrentGUI(player);
+		return openGUI != null && openGUI.equals(gui);
 	}
 
 	public void closeAllGUIs() {

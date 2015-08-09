@@ -249,9 +249,7 @@ public class MailCommands implements CommandExecutor {
 						attachmentData = attachmentArgs.split(" ");
 					}
 					User user = UserFactory.getUser(sender.getName());
-					if(user.sendMail(completedName, message, mailType.handleSendCommand(player, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user))) {
-						sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", completedName));
-					}
+					user.sendMail(completedName, message, mailType.handleSendCommand(player, attachmentData), mailType, Config.getCurrentWorldGroupForUser(user));
 				} catch (MailException e) {
 					sender.sendMessage(Phrases.PREFIX.toString() + " " + e.getErrorMessage());
 				}

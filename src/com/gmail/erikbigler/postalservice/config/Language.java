@@ -55,6 +55,7 @@ public class Language {
 		BUTTON_COMPOSE_PACKAGE("&e&lCompose Package"),
 		BUTTON_INBOX("&e&lInbox"),
 		BUTTON_INBOX_UNREAD("%count% Unread"),
+		BUTTON_LOADING("&7Loading..."),
 		BUTTON_MAINMENU("&e&lMain Menu"),
 		BUTTON_NEXT("Next &l->"),
 		BUTTON_PREVIOUS("&l<-&r Previous"),
