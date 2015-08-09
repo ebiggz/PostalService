@@ -16,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitScheduler;
 
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIListener;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
@@ -128,16 +129,23 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		unregisterCommand(Phrases.COMMAND_MAIL.toString());
-		unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
+		scheduler.scheduleSyncDelayedTask(PostalService.getPlugin(), new Runnable() {
+			@Override
+			public void run() {
+				unregisterCommand(Phrases.COMMAND_MAIL.toString());
+				unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
 
-		this.registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
-		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
-		getCommand(Phrases.COMMAND_MAIL.toString()).setTabCompleter(new MailTabCompleter());
+				registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
+				getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
+				getCommand(Phrases.COMMAND_MAIL.toString()).setTabCompleter(new MailTabCompleter());
 
-		this.registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
-		getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
-		getCommand(Phrases.COMMAND_MAILBOX.toString()).setTabCompleter(new MailboxTabCompleter());
+				registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
+				getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
+				getCommand(Phrases.COMMAND_MAILBOX.toString()).setTabCompleter(new MailboxTabCompleter());
+			}
+		}, 20L);
+
 
 		/*
 		 * Connect to database
@@ -180,6 +188,9 @@ public class PostalService extends JavaPlugin {
 	public void onDisable() {
 		//Make sure all open GUI inventories are closed when disabled. Otherwise, players would be able to access items during a reload.
 		GUIManager.getInstance().closeAllGUIs();
+		//Unregister commands
+		unregisterCommand(Phrases.COMMAND_MAIL.toString());
+		unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
 		getLogger().info("Disabled!");
 	}
 
@@ -328,7 +339,7 @@ public class PostalService extends JavaPlugin {
 		try {
 			HashMap<String, Command> knownCommands = getKnownCommands();
 			if(knownCommands.containsKey(cmd.trim())) {
-				Utils.debugMessage("\"" + cmd + "\" command is registered by another plugin. Unregistering..");
+				Utils.debugMessage("\"" + cmd + "\" command is registered by another plugin. Unregistering...");
 				Command pCmd = knownCommands.get(cmd);
 				knownCommands.remove(cmd);
 				for (String alias : pCmd.getAliases()) {
