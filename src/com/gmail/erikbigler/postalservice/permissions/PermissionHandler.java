@@ -99,6 +99,7 @@ public class PermissionHandler {
 		userChildren.put("postalservice.mailbox.removeall", true);
 		userChildren.put("postalservice.find", true);
 		userChildren.put("postalservice.help", true);
+		Bukkit.getPluginManager().removePermission("postalservice.user");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.user", PermissionDefault.FALSE, userChildren));
 
 		Map<String, Boolean> modChildren = new HashMap<String, Boolean>();
@@ -106,6 +107,7 @@ public class PermissionHandler {
 		modChildren.put("postalservice.mailbox.removeother", true);
 		modChildren.put("postalservice.mailbox.removeallother", true);
 		modChildren.put("postalservice.mail.readother", true);
+		Bukkit.getPluginManager().removePermission("postalservice.mod");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.mod", PermissionDefault.FALSE, modChildren));
 
 		Map<String, Boolean> adminChildren = new HashMap<String, Boolean>();
@@ -114,23 +116,28 @@ public class PermissionHandler {
 		adminChildren.put("postalservice.overriderequiremailbox", true);
 		adminChildren.put("postalservice.overrideworldblacklist", true);
 		adminChildren.put("postalservice.mail.self", true);
+		Bukkit.getPluginManager().removePermission("postalservice.admin");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.admin", PermissionDefault.FALSE, adminChildren));
 
 		Map<String, Boolean> opChildren = new HashMap<String, Boolean>();
 		opChildren.put("postalservice.user", true);
 		opChildren.put("postalservice.mod", true);
 		opChildren.put("postalservice.admin", true);
+		Bukkit.getPluginManager().removePermission("postalservice.*");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.*", PermissionDefault.OP, opChildren));
 
 		for(String perm : userChildren.keySet()) {
+			Bukkit.getPluginManager().removePermission(perm);
 			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
 		}
 
 		for(String perm : modChildren.keySet()) {
+			Bukkit.getPluginManager().removePermission(perm);
 			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
 		}
 
 		for(String perm : adminChildren.keySet()) {
+			Bukkit.getPluginManager().removePermission(perm);
 			Bukkit.getPluginManager().addPermission(new Permission(perm, PermissionDefault.FALSE));
 		}
 	}
