@@ -54,6 +54,7 @@ public class MailboxManager {
 				ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT * FROM ps_mailboxes");
 				while(rs.next()) {
 					String location = rs.getString("Location");
+					Utils.debugMessage("Loading mailbox at locaiton: " + location);
 					String playerIdentifier = rs.getString("PlayerID");
 					if(location != null || playerIdentifier != null) {
 						Location loc = Utils.stringToLocation(location);

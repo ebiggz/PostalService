@@ -92,17 +92,20 @@ public class Config {
 	private static void loadOptions() {
 		FileConfiguration config = PostalService.getPlugin().getConfig();
 		CONFIG_VERSION = config.getDouble("config-version");
+		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
 		/* Load world group options */
 		ENABLE_WORLD_GROUPS = config.getBoolean("enable-world-groups", false);
 		WORLD_GROUPS = new ArrayList<WorldGroup>();
 		ConfigurationSection wgConfigSec = config.getConfigurationSection("world-groups");
 		if(wgConfigSec != null) {
 			for(String worldGroupName : wgConfigSec.getKeys(false)) {
+				Utils.debugMessage("Loading world group: " + worldGroupName);
 				List<String> worldNames = wgConfigSec.getStringList(worldGroupName);
 				if(worldNames.isEmpty()) {
-					// log error, empty world group
+					Utils.debugMessage(worldGroupName + " is empty! Oh no!");
 					continue;
 				}
+				Utils.debugMessage("Added worlds: " + worldNames.toString() + " for  WG: " + worldGroupName);
 				WORLD_GROUPS.add(new WorldGroup(worldGroupName, worldNames));
 			}
 		}
@@ -133,7 +136,6 @@ public class Config {
 				FORCE_UUIDS = true;
 			}
 		}
-		ENABLE_DEBUG = config.getBoolean("debug-mode", false);
 		CHECK_FOR_UPDATES = config.getBoolean("update-checker.enabled", true);
 		String autoDownloadSetting = config.getString("update-checker.auto-download", "all");
 		AUTO_DOWNLOAD_TYPE = AutoDownloadType.ALL;
@@ -239,14 +241,26 @@ public class Config {
 	}
 
 	public static WorldGroup getCurrentWorldGroupForUser(User user) {
+		Utils.debugMessage("Getting world group for " + user.getPlayerName());
 		Player player = Utils.getPlayerFromIdentifier(user.getIdentifier());
 		if(player != null && player.isOnline()) {
+			World world = player.getWorld();
+			if(world != null) {
+				Utils.debugMessage(user.getPlayerName() + " found player. They are in world " + world.getName());
+			} else {
+				Utils.debugMessage(user.getPlayerName() + " found player. But their world is null?!");
+			}
 			return getWorldGroupFromWorld(player.getWorld());
 		}
 		return new WorldGroup("None", new ArrayList<String>());
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(String worldName) {
+		if(worldName != null) {
+			Utils.debugMessage("Getting world group from world " + worldName);
+		} else {
+			Utils.debugMessage("Attempting to get worldgroup but the worldname is null?!");
+		}
 		if(!Config.ENABLE_WORLD_GROUPS)
 			return new WorldGroup("None", new ArrayList<String>());
 		for(WorldGroup worldGroup : WORLD_GROUPS) {
@@ -257,6 +271,11 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(World world) {
+		if(world != null) {
+			Utils.debugMessage("Getting world group from world " + world.getName());
+		} else {
+			Utils.debugMessage("Attempting to get worldgroup but the world is null?!");
+		}
 		return getWorldGroupFromWorld(world.getName());
 	}
 
@@ -271,12 +290,16 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromGroupName(String string) {
+		Utils.debugMessage("Getting world group by name: " + string);
 		if(!Config.ENABLE_WORLD_GROUPS)
 			return new WorldGroup("None", new ArrayList<String>());
 		for(WorldGroup worldGroup : WORLD_GROUPS) {
-			if(worldGroup.getName().equalsIgnoreCase(string))
+			if(worldGroup.getName().equalsIgnoreCase(string)) {
+				Utils.debugMessage("Found: " + worldGroup.getName());
 				return worldGroup;
+			}
 		}
+		Utils.debugMessage("None found!");
 		return new WorldGroup("None", new ArrayList<String>());
 	}
 }
