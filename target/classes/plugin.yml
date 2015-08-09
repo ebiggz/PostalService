@@ -3,4 +3,4 @@ name: PostalService
 version: 1.0.3 SNAPSHOT
 author: ebiggz
 description: A mail system for Bukkit servers
-softdepends: [Vault]
+softdepends: [Essentials, Vault]

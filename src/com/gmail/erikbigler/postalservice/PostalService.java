@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -125,6 +127,9 @@ public class PostalService extends JavaPlugin {
 		/*
 		 * Register commands
 		 */
+
+		unregisterCommand(Phrases.COMMAND_MAIL.toString());
+		unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
 
 		this.registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
 		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
@@ -317,7 +322,26 @@ public class PostalService extends JavaPlugin {
 		}
 	}
 
-	/** Functions for registering command aliases in code. */
+	/** Functions for registering commands in code. */
+
+	private void unregisterCommand(String cmd) {
+		try {
+			HashMap<String, Command> knownCommands = getKnownCommands();
+			if(knownCommands.containsKey(cmd.trim())) {
+				Utils.debugMessage("\"" + cmd + "\" command is registered by another plugin. Unregistering..");
+				Command pCmd = knownCommands.get(cmd);
+				knownCommands.remove(cmd);
+				for (String alias : pCmd.getAliases()) {
+					if(knownCommands.containsKey(alias) && knownCommands.get(alias).toString().contains(this.getName())){
+						knownCommands.remove(alias);
+					}
+				}
+			}
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG)
+				e.printStackTrace();
+		}
+	}
 
 	private void registerCommand(String... aliases) {
 		PluginCommand command = getCommand(aliases[0], this);
@@ -350,6 +374,28 @@ public class PostalService extends JavaPlugin {
 				e.printStackTrace();
 		}
 		return commandMap;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static HashMap<String,Command> getKnownCommands() {
+		HashMap<String,Command> knownCommands = null;
+		try {
+			knownCommands = (HashMap<String, Command>) getPrivateField(getCommandMap(), "knownCommands");
+		} catch (Exception e) {
+			if(Config.ENABLE_DEBUG)
+				e.printStackTrace();
+		}
+		return knownCommands;
+	}
+
+	private static Object getPrivateField(Object object, String field)throws SecurityException,
+	NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
+		Class<?> clazz = object.getClass();
+		Field objectField = clazz.getDeclaredField(field);
+		objectField.setAccessible(true);
+		Object result = objectField.get(object);
+		objectField.setAccessible(false);
+		return result;
 	}
 
 	/** Update checker **/
