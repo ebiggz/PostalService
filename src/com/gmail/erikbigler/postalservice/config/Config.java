@@ -105,7 +105,7 @@ public class Config {
 					Utils.debugMessage(worldGroupName + " is empty! Oh no!");
 					continue;
 				}
-				Utils.debugMessage("Added worlds: " + worldNames.toString() + " for  WG: " + worldGroupName);
+				Utils.debugMessage("Added worlds: " + worldNames.toString() + " to " + worldGroupName);
 				WORLD_GROUPS.add(new WorldGroup(worldGroupName, worldNames));
 			}
 		}
@@ -241,26 +241,14 @@ public class Config {
 	}
 
 	public static WorldGroup getCurrentWorldGroupForUser(User user) {
-		Utils.debugMessage("Getting world group for " + user.getPlayerName());
 		Player player = Utils.getPlayerFromIdentifier(user.getIdentifier());
 		if(player != null && player.isOnline()) {
-			World world = player.getWorld();
-			if(world != null) {
-				Utils.debugMessage(user.getPlayerName() + " found player. They are in world " + world.getName());
-			} else {
-				Utils.debugMessage(user.getPlayerName() + " found player. But their world is null?!");
-			}
 			return getWorldGroupFromWorld(player.getWorld());
 		}
 		return new WorldGroup("None", new ArrayList<String>());
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(String worldName) {
-		if(worldName != null) {
-			Utils.debugMessage("Getting world group from world " + worldName);
-		} else {
-			Utils.debugMessage("Attempting to get worldgroup but the worldname is null?!");
-		}
 		if(!Config.ENABLE_WORLD_GROUPS)
 			return new WorldGroup("None", new ArrayList<String>());
 		for(WorldGroup worldGroup : WORLD_GROUPS) {
@@ -271,11 +259,6 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(World world) {
-		if(world != null) {
-			Utils.debugMessage("Getting world group from world " + world.getName());
-		} else {
-			Utils.debugMessage("Attempting to get worldgroup but the world is null?!");
-		}
 		return getWorldGroupFromWorld(world.getName());
 	}
 
@@ -290,7 +273,6 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromGroupName(String string) {
-		Utils.debugMessage("Getting world group by name: " + string);
 		if(!Config.ENABLE_WORLD_GROUPS)
 			return new WorldGroup("None", new ArrayList<String>());
 		for(WorldGroup worldGroup : WORLD_GROUPS) {
@@ -299,7 +281,6 @@ public class Config {
 				return worldGroup;
 			}
 		}
-		Utils.debugMessage("None found!");
 		return new WorldGroup("None", new ArrayList<String>());
 	}
 }

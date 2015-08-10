@@ -25,6 +25,7 @@ import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
+import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailboxListener implements Listener {
 
@@ -39,7 +40,6 @@ public class MailboxListener implements Listener {
 		}
 	}
 
-	//TODO: Convert GUI shower from interact to open event
 	@EventHandler
 	public void onInventoryOpenEvent(InventoryOpenEvent e) {
 		if(!(e.getPlayer() instanceof Player)) return;
@@ -89,6 +89,7 @@ public class MailboxListener implements Listener {
 					event.setCancelled(true);
 					if(selectType == MailboxSelect.SET) {
 						try {
+							Utils.debugMessage("Attempting to add mailbox at location: " + event.getClickedBlock().getLocation().toString());
 							MailboxManager.getInstance().addMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
 							event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_REG.toPrefixedString());
 						} catch (MailboxException me) {
@@ -101,6 +102,9 @@ public class MailboxListener implements Listener {
 								break;
 							case DOUBLE_CHEST:
 								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_DOUBLE_CHEST.toPrefixedString());
+								break;
+							case MAX_REACHED:
+								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_MAX_REACHED.toPrefixedString());
 								break;
 							default:
 								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());

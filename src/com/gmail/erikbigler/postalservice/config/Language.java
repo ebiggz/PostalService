@@ -111,6 +111,7 @@ public class Language {
 		ERROR_MAILBOX_DOESNT_EXIST("&cA mailbox doesn't exist here! Selection canceled."),
 		ERROR_MAILBOX_DOUBLE_CHEST("&cYou can't register a double chest as a mailbox!"),
 		ERROR_MAILBOX_FIND_NONE("&cThere are no nearby mailboxes!"),
+		ERROR_MAILBOX_MAX_REACHED("&cYou have reached your maxium number of mailboxes!"),
 		ERROR_MAILBOX_NOT_CHEST("&cSelected block is not a chest! Selection canceled."),
 		ERROR_MAILBOX_NOT_OWNER("&cYou do not own this mailbox! Selection canceled."),
 		ERROR_MAILBOX_NO_PERM("&cYou do not have permission to register a mailbox here! Selection canceled."),

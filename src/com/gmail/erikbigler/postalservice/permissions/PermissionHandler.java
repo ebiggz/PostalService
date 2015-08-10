@@ -163,10 +163,12 @@ public class PermissionHandler {
 
 	public static boolean playerCanCreateMailboxAtLoc(Location loc, Player player) {
 		Block block = loc.getBlock();
+		Location belowOne = loc.clone();
+		belowOne.setY(belowOne.getY()-1);
 		int spawnRadius = Bukkit.getServer().getSpawnRadius();
 		Location spawn = loc.getWorld().getSpawnLocation();
 		boolean canBuild = (spawnRadius <= 0) || (player.isOp()) || (Math.max(Math.abs(block.getX() - spawn.getBlockX()), Math.abs(block.getZ() - spawn.getBlockZ())) > spawnRadius);
-		BlockPlaceEvent placeEvent = new BlockPlaceEvent(block, block.getState(), null, new ItemStack(Material.CHEST), player, canBuild);
+		BlockPlaceEvent placeEvent = new BlockPlaceEvent(block, block.getState(), belowOne.getBlock(), new ItemStack(Material.CHEST), player, canBuild);
 		BlockBreakEvent breakEvent = new BlockBreakEvent(block, player);
 		Bukkit.getPluginManager().callEvent(placeEvent);
 		Bukkit.getPluginManager().callEvent(breakEvent);

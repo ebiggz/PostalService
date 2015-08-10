@@ -91,12 +91,15 @@ public class MailboxManager {
 			if(Config.USE_DATABASE) {
 				try {
 					PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
+					this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
 				} catch (Exception e) {
-					if(Config.ENABLE_DEBUG)
+					if(Config.ENABLE_DEBUG) {
 						e.printStackTrace();
+					}
+					Utils.debugMessage("error saving a mailbox for " + user.getPlayerName() + " at location " + Utils.locationToString(location));
+					throw new MailboxException(Reason.UNKOWN);
 				}
 			}
-			this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
 		}
 	}
 
@@ -114,12 +117,12 @@ public class MailboxManager {
 			if(Config.USE_DATABASE) {
 				try {
 					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = \"" + Utils.locationToString(mb.getLocation()) + "\"");
+					this.mailboxes.remove(location);
 				} catch (Exception e) {
 					if(Config.ENABLE_DEBUG)
 						e.printStackTrace();
 				}
 			}
-			this.mailboxes.remove(mb);
 		}
 	}
 
@@ -151,10 +154,10 @@ public class MailboxManager {
 					e.printStackTrace();
 			}
 		}
-		for(int i = 0; i< this.mailboxes.size(); i++) {
-			Mailbox mailbox = this.mailboxes.get(i);
+		for(Location mailboxLoc : mailboxes.keySet()) {
+			Mailbox mailbox = this.mailboxes.get(mailboxLoc);
 			if(mailbox.getOwner().getPlayerName().equals(owner))
-				mailboxes.remove(i);
+				mailboxes.remove(mailboxLoc);
 		}
 	}
 

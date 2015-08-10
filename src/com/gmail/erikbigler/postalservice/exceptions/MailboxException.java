@@ -15,7 +15,7 @@ public class MailboxException extends Exception {
 	}
 
 	public enum Reason {
-		ALREADY_EXISTS, MAX_REACHED, NO_PERMISSION, NOT_CHEST, DOESNT_EXIST, NOT_OWNER, DOUBLE_CHEST
+		ALREADY_EXISTS, MAX_REACHED, NO_PERMISSION, NOT_CHEST, DOESNT_EXIST, NOT_OWNER, DOUBLE_CHEST, UNKOWN
 	}
 
 	public Reason getReason() {
