@@ -57,6 +57,9 @@ public class MailManager {
 			}
 		}
 		mailTypesStorage.add(newType);
+		if(!Config.mailTypeIsDisabled(newType)) {
+			mailTypes.add(newType);
+		}
 	}
 
 	public void deregisterMailType(MailType mailType) {
