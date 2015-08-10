@@ -377,6 +377,6 @@ public class Utils {
 
 	public static Location stringToLocation(String string) {
 		String[] split = string.split(",");
-		return new Location(Bukkit.getWorld(split[3]), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
+		return new Location(Bukkit.getServer().getWorld(split[3].trim()), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
 	}
 }
