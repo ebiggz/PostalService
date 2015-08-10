@@ -13,6 +13,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -377,6 +378,26 @@ public class Utils {
 
 	public static Location stringToLocation(String string) {
 		String[] split = string.split(",");
+		Utils.debugMessage("Attempting to find world: \"" + split[3].trim() + "\"");
+		World world = Bukkit.getWorld(split[3].trim());
+		if(world == null) {
+			Utils.debugMessage("Unable to find world!! Here are the worlds I can find: ");
+			String worlds = "";
+			for(World w : Bukkit.getWorlds()) {
+				worlds += "\"" + w.getName() + "\", ";
+				if(split[3].trim().equals(w.getName().trim())) {
+					world = w;
+				}
+			}
+			Utils.debugMessage(worlds);
+			if(world != null) {
+				Utils.debugMessage("A manual match was made!! Found world: " + world.getName());
+			} else {
+				Utils.debugMessage("A match could not be found.");
+			}
+		} else {
+			Utils.debugMessage("A match was made!! Found world: " + world.getName());
+		}
 		return new Location(Bukkit.getServer().getWorld(split[3].trim()), Double.parseDouble(split[0]), Double.parseDouble(split[1]), Double.parseDouble(split[2]));
 	}
 }
