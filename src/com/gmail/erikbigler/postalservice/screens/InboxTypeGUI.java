@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -25,8 +26,6 @@ import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.Mail;
 import com.gmail.erikbigler.postalservice.mail.MailManager.BoxType;
 import com.gmail.erikbigler.postalservice.utils.Utils;
-
-import net.md_5.bungee.api.ChatColor;
 
 @SuppressWarnings("all")
 public class InboxTypeGUI implements GUI {
@@ -248,7 +247,7 @@ public class InboxTypeGUI implements GUI {
 		String info = "";
 
 		if(mail.hasAttachments()) {
-			if(mail.isClaimed()) {
+			if(boxType == BoxType.INBOX && mail.isClaimed()) {
 				info = ChatColor.GRAY + "*" + ChatColor.stripColor(Phrases.CLAIMED.toString()) + "*";
 			} else {
 				if(mail.getType().getAttachmentDescription() != null && !mail.getType().getAttachmentDescription().isEmpty()) {

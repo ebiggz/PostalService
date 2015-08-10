@@ -1,5 +1,8 @@
 package com.gmail.erikbigler.postalservice.listeners;
 
+import java.util.Arrays;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -18,6 +21,7 @@ import org.bukkit.inventory.ItemStack;
 import com.gmail.erikbigler.postalservice.apis.guiAPI.GUIManager;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.events.PlayerOpenMailMenuEvent;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
 import com.gmail.erikbigler.postalservice.mailbox.Mailbox;
 import com.gmail.erikbigler.postalservice.mailbox.MailboxManager;
@@ -25,7 +29,6 @@ import com.gmail.erikbigler.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler.Perm;
 import com.gmail.erikbigler.postalservice.screens.MainMenuGUI;
-import com.gmail.erikbigler.postalservice.utils.Utils;
 
 public class MailboxListener implements Listener {
 
@@ -47,26 +50,27 @@ public class MailboxListener implements Listener {
 		if(GUIManager.getInstance().playerHasGUIOpen(player)) return;
 		if (e.getInventory().getHolder() instanceof Chest) {
 			Chest c = (Chest) e.getInventory().getHolder();
-			if(MailboxManager.getInstance().locationHasMailbox(c.getLocation())) {
+			Mailbox mailbox = MailboxManager.getInstance().getMailbox(c.getLocation());
+			if(mailbox != null) {
 				e.setCancelled(true);
 				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, player, true)) return;
+				Bukkit.getServer().getPluginManager().callEvent(new PlayerOpenMailMenuEvent(player, UserFactory.getUser(player), mailbox));
 				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
 			}
 		}
 	}
 
-	@SuppressWarnings("deprecation")
+
 	@EventHandler
 	public void onChestPlace(BlockPlaceEvent e) {
 		ItemStack item = e.getItemInHand();
 		if(item.getType() == Material.CHEST) {
-			for(BlockFace face : BlockFace.values()) {
+			for(BlockFace face : Arrays.asList(BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST)) {
 				Block block = e.getBlock().getRelative(face);
 				if(block.getType() == Material.CHEST) {
 					if(MailboxManager.getInstance().locationHasMailbox(block.getLocation())) {
 						e.getPlayer().sendMessage(Phrases.ERROR_CHEST_PLACE.toPrefixedString());
 						e.setCancelled(true);
-						block.setData((byte) 3);
 						break;
 					}
 				}
@@ -89,7 +93,6 @@ public class MailboxListener implements Listener {
 					event.setCancelled(true);
 					if(selectType == MailboxSelect.SET) {
 						try {
-							Utils.debugMessage("Attempting to add mailbox at location: " + event.getClickedBlock().getLocation().toString());
 							MailboxManager.getInstance().addMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
 							event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_REG.toPrefixedString());
 						} catch (MailboxException me) {

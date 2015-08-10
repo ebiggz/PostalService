@@ -118,6 +118,7 @@ public class PostalService extends JavaPlugin {
 		 * Register built in MailTypes
 		 */
 
+		PostalService.getMailManager().clearMailTypes();
 		getMailManager().registerMailType(new Letter());
 		getMailManager().registerMailType(new Experience());
 		getMailManager().registerMailType(new Package());

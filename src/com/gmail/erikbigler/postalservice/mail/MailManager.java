@@ -35,18 +35,22 @@ public class MailManager {
 		for(MailType newType : mailTypesStorage) {
 			if(Config.mailTypeIsDisabled(newType)) continue;
 			mailTypes.add(newType);
-			Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
-			typePerm.addParent("postalservice.mail.send.*", true);
-			PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
 		}
 	}
 
+	public void clearMailTypes() {
+		mailTypesStorage.clear();
+		mailTypes.clear();
+	}
+
 	public void deregisterAllMailTypes() {
+		//PostalService.getPlugin().getServer().getPluginManager().removePermission(PostalService.getPlugin().getServer().getPluginManager().getPermission("postalservice.mail.send.*"));
 		for(int i = 0; i < mailTypes.size(); i++) {
 			MailType type = mailTypes.get(i);
 			deregisterMailType(type);
 			mailTypes.remove(type);
 		}
+		//PostalService.getPlugin().getServer().getPluginManager().addPermission(new Permission("postalservice.mail.send.*", PermissionDefault.FALSE));
 	}
 
 	public void registerMailType(MailType newType) {
@@ -57,14 +61,17 @@ public class MailManager {
 			}
 		}
 		mailTypesStorage.add(newType);
+		Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
+		typePerm.addParent("postalservice.mail.send.*", true);
+		PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
 		if(!Config.mailTypeIsDisabled(newType)) {
 			mailTypes.add(newType);
 		}
 	}
 
 	public void deregisterMailType(MailType mailType) {
+		//PostalService.getPlugin().getServer().getPluginManager().removePermission("postalservice.mail.send." + mailType.getDisplayName().toLowerCase());
 		mailTypes.remove(mailType);
-		PostalService.getPlugin().getServer().getPluginManager().removePermission("postalservice.mail.send." + mailType.getDisplayName().toLowerCase());
 	}
 
 	public void deregisterMailTypeByIdentifier(String identifier) {

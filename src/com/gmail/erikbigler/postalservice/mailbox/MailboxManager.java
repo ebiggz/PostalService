@@ -3,6 +3,7 @@ package com.gmail.erikbigler.postalservice.mailbox;
 import java.sql.ResultSet;
 import java.util.HashMap;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
@@ -14,6 +15,8 @@ import com.gmail.erikbigler.postalservice.backend.User;
 import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.WorldGroup;
+import com.gmail.erikbigler.postalservice.events.PlayerRegisterMailboxEvent;
+import com.gmail.erikbigler.postalservice.events.PlayerUnregisterMailboxEvent;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException;
 import com.gmail.erikbigler.postalservice.exceptions.MailboxException.Reason;
 import com.gmail.erikbigler.postalservice.permissions.PermissionHandler;
@@ -92,17 +95,21 @@ public class MailboxManager {
 		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld().getName())) >= Config.getMailboxLimitForPlayer(player.getName())) {
 			throw new MailboxException(Reason.MAX_REACHED);
 		} else {
-			if(Config.USE_DATABASE) {
-				try {
-					Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
-					PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
-					this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
-				} catch (Exception e) {
-					if(Config.ENABLE_DEBUG) {
-						e.printStackTrace();
+			PlayerRegisterMailboxEvent event = new PlayerRegisterMailboxEvent(player, location);
+			Bukkit.getServer().getPluginManager().callEvent(event);
+			if(!event.isCanceled()) {
+				if(Config.USE_DATABASE) {
+					try {
+						Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
+						PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
+						this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
+					} catch (Exception e) {
+						if(Config.ENABLE_DEBUG) {
+							e.printStackTrace();
+						}
+						Utils.debugMessage("error saving a mailbox for " + user.getPlayerName() + " at location " + Utils.locationToString(location));
+						throw new MailboxException(Reason.UNKOWN);
 					}
-					Utils.debugMessage("error saving a mailbox for " + user.getPlayerName() + " at location " + Utils.locationToString(location));
-					throw new MailboxException(Reason.UNKOWN);
 				}
 			}
 		}
@@ -119,13 +126,17 @@ public class MailboxManager {
 		} else if(!mb.getOwner().getPlayerName().equals(player.getName()) && !PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEOTHER, player, false)) {
 			throw new MailboxException(Reason.NOT_OWNER);
 		} else {
-			if(Config.USE_DATABASE) {
-				try {
-					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = \"" + Utils.locationToString(mb.getLocation()) + "\"");
-					this.mailboxes.remove(location);
-				} catch (Exception e) {
-					if(Config.ENABLE_DEBUG)
-						e.printStackTrace();
+			PlayerUnregisterMailboxEvent event = new PlayerUnregisterMailboxEvent(player, mb);
+			Bukkit.getServer().getPluginManager().callEvent(event);
+			if(!event.isCanceled()) {
+				if(Config.USE_DATABASE) {
+					try {
+						PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = \"" + Utils.locationToString(mb.getLocation()) + "\"");
+						this.mailboxes.remove(location);
+					} catch (Exception e) {
+						if(Config.ENABLE_DEBUG)
+							e.printStackTrace();
+					}
 				}
 			}
 		}

@@ -15,6 +15,7 @@ import com.gmail.erikbigler.postalservice.backend.UserFactory;
 import com.gmail.erikbigler.postalservice.config.Config;
 import com.gmail.erikbigler.postalservice.config.Language;
 import com.gmail.erikbigler.postalservice.config.Language.Phrases;
+import com.gmail.erikbigler.postalservice.events.PlayerOpenMailMenuEvent;
 import com.gmail.erikbigler.postalservice.exceptions.MailException;
 import com.gmail.erikbigler.postalservice.mail.MailManager;
 import com.gmail.erikbigler.postalservice.mail.MailType;
@@ -59,7 +60,9 @@ public class MailCommands implements CommandExecutor {
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
 					Utils.fancyHelpMenu(sender, commandLabel + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
 				} else {
-					GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
+					User user = UserFactory.getUser(player);
+					Bukkit.getServer().getPluginManager().callEvent(new PlayerOpenMailMenuEvent(player, user, null));
+					GUIManager.getInstance().showGUI(new MainMenuGUI(user), player);
 				}
 				return true;
 			}
