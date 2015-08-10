@@ -168,7 +168,12 @@ public class PostalService extends JavaPlugin {
 			}
 		}
 
-		MailboxManager.getInstance().loadMailboxes();
+		scheduler.scheduleSyncDelayedTask(PostalService.getPlugin(), new Runnable() {
+			@Override
+			public void run() {
+				MailboxManager.getInstance().loadMailboxes();
+			}
+		}, 20L);
 
 		scheduleTasks();
 
