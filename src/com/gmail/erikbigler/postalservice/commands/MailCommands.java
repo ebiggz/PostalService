@@ -2,6 +2,7 @@ package com.gmail.erikbigler.postalservice.commands;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -67,6 +68,17 @@ public class MailCommands implements CommandExecutor {
 				return true;
 			}
 			else if(args.length == 1) {
+				if(args[0].equalsIgnoreCase("worlds")) {
+					String worlds = "";
+					for(World world : Bukkit.getWorlds()) {
+						worlds += world.getName() + " ";
+					}
+					sender.sendMessage("Worlds that Bukkit/Spigot give me: " + worlds);
+					if(sender instanceof Player) {
+						sender.sendMessage("You are standing in the world: " + ((Player) sender).getWorld().getName());
+					}
+					return true;
+				}
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_COMPOSE.toString())) {
 					if(senderIsConsole(sender, isConsole)) return true;
 					//check if a mailbox should be near by
