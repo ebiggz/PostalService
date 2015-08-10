@@ -58,7 +58,10 @@ public class MailboxManager {
 					String playerIdentifier = rs.getString("PlayerID");
 					if(location != null || playerIdentifier != null) {
 						Location loc = Utils.stringToLocation(location);
+						Utils.debugMessage("Converted location: " + loc.toString());
 						mailboxes.put(loc, new Mailbox(loc, playerIdentifier));
+					} else {
+						Utils.debugMessage("Could not load mailbox. Location or player id is null");
 					}
 				}
 			} catch (Exception e) {
@@ -76,6 +79,7 @@ public class MailboxManager {
 	}
 
 	public void addMailboxAtLoc(Location location, Player player) throws MailboxException {
+		Utils.debugMessage("location to add for new mailbox: " + location.getWorld());
 		User user = UserFactory.getUser(player.getName());
 		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
 			throw new MailboxException(Reason.NOT_CHEST);
@@ -85,12 +89,13 @@ public class MailboxManager {
 			throw new MailboxException(Reason.ALREADY_EXISTS);
 		} else if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETOVERRIDE, player, false) && !PermissionHandler.playerCanCreateMailboxAtLoc(location, player)) {
 			throw new MailboxException(Reason.NO_PERMISSION);
-		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld())) >= Config.getMailboxLimitForPlayer(player.getName())) {
+		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld().getName())) >= Config.getMailboxLimitForPlayer(player.getName())) {
 			throw new MailboxException(Reason.MAX_REACHED);
 		} else {
 			if(Config.USE_DATABASE) {
 				try {
-					PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
+					Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
+					PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
 					this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
 				} catch (Exception e) {
 					if(Config.ENABLE_DEBUG) {
@@ -162,8 +167,14 @@ public class MailboxManager {
 	}
 
 	public int getMailboxCount(String name, WorldGroup group) {
+		Utils.debugMessage("Counting mailboxes for " + name);
 		int count = 0;
 		for(Mailbox mailbox : mailboxes.values()) {
+			if(mailbox == null) {
+				Utils.debugMessage("Found a null mailbox! Skipping...");
+				continue;
+			}
+			Utils.debugMessage("Checking mailbox: " + mailbox.getLocation().toString());
 			if(!mailbox.getOwner().getPlayerName().equals(name)) continue;
 			if(Config.getWorldGroupFromWorld(mailbox.getLocation().getWorld()).getName().equals(group.getName())) {
 				count++;

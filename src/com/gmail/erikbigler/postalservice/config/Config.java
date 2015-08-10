@@ -259,6 +259,10 @@ public class Config {
 	}
 
 	public static WorldGroup getWorldGroupFromWorld(World world) {
+		if(world == null) {
+			Utils.debugMessage("null world passed. No world group will be found.");
+			return new WorldGroup("None", new ArrayList<String>());
+		}
 		return getWorldGroupFromWorld(world.getName());
 	}
 
