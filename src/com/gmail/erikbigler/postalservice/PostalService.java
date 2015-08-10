@@ -191,6 +191,8 @@ public class PostalService extends JavaPlugin {
 		//Unregister commands
 		unregisterCommand(Phrases.COMMAND_MAIL.toString());
 		unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
+		//Unregister mail permissions
+		getMailManager().deregisterAllMailTypes();
 		getLogger().info("Disabled!");
 	}
 

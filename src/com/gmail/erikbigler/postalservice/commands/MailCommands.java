@@ -94,6 +94,7 @@ public class MailCommands implements CommandExecutor {
 					Config.loadFile();
 					Language.loadFile();
 					UUIDUtils.loadFile();
+					MailManager.getInstance().loadEnabledMailTypes();
 					sender.sendMessage(Phrases.ALERT_RELOAD_COMPLETE.toPrefixedString());
 					return true;
 				}

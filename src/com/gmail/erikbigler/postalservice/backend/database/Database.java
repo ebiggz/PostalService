@@ -9,6 +9,7 @@ import java.sql.Statement;
 import org.bukkit.plugin.Plugin;
 
 import com.gmail.erikbigler.postalservice.PostalService;
+import com.gmail.erikbigler.postalservice.config.Config;
 
 /** Abstract Database class, serves as a base for any connection method (MySQL,
  * SQLite, etc.)
@@ -64,6 +65,7 @@ public abstract class Database {
 			this.createTable("ps_mailboxes", "Location varchar(255) NOT NULL KEY, PlayerID varchar(255) NOT NULL");
 		} catch (Exception e) {
 			PostalService.getPlugin().getLogger().severe("Unable to create tables in database, plugin may not function as intended!");
+			if(Config.ENABLE_DEBUG) e.printStackTrace();
 		}
 	}
 

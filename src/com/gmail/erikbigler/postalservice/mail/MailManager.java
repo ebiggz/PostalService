@@ -14,6 +14,7 @@ import com.gmail.erikbigler.postalservice.mail.Mail.MailStatus;
 public class MailManager {
 
 	private List<MailType> mailTypes = new ArrayList<MailType>();
+	private List<MailType> mailTypesStorage = new ArrayList<MailType>();
 	public List<Player> willDropBook = new ArrayList<Player>();
 
 	protected MailManager() { /* exists to block instantiation */
@@ -28,19 +29,34 @@ public class MailManager {
 		return instance;
 	}
 
+	public void loadEnabledMailTypes() {
+		deregisterAllMailTypes();
+		mailTypes.clear();
+		for(MailType newType : mailTypesStorage) {
+			if(Config.mailTypeIsDisabled(newType)) continue;
+			mailTypes.add(newType);
+			Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
+			typePerm.addParent("postalservice.mail.send.*", true);
+			PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
+		}
+	}
+
+	public void deregisterAllMailTypes() {
+		for(int i = 0; i < mailTypes.size(); i++) {
+			MailType type = mailTypes.get(i);
+			deregisterMailType(type);
+			mailTypes.remove(type);
+		}
+	}
+
 	public void registerMailType(MailType newType) {
-		if(Config.mailTypeIsDisabled(newType))
-			return;
-		for(MailType mailType : mailTypes) {
+		for(MailType mailType : mailTypesStorage) {
 			if(mailType.getDisplayName().equalsIgnoreCase(newType.getDisplayName()) || mailType.getIdentifier().equalsIgnoreCase(newType.getIdentifier())) {
 				PostalService.getPlugin().getLogger().warning("A plugin attempted to register a mail type named " + newType.getDisplayName() + " with the identifier " + newType.getIdentifier() + " but a mail type with that name or identifier already exists!");
 				return;
 			}
 		}
-		mailTypes.add(newType);
-		Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
-		typePerm.addParent("postalservice.mail.send.*", true);
-		PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
+		mailTypesStorage.add(newType);
 	}
 
 	public void deregisterMailType(MailType mailType) {
