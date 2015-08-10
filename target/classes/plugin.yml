@@ -3,4 +3,4 @@ name: PostalService
 version: 1.0.5 SNAPSHOT
 author: ebiggz
 description: A mail system for Bukkit servers
-softdepends: [Vault,Multiverse-Core]
+softdepends: [Vault, Multiverse-Core, Multiverse, MultiVerse, MV, MV-Core]
