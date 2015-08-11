@@ -9,9 +9,9 @@ import com.ebiggz.postalservice.exceptions.MailException;
 
 public interface MailType {
 
-	/** Identifiers are used places such as when saved to the database. Identifiers should be static.
+	/** Identifiers are internal ids used in places such as when saved to the database. Identifiers should be static.
 	 *
-	 * Identifiers must be unique from other mail types. If a two mail types
+	 * Identifiers must be unique from other mail types (case insensitive). If a two mail types
 	 * share the same identifier, the second one will not be registered.
 	 *
 	 * @return The mail types internal identifier
@@ -22,39 +22,39 @@ public interface MailType {
 	 * permission, and what is used for the "enabled-mail-types" section. Display names can be dynamic, allowing
 	 * server administrators to translate the display names.
 	 *
-	 * Display names must also be unique from other mail types.
+	 * Display names must also be unique from other mail types (case insensitive).
 	 *
 	 * @return The mail types display name
 	 */
 	public String getDisplayName();
 
 	/**
-	 * @return The icon shown in the inbox and sent box screens for a mail type
+	 * @return The icon shown in the inbox and sent box screens for this mail type
 	 */
 	public Material getIcon();
 
 	/** The hover over description is what is shown when a player hovers over the mail type name in
-	 *  the interactive chat compose message.
+	 *  the interactive chat "/mail compose" message.
 	 *
-	 * @return The hover over description
+	 * @return The chat hover over description
 	 */
 	public String getHoveroverDescription();
 
-	/** Whether or not players should be required to include a text message (with the "message:" node) while
+	/** Whether or not players should be required to include a message (with the "message:" node) while
 	 * composing this mail type.
 	 *
-	 * @return Whether or not players should be required to include a text message
+	 * @return Whether or not players should be required to include a message
 	 */
 	public boolean requireMessage();
 
 	/** This is the argument players must use to specify what they want to attach while composing this mail type.
 	 *
-	 * For example, the Payment mail type returns "amount" so a player would need to include "amount:" in their compose
+	 * For example, the Payment mail type uses "amount" so a player would need to include "amount:" in their compose
 	 * command.
 	 *
 	 * If you do not need an attachment argument, simply return null.
 	 *
-	 * @return The command argument or null if not needed.
+	 * @return The attachment command argument or null if not needed.
 	 */
 	public String getAttachmentCommandArgument();
 
@@ -104,7 +104,7 @@ public interface MailType {
 	 */
 	public String getAttachmentClaimMessage();
 
-	/** This message is shown under the mail type name when viewing the mail in the inbox/sent views.
+	/** This message is shown under the mail type name when viewing mail in the inbox/sent views.
 	 *
 	 * It allows players to see what they will get if the claim the attachment.
 	 *
@@ -114,9 +114,9 @@ public interface MailType {
 	 */
 	public String getAttachmentDescription();
 
-	/** Sometimes you cannot adequately describe the attachments with a string message. In those cases,
-	 * You can opt to use the summary Screen. An example of this is the Package mail type, where it uses
-	 * the Summary Screen to show the items in the package.
+	/** Sometimes you cannot adequately describe the attachments with text. In those cases,
+	 * You can opt to use the Summary Screen. An example of this is the Package mail type, which uses
+	 * the Summary Screen to show the items within the package before a player can claim.
 	 *
 	 *  @return Whether or not the player should be taken to a Summary Screen when claiming this mail type.
 	 */
@@ -134,7 +134,7 @@ public interface MailType {
 	 */
 	public String getSummaryClaimButtonTitle();
 
-	/** Here you can return the array of items to be shown in the summary screen.
+	/** Here you can return an array of items to be shown in the summary screen.
 	 *
 	 * For example, the Package mail type returns all the items contained in the package.
 	 *
