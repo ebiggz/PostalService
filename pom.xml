@@ -1,8 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>PostalService</groupId>
+  <groupId>com.ebiggz.postalservice</groupId>
   <artifactId>PostalService</artifactId>
-  <version>1.0.5</version>
+  <version>1.0.6-SNAPSHOT</version>
   <name>PostalService</name>
   <description>A mail service for Bukkit servers.</description>
             <repositories>
@@ -39,6 +39,13 @@
                 </dependency>
         </dependencies>
   <build>
+           <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-ftp</artifactId>
+        <version>1.0-alpha-6</version>
+      </extension>
+    </extensions>
   <sourceDirectory>src</sourceDirectory>
   <resources>
   <resource>
@@ -59,4 +66,10 @@
       </plugin>
     </plugins>
   </build>
+    <distributionManagement>
+    <repository>
+      <id>ebiggz-ftp</id>
+      <url>ftp://mythicacraft.com/maven/</url>
+    </repository>
+  </distributionManagement>
 </project>
