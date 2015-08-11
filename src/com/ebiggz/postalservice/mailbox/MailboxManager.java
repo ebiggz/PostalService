@@ -196,6 +196,7 @@ public class MailboxManager {
 
 	public boolean mailboxIsNearby(Location location, int distance) {
 		for(Location mailboxLoc : mailboxes.keySet()) {
+			if(!location.getWorld().equals(mailboxLoc.getWorld())) continue;
 			if(location.distance(mailboxLoc) < distance)
 				return true;
 		}
