@@ -18,8 +18,8 @@ import com.ebiggz.postalservice.config.Config;
 import com.ebiggz.postalservice.mail.MailManager;
 import com.ebiggz.postalservice.permissions.PermissionHandler;
 import com.ebiggz.postalservice.permissions.PermissionHandler.Perm;
-import com.ebiggz.postalservice.utils.Utils;
 import com.ebiggz.postalservice.utils.Updater.UpdateResult;
+import com.ebiggz.postalservice.utils.Utils;
 
 public class PlayerListener implements Listener {
 
@@ -47,13 +47,15 @@ public class PlayerListener implements Listener {
 					User user = UserFactory.getUser(player);
 					Utils.unreadMailAlert(user, true);
 				}
-				if(PermissionHandler.playerHasPermission(Perm.UPDATE, player, false)) {
-					UpdateResult result = PostalService.getUpdater().getResult();
-					if(result == UpdateResult.UPDATE_AVAILABLE) {
-						Utils.getUpdateAvailableMessage().sendTo(player);
-					}
-					else if(result == UpdateResult.SUCCESS) {
-						Utils.getUpdateDownloadedMessage().sendTo(player);
+				if(Config.CHECK_FOR_UPDATES) {
+					if(PermissionHandler.playerHasPermission(Perm.UPDATE, player, false)) {
+						UpdateResult result = PostalService.getUpdater().getResult();
+						if(result == UpdateResult.UPDATE_AVAILABLE) {
+							Utils.getUpdateAvailableMessage().sendTo(player);
+						}
+						else if(result == UpdateResult.SUCCESS) {
+							Utils.getUpdateDownloadedMessage().sendTo(player);
+						}
 					}
 				}
 			}
