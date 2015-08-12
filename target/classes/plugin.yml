@@ -1,6 +1,6 @@
-main: com.gmail.erikbigler.postalservice.PostalService
+main: com.ebiggz.postalservice.PostalService
 name: PostalService
-version: 1.0.6-SNAPSHOT
+version: 1.0.6
 author: ebiggz
 description: A mail system for Bukkit servers
 softdepends: [Vault]
