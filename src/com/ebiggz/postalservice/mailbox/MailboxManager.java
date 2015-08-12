@@ -1,9 +1,7 @@
 package com.ebiggz.postalservice.mailbox;
 
 import java.sql.ResultSet;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -210,19 +208,15 @@ public class MailboxManager {
 	}
 
 	/**
-	 * @return the nearest mailbox within 6 blocks of location, null if none found
+	 * @return the nearest mailbox within 5 blocks of location, null if none found
 	 */
 	public Mailbox getNearestMailbox(Location location) {
 		double distance = 6;
-		List<Mailbox> nearestMailboxes = new ArrayList<Mailbox>();
-		for(Location mailboxLoc : mailboxes.keySet()) {
-			if(!location.getWorld().equals(mailboxLoc.getWorld())) continue;
-			if(location.distance(mailboxLoc) < distance)
-				nearestMailboxes.add(mailboxes.get(mailboxLoc));
-		}
 		Mailbox nearest = null;
 		double nearestDist = distance;
-		for(Mailbox mailbox: nearestMailboxes) {
+		for(Mailbox mailbox: mailboxes.values()) {
+			if(!location.getWorld().equals(mailbox.getLocation().getWorld())) continue;
+			if(location.distance(mailbox.getLocation()) >= distance) continue;
 			if(nearest == null) {
 				nearest = mailbox;
 				nearestDist = location.distance(mailbox.getLocation());
