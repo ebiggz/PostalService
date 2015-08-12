@@ -24,8 +24,8 @@ import com.ebiggz.postalservice.permissions.PermissionHandler;
 import com.ebiggz.postalservice.permissions.PermissionHandler.Perm;
 import com.ebiggz.postalservice.screens.MainMenuGUI;
 import com.ebiggz.postalservice.utils.UUIDUtils;
-import com.ebiggz.postalservice.utils.Utils;
 import com.ebiggz.postalservice.utils.Updater.UpdateResult;
+import com.ebiggz.postalservice.utils.Utils;
 
 public class MailCommands implements CommandExecutor {
 
@@ -71,7 +71,7 @@ public class MailCommands implements CommandExecutor {
 					if(senderIsConsole(sender, isConsole)) return true;
 					//check if a mailbox should be near by
 					if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
-						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
+						boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation());
 						if(!nearMailbox) {
 							sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
 							return true;
@@ -151,7 +151,7 @@ public class MailCommands implements CommandExecutor {
 
 				//check if a mailbox should be near by
 				if(Config.REQUIRE_MAILBOX && !PermissionHandler.playerHasPermission(Perm.OVERRIDE_REQUIRE_MAILBOX, sender, false)) {
-					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation(), 6);
+					boolean nearMailbox = MailboxManager.getInstance().mailboxIsNearby(player.getLocation());
 					if(!nearMailbox) {
 						sender.sendMessage(Phrases.ERROR_NEAR_MAILBOX.toPrefixedString());
 						return true;

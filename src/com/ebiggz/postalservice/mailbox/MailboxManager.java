@@ -1,7 +1,9 @@
 package com.ebiggz.postalservice.mailbox;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -194,12 +196,44 @@ public class MailboxManager {
 		return count;
 	}
 
-	public boolean mailboxIsNearby(Location location, int distance) {
+	/**
+	 * @return return true if a mailbox is within 6 blocks of location
+	 */
+	public boolean mailboxIsNearby(Location location) {
+		double distance = 6;
 		for(Location mailboxLoc : mailboxes.keySet()) {
 			if(!location.getWorld().equals(mailboxLoc.getWorld())) continue;
 			if(location.distance(mailboxLoc) < distance)
 				return true;
 		}
 		return false;
+	}
+
+	/**
+	 * @return the nearest mailbox within 6 blocks of location, null if none found
+	 */
+	public Mailbox getNearestMailbox(Location location) {
+		double distance = 6;
+		List<Mailbox> nearestMailboxes = new ArrayList<Mailbox>();
+		for(Location mailboxLoc : mailboxes.keySet()) {
+			if(!location.getWorld().equals(mailboxLoc.getWorld())) continue;
+			if(location.distance(mailboxLoc) < distance)
+				nearestMailboxes.add(mailboxes.get(mailboxLoc));
+		}
+		Mailbox nearest = null;
+		double nearestDist = distance;
+		for(Mailbox mailbox: nearestMailboxes) {
+			if(nearest == null) {
+				nearest = mailbox;
+				nearestDist = location.distance(mailbox.getLocation());
+			} else {
+				double nextDist = location.distance(mailbox.getLocation());
+				if(nextDist < nearestDist) {
+					nearestDist = nextDist;
+					nearest = mailbox;
+				}
+			}
+		}
+		return nearest;
 	}
 }
