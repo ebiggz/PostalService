@@ -216,12 +216,12 @@ public class MailboxManager {
 		double nearestDist = distance;
 		for(Mailbox mailbox: mailboxes.values()) {
 			if(!location.getWorld().equals(mailbox.getLocation().getWorld())) continue;
-			if(location.distance(mailbox.getLocation()) >= distance) continue;
+			double nextDist = location.distance(mailbox.getLocation());
+			if(nextDist >= distance) continue;
 			if(nearest == null) {
 				nearest = mailbox;
-				nearestDist = location.distance(mailbox.getLocation());
+				nearestDist = nextDist;
 			} else {
-				double nextDist = location.distance(mailbox.getLocation());
 				if(nextDist < nearestDist) {
 					nearestDist = nextDist;
 					nearest = mailbox;
