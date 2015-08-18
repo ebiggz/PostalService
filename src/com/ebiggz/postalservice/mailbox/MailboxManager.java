@@ -16,6 +16,7 @@ import com.ebiggz.postalservice.backend.UserFactory;
 import com.ebiggz.postalservice.config.Config;
 import com.ebiggz.postalservice.config.WorldGroup;
 import com.ebiggz.postalservice.events.PlayerRegisterMailboxEvent;
+import com.ebiggz.postalservice.events.PlayerUnregisterAllMailboxesEvent;
 import com.ebiggz.postalservice.events.PlayerUnregisterMailboxEvent;
 import com.ebiggz.postalservice.exceptions.MailboxException;
 import com.ebiggz.postalservice.exceptions.MailboxException.Reason;
@@ -160,20 +161,24 @@ public class MailboxManager {
 		return found;
 	}
 
-	public void removeAllMailboxes(String owner) {
+	public void removeAllMailboxes(Player commandSender, String owner) {
 		User user = UserFactory.getUser(owner);
-		if(Config.USE_DATABASE) {
-			try {
-				PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE PlayerID = \"" + user.getIdentifier() + "\"");
-			} catch (Exception e) {
-				if(Config.ENABLE_DEBUG)
-					e.printStackTrace();
+		PlayerUnregisterAllMailboxesEvent event = new PlayerUnregisterAllMailboxesEvent(commandSender, user);
+		Bukkit.getServer().getPluginManager().callEvent(event);
+		if(!event.isCanceled()) {
+			if(Config.USE_DATABASE) {
+				try {
+					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE PlayerID = \"" + user.getIdentifier() + "\"");
+				} catch (Exception e) {
+					if(Config.ENABLE_DEBUG)
+						e.printStackTrace();
+				}
 			}
-		}
-		for(Location mailboxLoc : mailboxes.keySet()) {
-			Mailbox mailbox = this.mailboxes.get(mailboxLoc);
-			if(mailbox.getOwner().getPlayerName().equals(owner))
-				mailboxes.remove(mailboxLoc);
+			for(Location mailboxLoc : mailboxes.keySet()) {
+				Mailbox mailbox = this.mailboxes.get(mailboxLoc);
+				if(mailbox.getOwner().getPlayerName().equals(owner))
+					mailboxes.remove(mailboxLoc);
+			}
 		}
 	}
 

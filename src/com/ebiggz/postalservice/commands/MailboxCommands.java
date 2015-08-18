@@ -54,7 +54,7 @@ public class MailboxCommands implements CommandExecutor {
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVEALL.toString())) {
 					if(args.length == 1) {
 						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALL, sender, true)) return true;
-						MailboxManager.getInstance().removeAllMailboxes(sender.getName());
+						MailboxManager.getInstance().removeAllMailboxes((Player) sender, sender.getName());
 						sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL.toPrefixedString());
 					} else {
 						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEALLOTHER, sender, true)) return true;
@@ -62,7 +62,7 @@ public class MailboxCommands implements CommandExecutor {
 						if(completedName == null || completedName.isEmpty()) {
 							completedName = args[1];
 						}
-						MailboxManager.getInstance().removeAllMailboxes(completedName);
+						MailboxManager.getInstance().removeAllMailboxes((Player) sender, completedName);
 						sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE_ALL_OTHER.toPrefixedString().replace("%player%", completedName));
 					}
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_FIND.toString())) {
