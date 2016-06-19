@@ -82,7 +82,7 @@ public class PostalService extends JavaPlugin {
 			String[] array = vString.split("_");
 			serverVersion = Double.parseDouble(array[0] + "." + array[1]);
 		}
-		if(serverVersion <= 1.6) {
+		if(serverVersion == 1.6 || serverVersion == 1.5 || serverVersion == 1.4 || serverVersion == 1.3) {
 			getLogger().severe("Sorry! PostalService is compatible with Bukkit 1.7 and above.");
 			Bukkit.getPluginManager().disablePlugin(this);
 		}
