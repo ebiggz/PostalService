@@ -47,7 +47,7 @@ public class MainMenuGUI implements GUI {
 
 
 		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
+				Material.OAK_SIGN,
 				Phrases.BUTTON_ACCOUNTINFO.toString(),
 				Config.ENABLE_MAILBOXES ? Arrays.asList(
 						ChatColor.GRAY + Phrases.ACCOUNT_INFO_MAILBOXES.toString() + ": " + ChatColor.WHITE + MailboxManager.getInstance().getMailboxCount(accountOwner.getPlayerName(), Config.getWorldGroupFromWorld(viewingPlayer.getWorld())) + "/" + Config.getMailboxLimitForPlayer(accountOwner.getPlayerName()),
@@ -58,7 +58,7 @@ public class MainMenuGUI implements GUI {
 									Phrases.CLICK_ACTION_HELP.toString()));
 
 		ItemStack composeBook = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_COMPOSE.toString(),
 				accountOwner.getPlayerName().equals(viewingPlayer.getName())
 				? (Config.packagesAreEnabled()
@@ -83,7 +83,7 @@ public class MainMenuGUI implements GUI {
 				Arrays.asList(Phrases.CLICK_ACTION_OPEN.toString()));
 
 		ItemStack tradingPost = GUIUtils.createButton(
-				Material.FENCE,
+				Material.OAK_FENCE,
 				Phrases.BUTTON_TRADINGPOST.toString(),
 				Arrays.asList(ChatColor.GRAY + "*Coming Soon*"));
 
@@ -103,12 +103,12 @@ public class MainMenuGUI implements GUI {
 
 
 		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
+				Material.OAK_SIGN,
 				Phrases.BUTTON_ACCOUNTINFO.toString(),
 				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 
 		ItemStack composeBook = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_COMPOSE.toString(),
 				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 
@@ -123,7 +123,7 @@ public class MainMenuGUI implements GUI {
 				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 
 		ItemStack tradingPost = GUIUtils.createButton(
-				Material.FENCE,
+				Material.OAK_FENCE,
 				Phrases.BUTTON_TRADINGPOST.toString(),
 				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 
@@ -158,7 +158,7 @@ public class MainMenuGUI implements GUI {
 			if(accountOwner.getPlayerName().equals(whoClicked.getName())) {
 				if(clickedEvent.getClick() == ClickType.LEFT) {
 					if(clickedEvent.getCursor() != null) {
-						if(clickedEvent.getCursor().getType() == Material.BOOK_AND_QUILL) {
+						if(clickedEvent.getCursor().getType() == Material.WRITABLE_BOOK) {
 							BookMeta bm = (BookMeta) clickedEvent.getCursor().getItemMeta();
 							if(bm.hasPages()) {
 								String pageData = bm.getPage(1).replaceAll(System.getProperty("line.separator"), "");

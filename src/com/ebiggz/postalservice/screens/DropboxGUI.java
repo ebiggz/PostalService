@@ -57,13 +57,13 @@ public class DropboxGUI implements GUI {
 			lore.add(ChatColor.WHITE + line);
 		}
 		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
+				Material.OAK_SIGN,
 				Phrases.DROPBOX_HELP.toString(),
 				lore);
 		inventory.setItem(39, infoSign);
 
 		ItemStack mainMenu = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_COMPOSE_PACKAGE.toString(),
 				Arrays.asList(
 						Phrases.CLICK_ACTION_COMPOSE.toString(),
@@ -82,13 +82,13 @@ public class DropboxGUI implements GUI {
 		}
 
 		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
+				Material.OAK_SIGN,
 				Phrases.DROPBOX_HELP.toString(),
 				Arrays.asList(Phrases.BUTTON_LOADING.toString()));
 		inventory.setItem(39, infoSign);
 
 		ItemStack mainMenu = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_COMPOSE_PACKAGE.toString(),
 				Arrays.asList(
 						Phrases.CLICK_ACTION_COMPOSE.toString(),

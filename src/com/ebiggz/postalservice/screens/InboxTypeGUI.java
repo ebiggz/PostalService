@@ -83,7 +83,7 @@ public class InboxTypeGUI implements GUI {
 		}
 
 		ItemStack mainMenu = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_MAINMENU.toString(),
 				Arrays.asList(
 						Phrases.CLICK_ACTION_LEFTRETURN.toString()));
@@ -92,7 +92,7 @@ public class InboxTypeGUI implements GUI {
 		if(totalPages > 1) {
 			if(pageNumber + 1 <= totalPages) {
 				ItemStack next = GUIUtils.createButton(
-						Material.IRON_PLATE,
+						Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
 						ChatColor.GOLD + Phrases.BUTTON_NEXT.toString(),
 						Arrays.asList(
 								Phrases.CLICK_ACTION_NEXTPAGE.toString()));
@@ -101,7 +101,7 @@ public class InboxTypeGUI implements GUI {
 			}
 			if(pageNumber - 1 >= 1) {
 				ItemStack previous = GUIUtils.createButton(
-						Material.IRON_PLATE,
+						Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
 						Phrases.BUTTON_PREVIOUS.toString(),
 						Arrays.asList(
 								Phrases.CLICK_ACTION_PREVIOUSPAGE.toString()));
@@ -124,7 +124,7 @@ public class InboxTypeGUI implements GUI {
 		}
 
 		ItemStack mainMenu = GUIUtils.createButton(
-				Material.BOOK_AND_QUILL,
+				Material.WRITABLE_BOOK,
 				Phrases.BUTTON_MAINMENU.toString(),
 				Arrays.asList(
 						Phrases.CLICK_ACTION_LEFTRETURN.toString()));
@@ -133,7 +133,7 @@ public class InboxTypeGUI implements GUI {
 		if(totalPages > 1) {
 			if(pageNumber + 1 <= totalPages) {
 				ItemStack next = GUIUtils.createButton(
-						Material.IRON_PLATE,
+						Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
 						ChatColor.GOLD + Phrases.BUTTON_NEXT.toString(),
 						Arrays.asList(
 								Phrases.CLICK_ACTION_NEXTPAGE.toString()));
@@ -142,7 +142,7 @@ public class InboxTypeGUI implements GUI {
 			}
 			if(pageNumber - 1 >= 1) {
 				ItemStack previous = GUIUtils.createButton(
-						Material.IRON_PLATE,
+						Material.HEAVY_WEIGHTED_PRESSURE_PLATE,
 						Phrases.BUTTON_PREVIOUS.toString(),
 						Arrays.asList(
 								Phrases.CLICK_ACTION_PREVIOUSPAGE.toString()));

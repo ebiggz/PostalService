@@ -14,7 +14,7 @@ public class TradeLogButton extends GUIButton {
 	List<String> logEntries = new ArrayList<String>();
 
 	public TradeLogButton() {
-		super(Material.BOOK_AND_QUILL, ChatColor.YELLOW +""+ ChatColor.BOLD + "Trade Log", Arrays.asList(ChatColor.GRAY + "..."));
+		super(Material.WRITABLE_BOOK, ChatColor.YELLOW +""+ ChatColor.BOLD + "Trade Log", Arrays.asList(ChatColor.GRAY + "..."));
 	}
 
 	public void addLogEntry(String text) {

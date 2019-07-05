@@ -93,7 +93,7 @@ public class Experience implements MailType {
 
 	@Override
 	public Material getIcon() {
-		return Material.EXP_BOTTLE;
+		return Material.EXPERIENCE_BOTTLE;
 	}
 
 	@Override
