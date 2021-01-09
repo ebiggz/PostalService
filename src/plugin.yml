@@ -1,7 +1,7 @@
 main: com.ebiggz.postalservice.PostalService
 name: PostalService
-version: 1.1
+version: 1.2
 author: ebiggz
-api-version: 1.14
-description: A mail system for Bukkit servers
+api-version: 1.16
+description: A mail system for Spigot servers
 softdepends: [Vault]
