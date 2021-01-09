@@ -30,7 +30,7 @@ public class PlayerListener implements Listener {
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerDrop(PlayerDropItemEvent event) {
 		if(MailManager.getInstance().willDropBook.contains(event.getPlayer())) {
-			event.getItemDrop().setItemStack(new ItemStack(Material.BOOK_AND_QUILL));
+			event.getItemDrop().setItemStack(new ItemStack(Material.WRITABLE_BOOK));
 			event.setCancelled(true);
 			MailManager.getInstance().willDropBook.remove(event.getPlayer());
 		}

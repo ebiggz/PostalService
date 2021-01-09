@@ -16,11 +16,11 @@ public class AcceptOfferButton extends GUIButton {
 	private String playerName;
 	private String otherPlayer;
 
-	private ItemStack unaccepted = new ItemStack(Material.getMaterial(160), 1, (short) 0);
-	private ItemStack accepted = new ItemStack(Material.getMaterial(160), 1, (short) 5);
+	private ItemStack unaccepted = new ItemStack(Material.WHITE_STAINED_GLASS_PANE);
+	private ItemStack accepted = new ItemStack(Material.LIME_STAINED_GLASS_PANE);
 
 	public AcceptOfferButton(String playerName, String otherPlayer) {
-		super(new ItemStack(Material.getMaterial(160), 1, (short) 0),
+		super(new ItemStack(Material.WHITE_STAINED_GLASS_PANE),
 				ChatColor.YELLOW +""+ChatColor.BOLD + playerName + " Accept Offer Button",
 				Arrays.asList(
 						ChatColor.WHITE + "Current Status: " + ChatColor.GOLD + "Can't accept",

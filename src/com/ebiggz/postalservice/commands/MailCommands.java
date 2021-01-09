@@ -223,7 +223,7 @@ public class MailCommands implements CommandExecutor {
 				}
 
 				if(message.isEmpty()) {
-					if(player.getItemInHand().getType() == Material.BOOK_AND_QUILL) {
+					if(player.getInventory().getItemInMainHand().getType() == Material.WRITABLE_BOOK) {
 						BookMeta bm = (BookMeta) player.getItemInHand().getItemMeta();
 						if(bm.hasPages()) {
 							if(bm.getPageCount() > 1) {
