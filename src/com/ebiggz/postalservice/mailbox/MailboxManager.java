@@ -102,7 +102,7 @@ public class MailboxManager {
 				if(Config.USE_DATABASE) {
 					try {
 						Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
-						PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES (\"" + Utils.locationToString(location) + "\", \"" + user.getIdentifier() + "\")");
+						PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES ('" + Utils.locationToString(location) + "', '" + user.getIdentifier() + "')");
 						this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
 					} catch (Exception e) {
 						if(Config.ENABLE_DEBUG) {
@@ -132,7 +132,7 @@ public class MailboxManager {
 			if(!event.isCanceled()) {
 				if(Config.USE_DATABASE) {
 					try {
-						PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = \"" + Utils.locationToString(mb.getLocation()) + "\"");
+						PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE Location = '" + Utils.locationToString(mb.getLocation()) + "'");
 						this.mailboxes.remove(location);
 					} catch (Exception e) {
 						if(Config.ENABLE_DEBUG)
@@ -168,7 +168,7 @@ public class MailboxManager {
 		if(!event.isCanceled()) {
 			if(Config.USE_DATABASE) {
 				try {
-					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE PlayerID = \"" + user.getIdentifier() + "\"");
+					PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes WHERE PlayerID = '" + user.getIdentifier() + "'");
 				} catch (Exception e) {
 					if(Config.ENABLE_DEBUG)
 						e.printStackTrace();

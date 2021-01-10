@@ -60,7 +60,7 @@ public class DBUser implements User {
 	@Override
 	public void createUser() {
 		try {
-			PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_users VALUES (\"" + this.getIdentifier() + "\",\"" + this.getPlayerName() + "\", \"\")");
+			PostalService.getPSDatabase().updateSQL("INSERT IGNORE INTO ps_users VALUES ('" + this.getIdentifier() + "','" + this.getPlayerName() + "', '')");
 		} catch (Exception e) {
 		}
 	}
@@ -91,7 +91,7 @@ public class DBUser implements User {
 	public void setPlayerName(String playerName) {
 		this.playerName = playerName;
 		try {
-			PostalService.getPSDatabase().updateSQL("UPDATE ps_users SET PlayerName = \"" + playerName + "\" WHERE PlayerID = \"" + getIdentifier() + "\"");
+			PostalService.getPSDatabase().updateSQL("UPDATE ps_users SET PlayerName = '" + playerName + "' WHERE PlayerID = '" + getIdentifier() + "'");
 		} catch (Exception e) {
 		}
 	}
@@ -109,9 +109,9 @@ public class DBUser implements User {
 	private List<Mail> queryDBByType(BoxType type) {
 		StringBuilder query = new StringBuilder();
 		if (type == BoxType.INBOX) {
-			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
+			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = '" + this.getIdentifier() + "' AND Received.Deleted = 0");
 		} else {
-			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
+			query.append("SELECT Sent.MailID, Received.ReceivedID, Sent.MailType, Sent.Message, Sent.Attachments, Sent.TimeStamp, Sent.WorldGroup, Sender.PlayerName AS Sender, Recipient.PlayerName AS Recipient, Received.Status FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = '" + this.getIdentifier() + "' AND Sent.Deleted = 0");
 		}
 		query.append(" ORDER BY Sent.TimeStamp DESC");
 		if((type == BoxType.INBOX && !Config.HARD_ENFORCE_INBOX_LIMIT) || type == BoxType.SENT) {
@@ -139,7 +139,7 @@ public class DBUser implements User {
 	@Override
 	public List<ItemStack> getDropbox(WorldGroup worldGroup) {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = '" + this.getIdentifier() + "' AND WorldGroup = '" + worldGroup.getName() + "'");
 			if (rs.next()) {
 				return Utils.bytesToItems(rs.getBytes("Contents"));
 			} else {
@@ -155,12 +155,12 @@ public class DBUser implements User {
 	@Override
 	public void saveDropbox(List<ItemStack> items, WorldGroup worldGroup) {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT DropboxID FROM ps_dropboxes WHERE PlayerID = \"" + this.getIdentifier() + "\" AND WorldGroup = \"" + worldGroup.getName() + "\"");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT DropboxID FROM ps_dropboxes WHERE PlayerID = '" + this.getIdentifier() + "' AND WorldGroup = '" + worldGroup.getName() + "'");
 			PreparedStatement statement;
 			if (rs.next()) {
 				statement = PostalService.getPSDatabase().getConnection().prepareStatement("UPDATE ps_dropboxes SET Contents = ? WHERE DropboxID = " + rs.getInt("DropboxID"));
 			} else {
-				statement = PostalService.getPSDatabase().getConnection().prepareStatement("INSERT IGNORE INTO ps_dropboxes VALUES (0,?,\"" + this.getIdentifier() + "\",\"" + worldGroup.getName() + "\")");
+				statement = PostalService.getPSDatabase().getConnection().prepareStatement("INSERT IGNORE INTO ps_dropboxes VALUES (0,?,'" + this.getIdentifier() + "','" + worldGroup.getName() + "')");
 			}
 			statement.setBytes(1, Utils.itemsToBytes(items));
 			statement.execute();
@@ -182,7 +182,7 @@ public class DBUser implements User {
 	@Override
 	public int getUnreadMailCount() {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT count(ReceivedID) AS UnreadCount FROM ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0 AND Received.Status = 0");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT count(ReceivedID) AS UnreadCount FROM ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID WHERE Received.RecipientID = '" + this.getIdentifier() + "' AND Received.Deleted = 0 AND Received.Status = 0");
 			rs.next();
 			return rs.getInt("UnreadCount");
 		} catch (Exception e) {
@@ -202,9 +202,9 @@ public class DBUser implements User {
 		try {
 			StringBuilder query = new StringBuilder();
 			if (type == BoxType.INBOX) {
-				query.append("SELECT count(Received.ReceivedID) as Size FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Deleted = 0");
+				query.append("SELECT count(Received.ReceivedID) as Size FROM ps_received AS Received JOIN ps_mail AS Sent ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Received.RecipientID = '" + this.getIdentifier() + "' AND Received.Deleted = 0");
 			} else {
-				query.append("SELECT count(Sent.MailID) as Size FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = \"" + this.getIdentifier() + "\" AND Sent.Deleted = 0");
+				query.append("SELECT count(Sent.MailID) as Size FROM ps_mail AS Sent JOIN ps_received AS Received ON Sent.MailID = Received.MailID JOIN ps_users AS Sender ON Sent.SenderID = Sender.PlayerID JOIN ps_users AS Recipient ON Received.RecipientID = Recipient.PlayerID WHERE Sent.SenderID = '" + this.getIdentifier() + "' AND Sent.Deleted = 0");
 			}
 
 			ResultSet rs = PostalService.getPSDatabase().querySQL(query.toString());
@@ -240,7 +240,7 @@ public class DBUser implements User {
 					@Override
 					public void run() {
 						try {
-							PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,\"" + event.getMailType().getIdentifier().toLowerCase() + "\",\"" + event.getMessage() + "\",\"" + event.getAttachmentData() + "\", now(), \"" + event.getSender().getIdentifier() + "\", 0, \"" + event.getWorldGroup().getName() + "\")");
+							PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,'" + event.getMailType().getIdentifier().toLowerCase() + "','" + event.getMessage() + "','" + event.getAttachmentData() + "', now(), '" + event.getSender().getIdentifier() + "', 0, '" + event.getWorldGroup().getName() + "')");
 							recipientUser.receieveMail(Utils.getPlayerFromIdentifier(event.getSender().getIdentifier()), event.getMailType());
 						} catch (Exception e) {
 							if(Config.ENABLE_DEBUG) e.printStackTrace();
@@ -266,7 +266,7 @@ public class DBUser implements User {
 	@Override
 	public boolean receieveMail(Player sender, MailType mailType) {
 		try {
-			PostalService.getPSDatabase().updateSQL("INSERT INTO ps_received VALUES (0,\"" + this.getIdentifier() + "\",LAST_INSERT_ID(), 0, 0)");
+			PostalService.getPSDatabase().updateSQL("INSERT INTO ps_received VALUES (0,'" + this.getIdentifier() + "',LAST_INSERT_ID(), 0, 0)");
 			if(Config.UNREAD_NOTIFICATION_ON_RECEIVE) {
 				Utils.messagePlayerIfOnline(this.getIdentifier(), Phrases.ALERT_RECEIVED_MAIL.toPrefixedString().replace("%sender%", sender.getName()));
 			}
@@ -281,7 +281,7 @@ public class DBUser implements User {
 	@Override
 	public boolean markAllMailAsRead() {
 		try {
-			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID SET Received.Status = 1 WHERE Received.RecipientID = \"" + this.getIdentifier() + "\" AND Received.Status = 0	");
+			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID SET Received.Status = 1 WHERE Received.RecipientID = '" + this.getIdentifier() + "' AND Received.Status = 0	");
 			return true;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
@@ -353,7 +353,7 @@ public class DBUser implements User {
 	@Override
 	public String getTimeZone() {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT TimeZone FROM ps_users WHERE PlayerID = \"" + this.getIdentifier() + "\"");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT TimeZone FROM ps_users WHERE PlayerID = '" + this.getIdentifier() + "'");
 			if(rs != null && rs.next()) {
 				String timezone = rs.getString("TimeZone");
 				if(timezone != null && !timezone.equalsIgnoreCase("null")) return timezone;
@@ -367,7 +367,7 @@ public class DBUser implements User {
 	@Override
 	public void setTimeZone(String timezone) {
 		try {
-			PostalService.getPSDatabase().updateSQL("UPDATE ps_users SET TimeZone = \"" + timezone + "\" WHERE PlayerID = \"" + this.getIdentifier() + "\"");
+			PostalService.getPSDatabase().updateSQL("UPDATE ps_users SET TimeZone = '" + timezone + "' WHERE PlayerID = '" + this.getIdentifier() + "'");
 		} catch (Exception e) {
 			if(Config.ENABLE_DEBUG) e.printStackTrace();
 		}

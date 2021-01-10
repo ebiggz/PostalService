@@ -4,9 +4,9 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ebiggz.postalservice</groupId>
 	<artifactId>PostalService</artifactId>
-	<version>1.1.0</version>
+	<version>1.2.0</version>
 	<name>PostalService</name>
-	<description>A mail service for Bukkit servers.</description>
+	<description>A mail service for Spigot servers.</description>
 	<repositories>
 		<repository>
 			<id>spigot-repo</id>
@@ -18,7 +18,7 @@
 		</repository>
 	</repositories>
 	<dependencies>
-		<!--Spigot API -->
+		<!-- Spigot API -->
 		<dependency>
 			<groupId>org.spigotmc</groupId>
 			<artifactId>spigot-api</artifactId>
