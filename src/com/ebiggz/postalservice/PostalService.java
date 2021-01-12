@@ -12,6 +12,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandMap;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
+import org.bukkit.command.SimpleCommandMap;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -130,22 +131,16 @@ public class PostalService extends JavaPlugin {
 		 * Register commands
 		 */
 
-		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
-		scheduler.scheduleSyncDelayedTask(PostalService.getPlugin(), new Runnable() {
-			@Override
-			public void run() {
-				unregisterCommand(Phrases.COMMAND_MAIL.toString());
-				unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
+		unregisterCommand(Phrases.COMMAND_MAIL.toString());
+		unregisterCommand(Phrases.COMMAND_MAILBOX.toString());
 
-				registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
-				getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
-				getCommand(Phrases.COMMAND_MAIL.toString()).setTabCompleter(new MailTabCompleter());
+		registerCommand(Phrases.COMMAND_MAIL.toString(), "mail", "m", "ps", "postalservice");
+		getCommand(Phrases.COMMAND_MAIL.toString()).setExecutor(new MailCommands());
+		getCommand(Phrases.COMMAND_MAIL.toString()).setTabCompleter(new MailTabCompleter());
 
-				registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
-				getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
-				getCommand(Phrases.COMMAND_MAILBOX.toString()).setTabCompleter(new MailboxTabCompleter());
-			}
-		}, 20L);
+		registerCommand(Phrases.COMMAND_MAILBOX.toString(),"mailbox", "mb");
+		getCommand(Phrases.COMMAND_MAILBOX.toString()).setExecutor(new MailboxCommands());
+		getCommand(Phrases.COMMAND_MAILBOX.toString()).setTabCompleter(new MailboxTabCompleter());
 
 
 		/*
@@ -168,6 +163,7 @@ public class PostalService extends JavaPlugin {
 			}
 		}
 
+		BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 		scheduler.scheduleSyncDelayedTask(PostalService.getPlugin(), new Runnable() {
 			@Override
 			public void run() {
@@ -358,75 +354,74 @@ public class PostalService extends JavaPlugin {
 	private void unregisterCommand(String cmd) {
 		try {
 			HashMap<String, Command> knownCommands = getKnownCommands();
-			if(knownCommands.containsKey(cmd.trim())) {
+			if (knownCommands.containsKey(cmd.trim())) {
 				Utils.debugMessage("\"" + cmd + "\" command is registered by another plugin. Unregistering...");
 				Command pCmd = knownCommands.get(cmd);
 				knownCommands.remove(cmd);
 				for (String alias : pCmd.getAliases()) {
-					if(knownCommands.containsKey(alias) && knownCommands.get(alias).toString().contains(this.getName())){
+					if (knownCommands.containsKey(alias)
+							&& ((Command) knownCommands.get(alias)).toString().contains(getName()))
 						knownCommands.remove(alias);
-					}
 				}
 			}
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG)
+			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
 		}
 	}
 
 	private void registerCommand(String... aliases) {
-		PluginCommand command = getCommand(aliases[0], this);
+		PluginCommand command = getCommand(aliases[0], (Plugin) this);
+		command.setPermission("");
 		command.setAliases(Arrays.asList(aliases));
-		getCommandMap().register("PostalService", command);
+		SimpleCommandMap commandMap = getCommandMap();
+		boolean registered = commandMap.register("PostalService", (Command) command);
+		if (registered)
+			System.out.println("Registered command " + aliases[0]);
 	}
 
 	private static PluginCommand getCommand(String name, Plugin plugin) {
 		PluginCommand command = null;
 		try {
-			Constructor<PluginCommand> c = PluginCommand.class.getDeclaredConstructor(String.class, Plugin.class);
+			Constructor<PluginCommand> c = PluginCommand.class
+					.getDeclaredConstructor(new Class[] { String.class, Plugin.class });
 			c.setAccessible(true);
-			command = c.newInstance(name, plugin);
+			command = c.newInstance(new Object[] { name, plugin });
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG)
+			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
 		}
 		return command;
 	}
 
-	private static CommandMap getCommandMap() {
-		CommandMap commandMap = null;
+	private static SimpleCommandMap getCommandMap() {
+		SimpleCommandMap commandMap = null;
 		try {
 			Field f = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
 			f.setAccessible(true);
-
-			commandMap = (CommandMap) f.get(Bukkit.getPluginManager());
+			commandMap = (SimpleCommandMap) f.get(Bukkit.getPluginManager());
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG)
+			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
 		}
 		return commandMap;
 	}
 
-	@SuppressWarnings("unchecked")
-	private static HashMap<String,Command> getKnownCommands() {
-		HashMap<String,Command> knownCommands = null;
+	private static HashMap<String, Command> getKnownCommands() {
+		HashMap<String, Command> knownCommands = new HashMap<>();
 		try {
-			knownCommands = (HashMap<String, Command>) getPrivateField(getCommandMap(), "knownCommands");
+			SimpleCommandMap commandMap = getCommandMap();
+			Class<?> clazz = commandMap.getClass().getSuperclass();
+			Field objectField = clazz.getDeclaredField("knownCommands");
+			objectField.setAccessible(true);
+			Object result = objectField.get(commandMap);
+			objectField.setAccessible(false);
+			knownCommands = (HashMap<String, Command>) result;
 		} catch (Exception e) {
-			if(Config.ENABLE_DEBUG)
+			if (Config.ENABLE_DEBUG)
 				e.printStackTrace();
 		}
 		return knownCommands;
-	}
-
-	private static Object getPrivateField(Object object, String field)throws SecurityException,
-	NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-		Class<?> clazz = object.getClass();
-		Field objectField = clazz.getDeclaredField(field);
-		objectField.setAccessible(true);
-		Object result = objectField.get(object);
-		objectField.setAccessible(false);
-		return result;
 	}
 
 	/** Update checker **/

@@ -109,6 +109,9 @@ public class MailboxListener implements Listener {
 							case MAX_REACHED:
 								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_MAX_REACHED.toPrefixedString());
 								break;
+							case CHEST_NOT_EMPTY:
+								event.getPlayer().sendMessage("Mailbox chest must be empty!");
+								break;
 							default:
 								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());
 								break;

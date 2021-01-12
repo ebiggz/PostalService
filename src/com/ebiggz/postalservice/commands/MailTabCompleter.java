@@ -3,6 +3,8 @@ package com.ebiggz.postalservice.commands;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
@@ -55,8 +57,22 @@ public class MailTabCompleter implements TabCompleter {
 					String to = Phrases.COMMAND_ARG_TO.toString() + ":";
 					String message = Phrases.COMMAND_ARG_MESSAGE.toString() + ":";
 					String typeArg = mailType.getAttachmentCommandArgument();
+					String lastArg = args[args.length - 1].toLowerCase();
 					if(!argsContainString(args, to)) {
 						cmdArgs.add(to);
+					}
+					if(lastArg.startsWith(to)) {
+						Bukkit.getOnlinePlayers().forEach(p -> {
+							if(p.getName() != sender.getName()) {
+								cmdArgs.add(to + p.getName());
+							}
+							for(OfflinePlayer offlinePlayer: Bukkit.getOfflinePlayers()) {
+								String name = offlinePlayer.getName();
+								if(name != null) {
+									cmdArgs.add(to + offlinePlayer.getName());
+								}
+							}
+						});	
 					}
 					if(!argsContainString(args, message)) {
 						cmdArgs.add(message);

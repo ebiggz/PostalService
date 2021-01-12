@@ -11,15 +11,18 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
+import com.ebiggz.postalservice.PostalService;
+
 public class ConfigAccessor {
 
-	private Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin("PostalService");
+	private Plugin plugin;
 	private final String fileName;
 	private File configFile;
 	private FileConfiguration fileConfiguration;
 	private String folderPath;
 
 	public ConfigAccessor(String fileName) {
+		plugin = PostalService.getPlugin();
 		if (plugin == null)
 			throw new IllegalArgumentException("plugin cannot be null");
 		this.fileName = fileName;

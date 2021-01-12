@@ -2,6 +2,8 @@ package com.ebiggz.postalservice.mailbox;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -9,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import com.ebiggz.postalservice.PostalService;
 import com.ebiggz.postalservice.backend.User;
@@ -95,6 +98,8 @@ public class MailboxManager {
 			throw new MailboxException(Reason.NO_PERMISSION);
 		} else if(this.getMailboxCount(player.getName(), Config.getWorldGroupFromWorld(location.getWorld().getName())) >= Config.getMailboxLimitForPlayer(player.getName())) {
 			throw new MailboxException(Reason.MAX_REACHED);
+		} else if(!((Chest) location.getBlock().getState()).getInventory().isEmpty()) {
+			throw new MailboxException(Reason.CHEST_NOT_EMPTY);
 		} else {
 			PlayerRegisterMailboxEvent event = new PlayerRegisterMailboxEvent(player, location);
 			Bukkit.getServer().getPluginManager().callEvent(event);
@@ -127,6 +132,8 @@ public class MailboxManager {
 		} else if(!mb.getOwner().getPlayerName().equals(player.getName()) && !PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVEOTHER, player, false)) {
 			throw new MailboxException(Reason.NOT_OWNER);
 		} else {
+			// clear out any items used for unread notifications
+			((Chest) location.getBlock().getState()).getInventory().clear();
 			PlayerUnregisterMailboxEvent event = new PlayerUnregisterMailboxEvent(player, mb);
 			Bukkit.getServer().getPluginManager().callEvent(event);
 			if(!event.isCanceled()) {
@@ -180,6 +187,30 @@ public class MailboxManager {
 					mailboxes.remove(mailboxLoc);
 			}
 		}
+	}
+	
+	public void updateMailboxUnreadState(String playerIdentifier, boolean hasUnread) {
+		
+		Bukkit.getScheduler().runTask(PostalService.getPlugin(), () -> {
+			
+			List<Mailbox> playerMailboxes = this.mailboxes.values().stream()
+					.filter(m -> m.getOwner().getIdentifier().equals(playerIdentifier))
+					.collect(Collectors.toList());
+		
+			for(Mailbox mailbox : playerMailboxes) {
+				Chest chest = mailbox.getChest();
+				if(chest == null) return;
+				if(hasUnread) {
+					chest.getSnapshotInventory().setContents(new ItemStack[] { 
+							new ItemStack(Material.DIRT, 1)
+					});
+				} else {
+					chest.getSnapshotInventory().clear();
+				}
+				chest.update(true);
+			}
+		});
+		
 	}
 
 	public int getMailboxCount(String name, WorldGroup group) {

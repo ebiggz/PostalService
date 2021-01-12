@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
+import java.util.UUID;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -21,6 +22,7 @@ import com.ebiggz.postalservice.PostalService;
 import com.ebiggz.postalservice.backend.User;
 import com.ebiggz.postalservice.mail.MailManager;
 import com.ebiggz.postalservice.mail.MailType;
+import com.ebiggz.postalservice.utils.UUIDUtils;
 import com.ebiggz.postalservice.utils.Utils;
 
 public class Config {
@@ -211,7 +213,12 @@ public class Config {
 	@SuppressWarnings("deprecation")
 	public static int getMaxInboxSizeForPlayer(String playerName) {
 		if(PostalService.foundPermPlugin()) {
-			String primaryGroup = PostalService.permission.getPrimaryGroup("", playerName);
+			
+			UUID playerUuid = UUIDUtils.findUUID(playerName);	
+			
+			String primaryGroup = PostalService.permission
+					.getPrimaryGroup(null, Bukkit.getOfflinePlayer(playerUuid));
+			
 			if(primaryGroup != null) {
 				if(INBOX_SIZES.containsKey(primaryGroup)) {
 					return INBOX_SIZES.get(primaryGroup);
@@ -227,7 +234,10 @@ public class Config {
 	@SuppressWarnings("deprecation")
 	public static int getMailboxLimitForPlayer(String playerName) {
 		if(PostalService.foundPermPlugin()) {
-			String primaryGroup = PostalService.permission.getPrimaryGroup("", playerName);
+			UUID playerUuid = UUIDUtils.findUUID(playerName);	
+			
+			String primaryGroup = PostalService.permission
+					.getPrimaryGroup(null, Bukkit.getOfflinePlayer(playerUuid));
 			if(primaryGroup != null) {
 				if(MAILBOX_LIMITS.containsKey(primaryGroup)) {
 					return MAILBOX_LIMITS.get(primaryGroup);

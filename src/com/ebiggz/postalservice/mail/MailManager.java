@@ -3,6 +3,7 @@ package com.ebiggz.postalservice.mail;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
@@ -61,8 +62,10 @@ public class MailManager {
 			}
 		}
 		mailTypesStorage.add(newType);
-		Permission typePerm = new Permission("postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim(), PermissionDefault.FALSE);
+		String newPerm = "postalservice.mail.send."+newType.getDisplayName().toLowerCase().trim();
+		Permission typePerm = new Permission(newPerm, PermissionDefault.FALSE);
 		typePerm.addParent("postalservice.mail.send.*", true);
+		Bukkit.getPluginManager().removePermission(newPerm);
 		PostalService.getPlugin().getServer().getPluginManager().addPermission(typePerm);
 		if(!Config.mailTypeIsDisabled(newType)) {
 			mailTypes.add(newType);

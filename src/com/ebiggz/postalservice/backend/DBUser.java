@@ -270,6 +270,7 @@ public class DBUser implements User {
 			if(Config.UNREAD_NOTIFICATION_ON_RECEIVE) {
 				Utils.messagePlayerIfOnline(this.getIdentifier(), Phrases.ALERT_RECEIVED_MAIL.toPrefixedString().replace("%sender%", sender.getName()));
 			}
+			PostalService.getMailboxManager().updateMailboxUnreadState(this.getIdentifier(), true);
 			return true;
 		} catch (Exception e) {
 			if (Config.ENABLE_DEBUG)
@@ -277,10 +278,12 @@ public class DBUser implements User {
 		}
 		return false;
 	}
+	
 
 	@Override
 	public boolean markAllMailAsRead() {
 		try {
+			PostalService.getMailboxManager().updateMailboxUnreadState(this.getIdentifier(), false);
 			PostalService.getPSDatabase().updateSQL("UPDATE ps_received AS Received JOIN ps_mail AS Sent ON Received.MailID = Sent.MailID SET Received.Status = 1 WHERE Received.RecipientID = '" + this.getIdentifier() + "' AND Received.Status = 0	");
 			return true;
 		} catch (Exception e) {
