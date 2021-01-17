@@ -14,13 +14,14 @@ import org.bukkit.inventory.ItemStack;
 import com.ebiggz.postalservice.apis.guiAPI.GUI;
 import com.ebiggz.postalservice.apis.guiAPI.GUIManager;
 import com.ebiggz.postalservice.apis.guiAPI.GUIUtils;
+import com.ebiggz.postalservice.backend.UserFactory;
 import com.ebiggz.postalservice.screens.MainMenuGUI;
+import com.ebiggz.postalservice.utils.Utils;
 
 
-public class TradingPostMenuGUI /*implements GUI*/{
-
-	/*@Override
-	public Inventory createInventory(Player player) {
+public class TradingPostMenuGUI implements GUI {
+	
+	private Inventory getInventory(Player player) {
 		Inventory inventory = GUIUtils.generateInventory(9*3, "Trading Post Menu");
 		if(TradeManager.getInstance().playerHasActiveTradeSession(player)) {
 			String otherPerson = "";
@@ -31,7 +32,7 @@ public class TradingPostMenuGUI /*implements GUI*/{
 				otherPerson = session.getInitiatorName();
 			}
 			ItemStack activeTradeButton = GUIUtils.createButton(
-					Utils.getPlayerHeadItem(otherPerson),
+					new ItemStack(Material.PLAYER_HEAD, 1),
 					"Current Session w/" + otherPerson,
 					Arrays.asList(
 							ChatColor.RED + "Left-Click to " + ChatColor.BOLD + "Open Trade Session",
@@ -39,7 +40,7 @@ public class TradingPostMenuGUI /*implements GUI*/{
 			inventory.setItem(4, activeTradeButton);
 		} else {
 			ItemStack createTradeButton = GUIUtils.createButton(
-					new ItemStack(Material.SKULL_ITEM, 1, (short) 3),
+					new ItemStack(Material.PLAYER_HEAD, 1),
 					ChatColor.YELLOW + "Start Trade Session",
 					Arrays.asList(
 							ChatColor.RED + "Click to " + ChatColor.BOLD + "Start A Trade Session"));
@@ -52,6 +53,15 @@ public class TradingPostMenuGUI /*implements GUI*/{
 		ItemStack back = GUIUtils.createButton(Material.CHEST, ChatColor.YELLOW + "Back To Mailbox", Arrays.asList(ChatColor.RED + "Click to return to mailbox"));
 		inventory.setItem(22, back);
 		return inventory;
+	}
+
+	@Override
+	public Inventory createBaseInventory(Player player) {
+		return getInventory(player);
+	}
+	
+	public ItemStack[] loadContents(Player player) {
+		return getInventory(player).getContents();
 	}
 
 	@Override
@@ -71,7 +81,7 @@ public class TradingPostMenuGUI /*implements GUI*/{
 				}
 				break;
 			case 22:
-				GUIManager.getInstance().showGUI(new MainMenuGUI(), whoClicked);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked)), whoClicked);
 				break;
 			default:
 				break;
@@ -85,5 +95,5 @@ public class TradingPostMenuGUI /*implements GUI*/{
 	@Override
 	public boolean ignoreForeignItems() {
 		return false;
-	}*/
+	}
 }

@@ -23,6 +23,8 @@ import com.ebiggz.postalservice.mail.MailManager.BoxType;
 import com.ebiggz.postalservice.utils.UUIDUtils;
 import com.ebiggz.postalservice.utils.Utils;
 
+import net.md_5.bungee.api.ChatColor;
+
 public class DBUser implements User {
 
 	private UUID uuid;
@@ -139,7 +141,7 @@ public class DBUser implements User {
 	@Override
 	public List<ItemStack> getDropbox(WorldGroup worldGroup) {
 		try {
-			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = '" + this.getIdentifier() + "' AND WorldGroup = '" + worldGroup.getName() + "'");
+			ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT Contents FROM ps_dropboxes WHERE PlayerID = '" + this.getIdentifier() + "' AND WorldGroup = '" + escape(worldGroup.getName()) + "'");
 			if (rs.next()) {
 				return Utils.bytesToItems(rs.getBytes("Contents"));
 			} else {
@@ -218,6 +220,11 @@ public class DBUser implements User {
 
 		return 0;
 	}
+	
+	private String escape(String str) {
+		if(str == null) return str;
+		return str.replace("'", "''");
+	}
 
 	@Override
 	public boolean sendMail(String recipient, String message, String attachmentData, MailType mailType, WorldGroup worldGroup) {
@@ -232,7 +239,6 @@ public class DBUser implements User {
 			PlayerSendMailEvent event = new PlayerSendMailEvent(this, recipientUser, message, attachmentData, mailType, worldGroup);
 			Bukkit.getServer().getPluginManager().callEvent(event);
 			if(!event.isCancelled()) {
-				sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", recipient));
 				BukkitScheduler scheduler = Bukkit.getServer().getScheduler();
 				scheduler.runTaskAsynchronously(PostalService.getPlugin(), new Runnable() {
 					private PlayerSendMailEvent event;
@@ -240,10 +246,25 @@ public class DBUser implements User {
 					@Override
 					public void run() {
 						try {
-							PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,'" + event.getMailType().getIdentifier().toLowerCase() + "','" + event.getMessage() + "','" + event.getAttachmentData() + "', now(), '" + event.getSender().getIdentifier() + "', 0, '" + event.getWorldGroup().getName() + "')");
+							
+							String mailIdentifier = escape(event.getMailType().getIdentifier().toLowerCase());
+							String message = escape(event.getMessage());
+							String attachmentData = escape(event.getAttachmentData());
+							String senderIdentifier = escape(event.getSender().getIdentifier());
+							String worldGroupName = escape(event.getWorldGroup().getName());
+							
+							PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mail VALUES (0,'" + mailIdentifier + "','" + message + "','" + attachmentData + "', now(), '" + senderIdentifier + "', 0, '" + worldGroupName + "')");
 							recipientUser.receieveMail(Utils.getPlayerFromIdentifier(event.getSender().getIdentifier()), event.getMailType());
+							
+							Bukkit.getScheduler().runTask(PostalService.getPlugin(), () -> {
+								mailType.handleSuccessfulSendCommandCleanUp(sender);
+								sender.sendMessage(Phrases.ALERT_SENT_MAIL.toPrefixedString().replace("%mailtype%", mailType.getDisplayName()).replace("%recipient%", recipient));
+							});
 						} catch (Exception e) {
 							if(Config.ENABLE_DEBUG) e.printStackTrace();
+							Bukkit.getScheduler().runTask(PostalService.getPlugin(), () -> {
+								sender.sendMessage(ChatColor.RED + "Sorry, there was an issue sending your mail. Please alert an administrator if this continues to happen.");
+							});
 						}
 					}
 					public Runnable init(PlayerSendMailEvent event, User recipientUser) {

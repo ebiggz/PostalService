@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-import com.ebiggz.postalservice.PostalService;
 import com.ebiggz.postalservice.backend.User;
 import com.ebiggz.postalservice.backend.UserFactory;
 import com.ebiggz.postalservice.config.Config;
@@ -18,7 +16,7 @@ import com.ebiggz.postalservice.exceptions.MailException;
 import com.ebiggz.postalservice.mail.MailType;
 import com.ebiggz.postalservice.utils.Utils;
 
-public class Package implements MailType {
+public class TradeGoods implements MailType {
 
 	private List<ItemStack> items = new ArrayList<ItemStack>();
 
@@ -59,16 +57,9 @@ public class Package implements MailType {
 		if(dropBoxContents == null || dropBoxContents.isEmpty()) {
 			throw new MailException(Phrases.ERROR_MAILTYPE_PACKAGE_NO_ITEMS.toString());
 		} else {
+			user.saveDropbox(null, Config.getCurrentWorldGroupForUser(user));
 			return Arrays.toString(Utils.itemsToBytes(dropBoxContents));
 		}
-	}
-	
-	@Override
-	public void handleSuccessfulSendCommandCleanUp(Player sender) {
-		Bukkit.getScheduler().runTaskAsynchronously(PostalService.getPlugin(), () -> {
-			User user = UserFactory.getUser(sender.getName());
-			user.saveDropbox(null, Config.getCurrentWorldGroupForUser(user));
-		});
 	}
 
 	@Override

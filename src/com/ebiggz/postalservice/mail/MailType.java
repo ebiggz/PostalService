@@ -75,6 +75,13 @@ public interface MailType {
 	 * @return The computed attachment data as a string to be saved to the database.
 	 */
 	public String handleSendCommand(Player sender, String[] commandArgs) throws MailException;
+	
+	/** This optional method is called after async DB operations of a send command for the purposes of cleanup, if required
+	 *
+	 *  @param sender
+	 *            The player who issued the send command.
+	 */
+	public default void handleSuccessfulSendCommandCleanUp(Player sender) {}
 
 	/** This method is called when the mail type is being loaded from the database.
 	 *

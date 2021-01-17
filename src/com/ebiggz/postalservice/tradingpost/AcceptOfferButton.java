@@ -8,7 +8,7 @@ import org.bukkit.inventory.ItemStack;
 
 import com.ebiggz.postalservice.apis.guiAPI.GUIButton;
 
-@SuppressWarnings("deprecation")
+//@SuppressWarnings("deprecation")
 public class AcceptOfferButton extends GUIButton {
 
 	private boolean isAccepted = false;

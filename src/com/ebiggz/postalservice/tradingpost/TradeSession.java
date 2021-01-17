@@ -19,6 +19,8 @@ import org.bukkit.inventory.ItemStack;
 import com.ebiggz.postalservice.apis.InteractiveMessageAPI.FormattedText;
 import com.ebiggz.postalservice.apis.InteractiveMessageAPI.InteractiveMessage;
 import com.ebiggz.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement;
+import com.ebiggz.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.ClickEvent;
+import com.ebiggz.postalservice.apis.InteractiveMessageAPI.InteractiveMessageElement.HoverEvent;
 import com.ebiggz.postalservice.apis.guiAPI.GUI;
 import com.ebiggz.postalservice.apis.guiAPI.GUIUtils;
 import com.ebiggz.postalservice.mail.Mail;
@@ -26,9 +28,9 @@ import com.ebiggz.postalservice.mail.Mail.MailStatus;
 import com.ebiggz.postalservice.mailbox.MailboxManager;
 
 
-public class TradeSession /*implements GUI*/ {
+public class TradeSession implements GUI {
 
-	/*private String initiatorName;
+	private String initiatorName;
 	private String inviteeName;
 
 	private AcceptOfferButton initiatorAccept;
@@ -87,7 +89,7 @@ public class TradeSession /*implements GUI*/ {
 		//Utils.addArrayToList(Utils.wrap(ChatColor.WHITE + "* Both players must accept each other's offers for the trade to be successful.", 30, "\n"+ ChatColor.WHITE, true).split("\n"), infoSignLore);
 
 		ItemStack infoSign = GUIUtils.createButton(
-				Material.SIGN,
+				Material.OAK_SIGN,
 				ChatColor.YELLOW +""+ChatColor.BOLD + "Help",
 				infoSignLore);
 		inventory.setItem(4, infoSign);
@@ -98,14 +100,14 @@ public class TradeSession /*implements GUI*/ {
 		inventory.setItem(37, initiatorLocked.toItemStack());
 		inventory.setItem(38, initiatorAccept.toItemStack());
 		inventory.setItem(39, GUIUtils.createButton(
-				Utils.getPlayerHeadItem(initiatorName),
+				new ItemStack(Material.PLAYER_HEAD, 1),
 				ChatColor.YELLOW +""+ ChatColor.BOLD +initiatorName + "'s Section",
 				Arrays.asList(
 						ChatColor.GRAY + "*" + initiatorName + ", shift + right click here",
 						ChatColor.GRAY + "to cancel the trade session*")));
 
 		inventory.setItem(41, GUIUtils.createButton(
-				Utils.getPlayerHeadItem(inviteeName),
+				new ItemStack(Material.PLAYER_HEAD, 1),
 				ChatColor.YELLOW +""+ChatColor.BOLD + inviteeName + "'s Section",
 				Arrays.asList(
 						ChatColor.GRAY + "*" + inviteeName + ", shift + right click here",
@@ -117,8 +119,12 @@ public class TradeSession /*implements GUI*/ {
 		return inventory;
 	}
 
-	public Inventory createInventory(Player player) {
+	public Inventory createBaseInventory(Player player) {
 		return inventory;
+	}
+	
+	public ItemStack[] loadContents(Player player) {
+		return inventory.getContents();
 	}
 
 	public void onInventoryClick(Player whoClicked, InventoryClickEvent clickedEvent) {
@@ -316,15 +322,15 @@ public class TradeSession /*implements GUI*/ {
 			inviteePlayer.sendMessage(ChatColor.YELLOW + "[TradingPost] Your trade session with " + initiatorName + " has been canceled. Any items you had for offer will be mailed to you.");
 		}
 		List<ItemStack> initiatorItems = this.getInitiatorsItems();
-		if(!initiatorItems.isEmpty()) {
-			Mail initiatorMail = new TradeGoods(initiatorName, "the Trade Master", "You recently had a canceled trade with " + inviteeName + ". Returned are the items you had for offer.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), initiatorItems, 0, 0);
-			MailboxManager.getInstance().getPlayerMailbox(initiatorName).receiveMail(initiatorMail);
-		}
-		List<ItemStack> inviteeItems = this.getInviteesItems();
-		if(!inviteeItems.isEmpty()) {
-			Mail mail = new TradeGoods(inviteeName, "the Trade Master", "You recently had a canceled trade with " + initiatorName + ". Returned are the items you had for offer.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), inviteeItems, 0, 0);
-			MailboxManager.getInstance().getPlayerMailbox(inviteeName).receiveMail(mail);
-		}
+//		if(!initiatorItems.isEmpty()) {
+//			Mail initiatorMail = new TradeGoods(initiatorName, "the Trade Master", "You recently had a canceled trade with " + inviteeName + ". Returned are the items you had for offer.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), initiatorItems, 0, 0);
+//			MailboxManager.getInstance().getPlayerMailbox(initiatorName).receiveMail(initiatorMail);
+//		}
+//		List<ItemStack> inviteeItems = this.getInviteesItems();
+//		if(!inviteeItems.isEmpty()) {
+//			Mail mail = new TradeGoods(inviteeName, "the Trade Master", "You recently had a canceled trade with " + initiatorName + ". Returned are the items you had for offer.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), inviteeItems, 0, 0);
+//			MailboxManager.getInstance().getPlayerMailbox(inviteeName).receiveMail(mail);
+//		}
 	}
 
 	@SuppressWarnings("deprecation")
@@ -343,33 +349,33 @@ public class TradeSession /*implements GUI*/ {
 		}
 		List<ItemStack> initiatorItems = this.getInitiatorsItems();
 		if(initiatorMoneyXP.getMoneyOffered() > 0) {
-			Mythsentials.economy.withdrawPlayer(initiatorName, initiatorMoneyXP.getMoneyOffered());
+			//Mythsentials.economy.withdrawPlayer(initiatorName, initiatorMoneyXP.getMoneyOffered());
 		}
 		if(initiatorMoneyXP.getXPOffered() > 0) {
-			long totalXp = SetExpFix.getTotalExperience(Bukkit.getPlayer(initiatorName)) - initiatorMoneyXP.getXPOffered();
-			if (totalXp < 0L)
-			{
-				totalXp = 0L;
-			}
-			SetExpFix.setTotalExperience(Bukkit.getPlayer(initiatorName), (int)totalXp);
+//			long totalXp = SetExpFix.getTotalExperience(Bukkit.getPlayer(initiatorName)) - initiatorMoneyXP.getXPOffered();
+//			if (totalXp < 0L)
+//			{
+//				totalXp = 0L;
+//			}
+//			SetExpFix.setTotalExperience(Bukkit.getPlayer(initiatorName), (int)totalXp);
 		}
-		Mail tradeGoodsForInvitee = new TradeGoods(inviteeName, "the Trade Master", "You recently had a successful trade with " + initiatorName + ". Here are the goods you got from that trade.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), initiatorItems, initiatorMoneyXP.getMoneyOffered(), initiatorMoneyXP.getXPOffered());
-		MailboxManager.getInstance().getPlayerMailbox(inviteeName).receiveMail(tradeGoodsForInvitee);
-
-		List<ItemStack> inviteeItems = this.getInviteesItems();
-		if(inviteeMoneyXP.getMoneyOffered() > 0) {
-			Mythsentials.economy.withdrawPlayer(inviteeName, inviteeMoneyXP.getMoneyOffered());
-		}
-		if(inviteeMoneyXP.getXPOffered() > 0) {
-			long totalXp = SetExpFix.getTotalExperience(Bukkit.getPlayer(inviteeName)) - inviteeMoneyXP.getXPOffered();
-			if (totalXp < 0L)
-			{
-				totalXp = 0L;
-			}
-			SetExpFix.setTotalExperience(Bukkit.getPlayer(inviteeName), (int)totalXp);
-		}
-		Mail tradeGoodsForInitiator = new TradeGoods(initiatorName, "the Trade Master", "You recently had a successful trade with " + inviteeName + ". Here are the goods you got from that trade.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), inviteeItems, inviteeMoneyXP.getMoneyOffered(), inviteeMoneyXP.getXPOffered());
-		MailboxManager.getInstance().getPlayerMailbox(initiatorName).receiveMail(tradeGoodsForInitiator);
+//		Mail tradeGoodsForInvitee = new TradeGoods(inviteeName, "the Trade Master", "You recently had a successful trade with " + initiatorName + ". Here are the goods you got from that trade.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), initiatorItems, initiatorMoneyXP.getMoneyOffered(), initiatorMoneyXP.getXPOffered());
+//		MailboxManager.getInstance().getPlayerMailbox(inviteeName).receiveMail(tradeGoodsForInvitee);
+//
+//		List<ItemStack> inviteeItems = this.getInviteesItems();
+//		if(inviteeMoneyXP.getMoneyOffered() > 0) {
+//			Mythsentials.economy.withdrawPlayer(inviteeName, inviteeMoneyXP.getMoneyOffered());
+//		}
+//		if(inviteeMoneyXP.getXPOffered() > 0) {
+//			long totalXp = SetExpFix.getTotalExperience(Bukkit.getPlayer(inviteeName)) - inviteeMoneyXP.getXPOffered();
+//			if (totalXp < 0L)
+//			{
+//				totalXp = 0L;
+//			}
+//			SetExpFix.setTotalExperience(Bukkit.getPlayer(inviteeName), (int)totalXp);
+//		}
+//		Mail tradeGoodsForInitiator = new TradeGoods(initiatorName, "the Trade Master", "You recently had a successful trade with " + inviteeName + ". Here are the goods you got from that trade.", Time.getTime(), MailStatus.UNREAD, UUID.randomUUID(), inviteeItems, inviteeMoneyXP.getMoneyOffered(), inviteeMoneyXP.getXPOffered());
+//		MailboxManager.getInstance().getPlayerMailbox(initiatorName).receiveMail(tradeGoodsForInitiator);
 	}
 
 	public List<ItemStack> getInitiatorsItems() {
@@ -480,6 +486,6 @@ public class TradeSession /*implements GUI*/ {
 
 	public boolean isEnded() {
 		return isEnded;
-	}*/
+	}
 
 }

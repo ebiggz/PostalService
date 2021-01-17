@@ -13,11 +13,13 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.util.io.BukkitObjectInputStream;
 import org.bukkit.util.io.BukkitObjectOutputStream;
 
@@ -40,6 +42,14 @@ public class Utils {
 	public static void debugMessage(String message) {
 		if (Config.ENABLE_DEBUG)
 			PostalService.getPlugin().getLogger().info("DEBUG: " + message);
+	}
+	
+	public static ItemStack getPlayerHead(Player player) {
+		ItemStack i = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta im = (SkullMeta) i.getItemMeta();
+        im.setOwningPlayer(Bukkit.getOfflinePlayer(player.getUniqueId()));
+        i.setItemMeta(im);
+        return i;
 	}
 
 	public static String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {

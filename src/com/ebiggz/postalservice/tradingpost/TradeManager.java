@@ -1,7 +1,10 @@
 package com.ebiggz.postalservice.tradingpost;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,7 +18,7 @@ public class TradeManager {
 	private List<TradeSession> activeTrades = new ArrayList<TradeSession>();
 
 	/* Singleton */
-	/*private static TradeManager instance = null;
+	private static TradeManager instance = null;
 	private TradeManager() {}
 	public static TradeManager getInstance() {
 		if(instance == null) {
@@ -49,25 +52,10 @@ public class TradeManager {
 		return false;
 	}
 
-	public List<String> availablePlayers(Player player) {
-		List<String> availablePlayers = new ArrayList<String>();
-		for(Player otherPlayer : Bukkit.getOnlinePlayers()) {
-			System.out.println("Checking for: " + otherPlayer.getName());
-			if(otherPlayer == player) {
-				System.out.println("Same player! Skipping! ");
-				continue;
-			}
-			if(this.playerHasActiveTradeSession(otherPlayer)) {
-				System.out.println("Already in a sesson!");
-				continue;
-			}
-			availablePlayers.add(otherPlayer.getName());
-		}
-		System.out.println("Players: ");
-		for(String p : availablePlayers) {
-			System.out.println(p);
-		}
-		return availablePlayers;
-	}*/
+	public List<Player> availablePlayers(Player player) {
+		return Bukkit.getOnlinePlayers().stream()
+				.filter(p -> p != player && !this.playerHasActiveTradeSession(p))
+				.collect(Collectors.toList());
+	}
 
 }
