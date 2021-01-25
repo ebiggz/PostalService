@@ -24,7 +24,25 @@ import com.ebiggz.postalservice.mail.MailManager;
 public class PermissionHandler {
 
 	public enum Perm {
-		MAIL_CHECK, MAIL_SELF, MAIL_READ, MAIL_READOTHER, HELP, MAILBOX_FIND, MAILBOX_SET, MAILBOX_REMOVE, MAILBOX_REMOVEALL, MAILBOX_REMOVEALLOTHER, MAILBOX_SETOVERRIDE, MAILBOX_REMOVEOTHER, OVERRIDE_WORLD_BLACKLIST, OVERRIDE_REQUIRE_MAILBOX, RELOAD, UPDATE
+		MAIL_CHECK,
+		MAIL_SELF,
+		MAIL_READ,
+		MAIL_READOTHER,
+		HELP,
+		MAILBOX_FIND,
+		MAILBOX_SET,
+		MAILBOX_SETOTHER,
+		MAILBOX_SETPOSTOFFICE,
+		MAILBOX_REMOVE,
+		MAILBOX_REMOVEALL,
+		MAILBOX_REMOVEALLOTHER,
+		MAILBOX_PURGEALL,
+		MAILBOX_SETOVERRIDE,
+		MAILBOX_REMOVEOTHER,
+		OVERRIDE_WORLD_BLACKLIST,
+		OVERRIDE_REQUIRE_MAILBOX,
+		RELOAD,
+		UPDATE
 	}
 
 
@@ -49,8 +67,17 @@ public class PermissionHandler {
 		case MAILBOX_REMOVEOTHER:
 			hasPerm = player.hasPermission("postalservice.mailbox.removeother");
 			break;
+		case MAILBOX_PURGEALL:
+			hasPerm = player.hasPermission("postalservice.mailbox.purgeall");
+			break;
 		case MAILBOX_SET:
 			hasPerm = player.hasPermission("postalservice.mailbox.set");
+			break;
+		case MAILBOX_SETOTHER:
+			hasPerm = player.hasPermission("postalservice.mailbox.setother");
+			break;
+		case MAILBOX_SETPOSTOFFICE:
+			hasPerm = player.hasPermission("postalservice.mailbox.setpostoffice");
 			break;
 		case MAILBOX_SETOVERRIDE:
 			hasPerm = player.hasPermission("postalservice.mailbox.setoverride");
@@ -106,7 +133,9 @@ public class PermissionHandler {
 		modChildren.put("postalservice.mailbox.setoverride", true);
 		modChildren.put("postalservice.mailbox.removeother", true);
 		modChildren.put("postalservice.mailbox.removeallother", true);
-		modChildren.put("postalservice.mail.readother", true);
+		modChildren.put("postalservice.mailbox.readother", true);
+		modChildren.put("postalservice.mailbox.setother", true);
+		modChildren.put("postalservice.mailbox.setpostoffice", true);
 		Bukkit.getPluginManager().removePermission("postalservice.mod");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.mod", PermissionDefault.FALSE, modChildren));
 
@@ -116,6 +145,7 @@ public class PermissionHandler {
 		adminChildren.put("postalservice.overriderequiremailbox", true);
 		adminChildren.put("postalservice.overrideworldblacklist", true);
 		adminChildren.put("postalservice.mail.self", true);
+		adminChildren.put("postalservice.mailbox.purgeall", true);
 		Bukkit.getPluginManager().removePermission("postalservice.admin");
 		Bukkit.getPluginManager().addPermission(new Permission("postalservice.admin", PermissionDefault.FALSE, adminChildren));
 

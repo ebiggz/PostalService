@@ -105,6 +105,11 @@ public class Package implements MailType {
 	}
 
 	@Override
+	public boolean onlyClaimableAtPostOffice() {
+		return true;
+	}
+
+	@Override
 	public boolean useSummaryScreen() {
 		return true;
 	}

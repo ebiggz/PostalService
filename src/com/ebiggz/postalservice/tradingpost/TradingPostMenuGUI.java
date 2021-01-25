@@ -81,7 +81,7 @@ public class TradingPostMenuGUI implements GUI {
 				}
 				break;
 			case 22:
-				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked)), whoClicked);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked), true), whoClicked);
 				break;
 			default:
 				break;

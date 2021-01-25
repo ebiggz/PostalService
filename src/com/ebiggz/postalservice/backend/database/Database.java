@@ -5,6 +5,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 
 import org.bukkit.plugin.Plugin;
 
@@ -62,7 +63,8 @@ public abstract class Database {
 			this.createTable("ps_mail", "MailID BIGINT AUTO_INCREMENT KEY, MailType varchar(255) NOT NULL, Message text, Attachments longtext, Timestamp DATETIME, SenderID varchar(255) NOT NULL, Deleted int DEFAULT 0, WorldGroup varchar(255)");
 			this.createTable("ps_received", "ReceivedID BIGINT AUTO_INCREMENT KEY, RecipientID varchar(255) NOT NULL, MailID INT NOT NULL, Status INT DEFAULT 0, Deleted INT DEFAULT 0");
 			this.createTable("ps_dropboxes", "DropboxID INT AUTO_INCREMENT KEY, Contents LONGBLOB, PlayerID varchar(255) NOT NULL, WorldGroup varchar(255) NOT NULL");
-			this.createTable("ps_mailboxes", "Location varchar(255) NOT NULL KEY, PlayerID varchar(255) NOT NULL");
+			this.createTable("ps_mailboxes", "Location varchar(255) NOT NULL KEY, PlayerID varchar(255) NOT NULL, IsPostOffice boolean DEFAULT 0");
+			this.ensureColumnsExists();
 		} catch (Exception e) {
 			PostalService.getPlugin().getLogger().severe("Unable to create tables in database, plugin may not function as intended!");
 			if(Config.ENABLE_DEBUG) e.printStackTrace();
@@ -75,6 +77,27 @@ public abstract class Database {
 		if(!tables.next()) {
 			Statement statement = connection.createStatement();
 			statement.executeUpdate("CREATE TABLE " + name + "(" + columns + ")");
+		}
+	}
+
+	private boolean columnExists(String tableName, String columnName) throws SQLException{
+		DatabaseMetaData dbm = connection.getMetaData();
+		ResultSet rs = dbm.getColumns(null, null, tableName, columnName);
+		if (rs.next()) {
+			return true;
+		}
+		return false;
+	}
+
+	public void ensureColumnsExists() {
+		try {
+			if (!this.columnExists("ps_mailboxes", "IsPostOffice")) {
+				Statement statement = connection.createStatement();
+				statement.executeUpdate("ALTER TABLE ps_mailboxes ADD COLUMN IsPostOffice boolean DEFAULT 0;");
+			}
+		} catch(SQLException exception) {
+			PostalService.getPlugin().getLogger().severe("Failed to ensure columns exist");
+			exception.printStackTrace();
 		}
 	}
 

@@ -81,7 +81,7 @@ public class TradeStarterGUI implements GUI {
 			}
 			else if(clickedItem.getType() == Material.CHEST) {
 				User user = UserFactory.getUser(whoClicked);
-				GUIManager.getInstance().showGUI(new MainMenuGUI(user), whoClicked);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(user, false), whoClicked);
 			}
 		}
 	}

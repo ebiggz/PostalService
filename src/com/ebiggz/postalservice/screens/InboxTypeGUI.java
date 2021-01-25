@@ -35,18 +35,21 @@ public class InboxTypeGUI implements GUI {
 	private int pageNumber;
 	private int totalPages = 1;
 	private List<Mail> mails;
+	private boolean atPostOffice;
 
-	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber) {
+	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber, boolean atPostOffice) {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
 		this.accountOwner = accountOwner;
+		this.atPostOffice = atPostOffice;
 	}
 
-	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber, int totalPages) {
+	public InboxTypeGUI(User accountOwner, BoxType type, int pageNumber, int totalPages, boolean atPostOffice) {
 		this.boxType = type;
 		this.pageNumber = pageNumber;
 		this.accountOwner = accountOwner;
 		this.totalPages = totalPages;
+		this.atPostOffice = atPostOffice;
 	}
 
 	public BoxType getType() {
@@ -168,7 +171,7 @@ public class InboxTypeGUI implements GUI {
 			break;
 		case 40:
 			if(clickedItem != null && clickedItem.getType() != Material.AIR) {
-				GUIManager.getInstance().showGUI(new MainMenuGUI(accountOwner), whoClicked);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(accountOwner, atPostOffice), whoClicked);
 			}
 			break;
 		case 41:
@@ -200,7 +203,7 @@ public class InboxTypeGUI implements GUI {
 						if(mail.hasAttachments() && !mail.isClaimed()) {
 							if(mail.getWorldGroup() == Config.getWorldGroupFromWorld(whoClicked.getWorld()) || mail.getWorldGroup().getName().equalsIgnoreCase("none") || Config.getMailTypesThatIgnoreWorldGroups().contains(mail.getType().getDisplayName())) {
 								if(mail.getType().useSummaryScreen()) {
-									GUIManager.getInstance().showGUI(new SummaryScreenGUI(mail, boxType, pageNumber), whoClicked);
+									GUIManager.getInstance().showGUI(new SummaryScreenGUI(mail, boxType, pageNumber, atPostOffice), whoClicked);
 								} else {
 									try {
 										mail.getType().administerAttachments(whoClicked);

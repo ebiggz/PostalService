@@ -5,11 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.ebiggz.postalservice.mail.Mail;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -30,7 +32,7 @@ import com.ebiggz.postalservice.utils.Utils;
 
 public class MailboxManager {
 
-	public HashMap<Player, MailboxSelect> mailboxSelectors = new HashMap<Player, MailboxSelect>();
+	public HashMap<Player, MailboxSelection> mailboxSelectors = new HashMap<Player, MailboxSelection>();
 	private HashMap<Location,Mailbox> mailboxes = new HashMap<Location,Mailbox>();
 
 	protected MailboxManager() {
@@ -45,10 +47,6 @@ public class MailboxManager {
 		return instance;
 	}
 
-	public enum MailboxSelect {
-		SET, REMOVE
-	}
-
 	public boolean locationHasMailbox(Location location) {
 		Mailbox mb = this.getMailbox(location);
 		return mb != null;
@@ -61,12 +59,13 @@ public class MailboxManager {
 				ResultSet rs = PostalService.getPSDatabase().querySQL("SELECT * FROM ps_mailboxes");
 				while(rs.next()) {
 					String location = rs.getString("Location");
-					Utils.debugMessage("Loading mailbox at locaiton: " + location);
+					Utils.debugMessage("Loading mailbox at location: " + location);
 					String playerIdentifier = rs.getString("PlayerID");
+					boolean isPostOffice = rs.getBoolean("IsPostOffice");
 					if(location != null || playerIdentifier != null) {
 						Location loc = Utils.stringToLocation(location);
 						Utils.debugMessage("Converted location: " + loc.toString());
-						mailboxes.put(loc, new Mailbox(loc, playerIdentifier));
+						mailboxes.put(loc, new Mailbox(loc, playerIdentifier, isPostOffice));
 					} else {
 						Utils.debugMessage("Could not load mailbox. Location or player id is null");
 					}
@@ -108,7 +107,7 @@ public class MailboxManager {
 					try {
 						Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
 						PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes VALUES ('" + Utils.locationToString(location) + "', '" + user.getIdentifier() + "')");
-						this.mailboxes.put(location,new Mailbox(location, user.getIdentifier()));
+						this.mailboxes.put(location,new Mailbox(location, user.getIdentifier(), false));
 					} catch (Exception e) {
 						if(Config.ENABLE_DEBUG) {
 							e.printStackTrace();
@@ -116,6 +115,39 @@ public class MailboxManager {
 						Utils.debugMessage("error saving a mailbox for " + user.getPlayerName() + " at location " + Utils.locationToString(location));
 						throw new MailboxException(Reason.UNKOWN);
 					}
+				}
+			}
+		}
+	}
+
+	public void addMailboxAtLocForOther(Player creator, String ownerName, Location location) throws MailboxException {
+		Utils.debugMessage("location to add for new mailbox for user " + ownerName + ": " + location.getWorld());
+		User user = UserFactory.getUser(ownerName);
+		if(user == null) {
+			throw new MailboxException(Reason.UNKOWN);
+		}
+		if(location.getBlock() != null && location.getBlock().getType() != Material.CHEST) {
+			throw new MailboxException(Reason.NOT_CHEST);
+		} else if(((Chest) location.getBlock().getState()).getInventory().getHolder() instanceof DoubleChest) {
+			throw new MailboxException(Reason.DOUBLE_CHEST);
+		} else if(this.locationHasMailbox(location)) {
+			throw new MailboxException(Reason.ALREADY_EXISTS);
+		} else if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETOTHER, creator, false)) {
+			throw new MailboxException(Reason.NO_PERMISSION);
+		} else if(!((Chest) location.getBlock().getState()).getInventory().isEmpty()) {
+			throw new MailboxException(Reason.CHEST_NOT_EMPTY);
+		} else {
+			if(Config.USE_DATABASE) {
+				try {
+					Utils.debugMessage("Adding mailbox to database for location: " + Utils.locationToString(location));
+					PostalService.getPSDatabase().updateSQL("INSERT INTO ps_mailboxes (Location, PlayerID) VALUES ('" + Utils.locationToString(location) + "', '" + user.getIdentifier() + "')");
+					this.mailboxes.put(location,new Mailbox(location, user.getIdentifier(), false));
+				} catch (Exception e) {
+					if(Config.ENABLE_DEBUG) {
+						e.printStackTrace();
+					}
+					Utils.debugMessage("error saving a mailbox for " + user.getPlayerName() + " at location " + Utils.locationToString(location));
+					throw new MailboxException(Reason.UNKOWN);
 				}
 			}
 		}
@@ -188,6 +220,42 @@ public class MailboxManager {
 			}
 		}
 	}
+
+	public boolean toggleMailboxPostOfficeStatus(Player player, Location location) throws MailboxException {
+		Mailbox mb = this.getMailbox(location);
+
+		if(mb == null) {
+			throw new MailboxException(Reason.DOESNT_EXIST);
+		} else if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETPOSTOFFICE, player, false)) {
+			throw new MailboxException(Reason.NO_PERMISSION);
+		} else {
+			mb.setIsPostOffice(!mb.isPostOffice());
+			if(Config.USE_DATABASE) {
+				try {
+					PostalService.getPSDatabase().updateSQL("UPDATE ps_mailboxes SET IsPostOffice = "
+							+ (mb.isPostOffice() ? "1" : "0")
+							+ " WHERE Location = '" + Utils.locationToString(mb.getLocation()) + "'");
+				} catch (Exception e) {
+					if(Config.ENABLE_DEBUG)
+						e.printStackTrace();
+				}
+			}
+		}
+
+		return mb.isPostOffice();
+	}
+
+	public void purgeAllMailboxes() {
+		if(Config.USE_DATABASE) {
+			try {
+				PostalService.getPSDatabase().updateSQL("DELETE FROM ps_mailboxes");
+			} catch (Exception e) {
+				if(Config.ENABLE_DEBUG)
+					e.printStackTrace();
+			}
+		}
+		mailboxes.clear();
+	}
 	
 	public void updateMailboxUnreadState(String playerIdentifier, boolean hasUnread) {
 		
@@ -214,20 +282,14 @@ public class MailboxManager {
 	}
 
 	public int getMailboxCount(String name, WorldGroup group) {
-		Utils.debugMessage("Counting mailboxes for " + name);
-		int count = 0;
-		for(Mailbox mailbox : mailboxes.values()) {
-			if(mailbox == null) {
-				Utils.debugMessage("Found a null mailbox! Skipping...");
-				continue;
-			}
-			Utils.debugMessage("Checking mailbox: " + mailbox.getLocation().toString());
-			if(!mailbox.getOwner().getPlayerName().equals(name)) continue;
-			if(Config.getWorldGroupFromWorld(mailbox.getLocation().getWorld()).getName().equals(group.getName())) {
-				count++;
-			}
-		}
-		return count;
+		return mailboxes.values()
+				.stream()
+				.filter(mb -> mb != null &&
+						!mb.isPostOffice() &&
+						mb.getOwner().getPlayerName().equals(name) &&
+						Config.getWorldGroupFromWorld(mb.getLocation().getWorld()).getName().equals(group.getName()))
+				.collect(Collectors.toList())
+				.size();
 	}
 
 	/**

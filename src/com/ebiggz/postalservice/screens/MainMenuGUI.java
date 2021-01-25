@@ -32,9 +32,11 @@ import com.ebiggz.postalservice.permissions.PermissionHandler.Perm;
 public class MainMenuGUI implements GUI {
 
 	private User accountOwner;
+	private boolean atPostOffice;
 
-	public MainMenuGUI(User accountOwner) {
+	public MainMenuGUI(User accountOwner, boolean atPostOffice) {
 		this.accountOwner = accountOwner;
+		this.atPostOffice = atPostOffice;
 	}
 
 	@Override
@@ -180,7 +182,7 @@ public class MainMenuGUI implements GUI {
 					whoClicked.performCommand(Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_COMPOSE.toString());
 				} else if(clickedEvent.getClick() == ClickType.RIGHT) {
 					if(Config.packagesAreEnabled())
-						GUIManager.getInstance().showGUI(new DropboxGUI(), whoClicked);
+						GUIManager.getInstance().showGUI(new DropboxGUI(atPostOffice), whoClicked);
 				}
 			}
 			break;
@@ -188,10 +190,10 @@ public class MainMenuGUI implements GUI {
 			if(accountOwner.getPlayerName().equals(whoClicked.getName())) {
 				accountOwner.markAllMailAsRead();
 			}
-			GUIManager.getInstance().showGUI(new InboxTypeGUI(accountOwner, BoxType.INBOX, 1), whoClicked);
+			GUIManager.getInstance().showGUI(new InboxTypeGUI(accountOwner, BoxType.INBOX, 1, atPostOffice), whoClicked);
 			break;
 		case 3:
-			GUIManager.getInstance().showGUI(new InboxTypeGUI(accountOwner, BoxType.SENT, 1), whoClicked);
+			GUIManager.getInstance().showGUI(new InboxTypeGUI(accountOwner, BoxType.SENT, 1, atPostOffice), whoClicked);
 			break;
 		case 4:
 			// TODO: Go to the trading post gui

@@ -35,6 +35,11 @@ import com.ebiggz.postalservice.utils.Utils;
 public class DropboxGUI implements GUI {
 
 	private boolean contentsLoaded = false;
+	private boolean atPostOffice;
+
+	public DropboxGUI(boolean atPostOffice) {
+		this.atPostOffice = atPostOffice;
+	}
 
 	@Override
 	public ItemStack[] loadContents(Player player) {
@@ -110,7 +115,7 @@ public class DropboxGUI implements GUI {
 			if(clickedEvent.getSlot() == 40) {
 				if(clickedItem != null && clickedItem.getType() != Material.AIR) {
 					if(clickedEvent.getClick() == ClickType.RIGHT) {
-						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked)), whoClicked);
+						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(whoClicked), atPostOffice), whoClicked);
 					} else {
 						whoClicked.closeInventory();
 						MailType type = MailManager.getInstance().getMailTypeByIdentifier("package");

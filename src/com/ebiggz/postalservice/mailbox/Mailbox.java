@@ -10,10 +10,12 @@ public class Mailbox {
 
 	private Location location;
 	private String playerID;
+	private boolean isPostOffice;
 
-	public Mailbox(Location location, String playerID) {
+	public Mailbox(Location location, String playerID, boolean isPostOffice) {
 		this.location = location;
 		this.playerID = playerID;
+		this.isPostOffice = isPostOffice;
 	}
 
 	/** @return the location of this mailbox */
@@ -28,5 +30,13 @@ public class Mailbox {
 	
 	public Chest getChest() {
 		return ((Chest) this.location.getBlock().getState());
+	}
+
+	public boolean isPostOffice() {
+		return isPostOffice;
+	}
+
+	public void setIsPostOffice(boolean isPostOffice) {
+		this.isPostOffice = isPostOffice;
 	}
 }

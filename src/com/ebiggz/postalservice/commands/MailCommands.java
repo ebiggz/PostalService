@@ -62,7 +62,7 @@ public class MailCommands implements CommandExecutor {
 				} else {
 					User user = UserFactory.getUser(player);
 					Bukkit.getServer().getPluginManager().callEvent(new PlayerOpenMailMenuEvent(player, user, null));
-					GUIManager.getInstance().showGUI(new MainMenuGUI(user), player);
+					GUIManager.getInstance().showGUI(new MainMenuGUI(user, false), player);
 				}
 				return true;
 			}
@@ -122,11 +122,11 @@ public class MailCommands implements CommandExecutor {
 					String completedName = Utils.completeName(args[0]);
 					if(completedName == null || completedName.isEmpty()) {
 						if(Bukkit.getOfflinePlayer(args[0]).hasPlayedBefore()) {
-							GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(args[0])), player);
+							GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(args[0]), false), player);
 							return true;
 						}
 					} else {
-						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(completedName)), player);
+						GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(completedName), false), player);
 						return true;
 					}
 				}

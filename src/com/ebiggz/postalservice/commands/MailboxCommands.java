@@ -1,6 +1,9 @@
 package com.ebiggz.postalservice.commands;
 
+import com.ebiggz.postalservice.mailbox.MailboxSelection;
+import com.ebiggz.postalservice.mailbox.MailboxSelectionType;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -11,7 +14,6 @@ import com.ebiggz.postalservice.PostalService;
 import com.ebiggz.postalservice.config.Config;
 import com.ebiggz.postalservice.config.Language.Phrases;
 import com.ebiggz.postalservice.mailbox.MailboxManager;
-import com.ebiggz.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.ebiggz.postalservice.permissions.PermissionHandler;
 import com.ebiggz.postalservice.permissions.PermissionHandler.Perm;
 import com.ebiggz.postalservice.utils.Utils;
@@ -44,12 +46,25 @@ public class MailboxCommands implements CommandExecutor {
 				Utils.fancyHelpMenu(sender, Phrases.COMMAND_MAIL.toString() + " " + Phrases.COMMAND_ARG_HELP.toString()).sendPage(1, sender);
 			} else if(args.length >= 1) {
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString())) {
-					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, sender, true)) return true;
-					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.SET);
-					sender.sendMessage(Phrases.ALERT_MAILBOX_SET.toPrefixedString());
+					if(args.length == 1) {
+						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SET, sender, true)) return true;
+						MailboxManager.getInstance().mailboxSelectors.put((Player) sender,
+								new MailboxSelection(sender.getName(), MailboxSelectionType.SET));
+						sender.sendMessage(Phrases.ALERT_MAILBOX_SET.toPrefixedString());
+					} else {
+						if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETOTHER, sender, true)) return true;
+						String completedName = Utils.completeName(args[1]);
+						if(completedName == null || completedName.isEmpty()) {
+							completedName = args[1];
+						}
+						MailboxManager.getInstance().mailboxSelectors.put((Player) sender,
+								new MailboxSelection(completedName, MailboxSelectionType.SET_OTHER));
+						sender.sendMessage(ChatColor.AQUA + "Please click a chest to register it as a mailbox for " + completedName + " ...");
+					}
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVE.toString())) {
 					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_REMOVE, sender, true)) return true;
-					MailboxManager.getInstance().mailboxSelectors.put((Player) sender, MailboxSelect.REMOVE);
+					MailboxManager.getInstance().mailboxSelectors.put((Player) sender,
+							new MailboxSelection(sender.getName(), MailboxSelectionType.REMOVE));
 					sender.sendMessage(Phrases.ALERT_MAILBOX_REMOVE.toPrefixedString());
 				} else if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVEALL.toString())) {
 					if(args.length == 1) {
@@ -72,6 +87,15 @@ public class MailboxCommands implements CommandExecutor {
 					} else {
 						sender.sendMessage(Phrases.ERROR_MAILBOX_FIND_NONE.toPrefixedString());
 					}
+				} else if(args[0].equalsIgnoreCase("setpostoffice")) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_SETPOSTOFFICE, sender, true)) return true;
+					MailboxManager.getInstance().mailboxSelectors.put((Player) sender,
+							new MailboxSelection(sender.getName(), MailboxSelectionType.MARK_POST_OFFICE));
+					sender.sendMessage(ChatColor.AQUA + "Please click a mailbox to toggle Post Office status");
+				} else if(args[0].equalsIgnoreCase("purgeall")) {
+					if(!PermissionHandler.playerHasPermission(Perm.MAILBOX_PURGEALL, sender, true)) return true;
+					MailboxManager.getInstance().purgeAllMailboxes();
+					sender.sendMessage(ChatColor.AQUA + "Unregistered ALL mailboxes.");
 				}
 
 				if(args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_SET.toString()) || args[0].equalsIgnoreCase(Phrases.COMMAND_ARG_REMOVE.toString())) {

@@ -2,7 +2,9 @@ package com.ebiggz.postalservice.listeners;
 
 import java.util.Arrays;
 
+import com.ebiggz.postalservice.mailbox.MailboxSelection;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -25,7 +27,6 @@ import com.ebiggz.postalservice.events.PlayerOpenMailMenuEvent;
 import com.ebiggz.postalservice.exceptions.MailboxException;
 import com.ebiggz.postalservice.mailbox.Mailbox;
 import com.ebiggz.postalservice.mailbox.MailboxManager;
-import com.ebiggz.postalservice.mailbox.MailboxManager.MailboxSelect;
 import com.ebiggz.postalservice.permissions.PermissionHandler;
 import com.ebiggz.postalservice.permissions.PermissionHandler.Perm;
 import com.ebiggz.postalservice.screens.MainMenuGUI;
@@ -54,12 +55,24 @@ public class MailboxListener implements Listener {
 			if(mailbox != null) {
 				e.setCancelled(true);
 				if(!PermissionHandler.playerHasPermission(Perm.MAIL_READ, player, true)) return;
+				if(!mailbox.getOwner().getPlayerName().equals(player.getName())) {
+					if(PermissionHandler.playerHasPermission(Perm.MAIL_READOTHER, player, false)) {
+						GUIManager.getInstance().showGUI(
+							new MainMenuGUI(UserFactory.getUser(mailbox.getOwner().getPlayerName()),
+							mailbox.isPostOffice()),
+							player
+						);
+					} else {
+						player.sendMessage(ChatColor.RED + "You can't open a mailbox that isn't yours.");
+					}
+					return;
+				}
+
 				Bukkit.getServer().getPluginManager().callEvent(new PlayerOpenMailMenuEvent(player, UserFactory.getUser(player), mailbox));
-				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player)), player);
+				GUIManager.getInstance().showGUI(new MainMenuGUI(UserFactory.getUser(player), mailbox.isPostOffice()), player);
 			}
 		}
 	}
-
 
 	@EventHandler
 	public void onChestPlace(BlockPlaceEvent e) {
@@ -78,6 +91,45 @@ public class MailboxListener implements Listener {
 		}
 	}
 
+	private String getSetErrorMessage(MailboxException.Reason reason) {
+		switch(reason) {
+			case ALREADY_EXISTS:
+				return Phrases.ERROR_MAILBOX_ALREADY_EXISTS.toPrefixedString();
+			case NO_PERMISSION:
+				return Phrases.ERROR_MAILBOX_NO_PERM.toPrefixedString();
+			case DOUBLE_CHEST:
+				return Phrases.ERROR_MAILBOX_DOUBLE_CHEST.toPrefixedString();
+			case MAX_REACHED:
+				return Phrases.ERROR_MAILBOX_MAX_REACHED.toPrefixedString();
+			case CHEST_NOT_EMPTY:
+				return "Mailbox chest must be empty!";
+			default:
+				return Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString();
+		}
+	}
+
+	private String getRemoveErrorMessage(MailboxException.Reason reason) {
+		switch(reason) {
+			case DOESNT_EXIST:
+				return Phrases.ERROR_MAILBOX_DOESNT_EXIST.toPrefixedString();
+			case NOT_OWNER:
+				return Phrases.ERROR_MAILBOX_NOT_OWNER.toPrefixedString();
+			default:
+				return Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString();
+		}
+	}
+
+	private String getPostOfficeErrorMessage(MailboxException.Reason reason) {
+		switch(reason) {
+			case DOESNT_EXIST:
+				return Phrases.ERROR_MAILBOX_DOESNT_EXIST.toPrefixedString();
+			case NO_PERMISSION:
+				return Phrases.ERROR_MAILBOX_NO_PERM.toPrefixedString();
+			default:
+				return Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString();
+		}
+	}
+
 	@EventHandler(priority = EventPriority.MONITOR)
 	public void onPlayerInteract(PlayerInteractEvent event) {
 		if(!event.hasBlock())
@@ -88,52 +140,44 @@ public class MailboxListener implements Listener {
 					event.setCancelled(true);
 					event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NOT_CHEST.toPrefixedString());
 				} else {
-					MailboxSelect selectType = MailboxManager.getInstance().mailboxSelectors.get(event.getPlayer());
+					MailboxSelection selectionData = MailboxManager.getInstance().mailboxSelectors.get(event.getPlayer());
 					MailboxManager.getInstance().mailboxSelectors.remove(event.getPlayer());
 					event.setCancelled(true);
-					if(selectType == MailboxSelect.SET) {
-						try {
-							MailboxManager.getInstance().addMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
-							event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_REG.toPrefixedString());
-						} catch (MailboxException me) {
-							switch(me.getReason()) {
-							case ALREADY_EXISTS:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_ALREADY_EXISTS.toPrefixedString());
-								break;
-							case NO_PERMISSION:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NO_PERM.toPrefixedString());
-								break;
-							case DOUBLE_CHEST:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_DOUBLE_CHEST.toPrefixedString());
-								break;
-							case MAX_REACHED:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_MAX_REACHED.toPrefixedString());
-								break;
-							case CHEST_NOT_EMPTY:
-								event.getPlayer().sendMessage("Mailbox chest must be empty!");
-								break;
-							default:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());
-								break;
+					switch(selectionData.getSelectionType()) {
+						case SET:
+							try {
+								MailboxManager.getInstance().addMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
+								event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_REG.toPrefixedString());
+							} catch (MailboxException me) {
+								event.getPlayer().sendMessage(getSetErrorMessage(me.getReason()));
 							}
-						}
-					} else {
-						try {
-							MailboxManager.getInstance().removeMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
-							event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_UNREG.toPrefixedString());
-						} catch (MailboxException me) {
-							switch(me.getReason()) {
-							case DOESNT_EXIST:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_DOESNT_EXIST.toPrefixedString());
-								break;
-							case NOT_OWNER:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_NOT_OWNER.toPrefixedString());
-								break;
-							default:
-								event.getPlayer().sendMessage(Phrases.ERROR_MAILBOX_UNKNOWN.toPrefixedString());
-								break;
+							break;
+						case REMOVE:
+							try {
+								MailboxManager.getInstance().removeMailboxAtLoc(event.getClickedBlock().getLocation(), event.getPlayer());
+								event.getPlayer().sendMessage(Phrases.ALERT_MAILBOX_UNREG.toPrefixedString());
+							} catch (MailboxException me) {
+								event.getPlayer().sendMessage(getRemoveErrorMessage(me.getReason()));
 							}
-						}
+							break;
+						case SET_OTHER:
+							try {
+								MailboxManager.getInstance().addMailboxAtLocForOther(event.getPlayer(), selectionData.getOwnerName(), event.getClickedBlock().getLocation());
+								event.getPlayer().sendMessage(ChatColor.AQUA + "Added mailbox for " + selectionData.getOwnerName());
+							} catch (MailboxException me) {
+								event.getPlayer().sendMessage(getSetErrorMessage(me.getReason()));
+							}
+							break;
+						case MARK_POST_OFFICE:
+							try {
+								boolean isPostOffice = MailboxManager.getInstance().toggleMailboxPostOfficeStatus(event.getPlayer(), event.getClickedBlock().getLocation());
+								event.getPlayer().sendMessage(ChatColor.AQUA + "Set mailbox post office status to: " + ChatColor.GOLD + (isPostOffice ? "true" : "false"));
+							} catch (MailboxException me) {
+								event.getPlayer().sendMessage(getPostOfficeErrorMessage(me.getReason()));
+							}
+							break;
+						default:
+							event.getPlayer().sendMessage("Unknown mailbox selection action!");
 					}
 				}
 			}

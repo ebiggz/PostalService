@@ -129,6 +129,10 @@ public interface MailType {
 	 */
 	public boolean useSummaryScreen();
 
+	default boolean onlyClaimableAtPostOffice() {
+		return false;
+	}
+
 	/** This is the title that will be shown on the top of the Summary Screen
 	 *
 	 *  @return The title of the Summary Screen

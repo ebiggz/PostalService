@@ -27,11 +27,13 @@ public class SummaryScreenGUI implements GUI {
 	private BoxType previous;
 	private int prevPage;
 	private ItemStack[] contents;
+	private boolean atPostOffice;
 
-	public SummaryScreenGUI(Mail mail, BoxType previous, int prevPage) {
+	public SummaryScreenGUI(Mail mail, BoxType previous, int prevPage, boolean atPostOffice) {
 		this.mail = mail;
 		this.previous = previous;
 		this.prevPage = prevPage;
+		this.atPostOffice = atPostOffice;
 	}
 
 	@Override
@@ -52,13 +54,23 @@ public class SummaryScreenGUI implements GUI {
 		}
 
 		if(previous == BoxType.INBOX) {
-			ItemStack claim = GUIUtils.createButton(
-					mail.getType().getIcon(),
-					mail.getType().getSummaryClaimButtonTitle(),
-					Arrays.asList(
-							Phrases.CLICK_ACTION_LEFTCLAIM.toString(),
-							Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
-			inventory.setItem(40, claim);
+			if(mail.getType().onlyClaimableAtPostOffice() && !atPostOffice) {
+				ItemStack claim = GUIUtils.createButton(
+						mail.getType().getIcon(),
+						mail.getType().getSummaryClaimButtonTitle(),
+						Arrays.asList(
+								ChatColor.GRAY + "*Visit a Post Office to Claim*",
+								Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
+				inventory.setItem(40, claim);
+			} else {
+				ItemStack claim = GUIUtils.createButton(
+						mail.getType().getIcon(),
+						mail.getType().getSummaryClaimButtonTitle(),
+						Arrays.asList(
+								Phrases.CLICK_ACTION_LEFTCLAIM.toString(),
+								Phrases.CLICK_ACTION_RIGHTRETURN.toString()));
+				inventory.setItem(40, claim);
+			}
 		} else {
 			ItemStack mainMenu = GUIUtils.createButton(
 					Material.CHEST,
@@ -76,16 +88,17 @@ public class SummaryScreenGUI implements GUI {
 		if(clickedEvent.getSlot() == 40) {
 			if(clickedEvent.getClick() == ClickType.LEFT) {
 				try {
+					if(mail.getType().onlyClaimableAtPostOffice() && !atPostOffice) return;
 					mail.getType().administerAttachments(whoClicked);
 					UserFactory.getUser(whoClicked.getName()).markMailAsClaimed(mail);
 					whoClicked.sendMessage(Phrases.PREFIX.toString() + " " + mail.getType().getAttachmentClaimMessage());
-					whoClicked.closeInventory();
+					GUIManager.getInstance().showGUI(new InboxTypeGUI(UserFactory.getUser(whoClicked.getName()), previous, prevPage, atPostOffice), whoClicked);
 				} catch (MailException e) {
 					whoClicked.sendMessage(Phrases.PREFIX + " " + e.getErrorMessage());
 					whoClicked.closeInventory();
 				}
 			} else {
-				GUIManager.getInstance().showGUI(new InboxTypeGUI(UserFactory.getUser(whoClicked.getName()), previous, prevPage), whoClicked);
+				GUIManager.getInstance().showGUI(new InboxTypeGUI(UserFactory.getUser(whoClicked.getName()), previous, prevPage, atPostOffice), whoClicked);
 			}
 		}
 	}
